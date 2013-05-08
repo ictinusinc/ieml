@@ -236,23 +236,8 @@ function IEML_save_cell($tab_id, $cell_info, $exp_assoc, $db_info) {
 function IEML_save_table($key_id, $tab_info) {
     $exp_query = Conn::queryArrays("
         SELECT
-            pkExpressionPrimary as id, strExpression as expression,
-                eng.strDescriptor AS descriptorEn, fra.strDescriptor AS descriptorFr
+            pkExpressionPrimary as id, strExpression as expression
         FROM expression_primary prim
-        LEFT JOIN
-            (
-                SELECT fkExpressionPrimary, strDescriptor
-                FROM expression_descriptors
-                WHERE strLanguage = 'eng'
-            ) eng
-            ON eng.fkExpressionPrimary = prim.pkExpressionPrimary
-        LEFT JOIN
-            (
-                SELECT fkExpressionPrimary, strDescriptor
-                FROM expression_descriptors
-                WHERE strLanguage = 'fra'
-            ) fra
-            ON fra.fkExpressionPrimary = prim.pkExpressionPrimary
         WHERE enumDeleted = 'N'
         AND   prim.strExpression IN (".implode(',', array_map(function($a) { return goodInput($a); }, $tab_info['table_flat'])).")");
 
