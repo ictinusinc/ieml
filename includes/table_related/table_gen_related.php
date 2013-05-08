@@ -1,6 +1,6 @@
 <?php
 
-global $IEML_toVary;
+global $IEML_toVary, $IEML_short_exapnd;
 
 $IEML_toVary = array(
     'F:' => array(
@@ -12,6 +12,13 @@ $IEML_toVary = array(
     	array(array('U:', 'A:'), 'O:'),
     	array(array('S:', 'B:', 'T:'), 'M:')
     )
+);
+
+$IEML_short_exapnd = array(
+	'O' => array('U', 'A'),
+	'M' => array('S', 'B', 'T'),
+	'F' => array('U', 'A', 'S', 'B', 'T'),
+	'I' => array('E', 'U', 'A', 'S', 'B', 'T'),
 );
 
 function IEML_gen_var($AST) {
@@ -233,7 +240,7 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 			
 	    	for ($i=0; $i<$tpv_len; $i++) {
 	    		$cvarr = cons_variance_arr($tally_part_varied[$i], $exp);
-				//echo 'cvarr: '.pre_dump($cvarr);
+				echo 'cvarr: '.pre_dump($cvarr);
 				//echo 'parts: '.pre_dump($pre, $tpv_out_str[$i][0], $tpv_out_str[$i][1], $post);
 	    		$sub = IEML_sub_gen_header($cvarr, 0, count($cvarr)-1, $tpv_out_str[$i][0], $tpv_out_str[$i][1]);
 	    		//echo 'sub_gen_head: '.pre_dump($sub);
