@@ -11,8 +11,7 @@ function var_dump_str() {
 
 $mailto = 'bence.me@gmail.com';
 $mail_title = 'GitHub `git pull`@'.date('Y-m-d H:i:s');
-$headers = 	"From: autonotify@ictinusdesign.com\r\n".
-			"Cc: james@ictin.us\r\n".
+$headers = 	"From: ieml_autonotify@ictinusdesign.com\r\n".
 			"MIME-Version: 1.0\r\n".
 			"Content-Type: text/html; charset=ISO-8859-1\r\n".
 			"X-Mailer: PHP/".phpversion();
