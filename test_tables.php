@@ -47,11 +47,9 @@ unset($key);
 foreach ($keys as &$key) {
     echo '<pre>'.$key['expression'].'</pre>';
 	
-	$tokens = \IEML_ExpParse\str_to_tokens($key['expression']);
-	$AST = \IEML_ExpParse\tokens_to_AST($tokens);
+	$info = IEML_gen_table_info($key['expression'], $IEML_lowToVowelReg);
 	
-	echo pre_dump(\IEML_ExpParse\AST_to_infix_str($AST, $key['expression']));
-	echo 'info: '.pre_dump($AST);
+	echo 'info: '.pre_dump($info);
 }
 
 ?>
