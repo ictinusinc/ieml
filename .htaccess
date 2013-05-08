@@ -1,0 +1,14 @@
+Options +FollowSymlinks
+
+<IfModule mod_rewrite.c>
+RewriteEngine on
+RewriteBase /
+
+RewriteRule ^api/?(.*)$ /ajax.php$1 [NC,S=2]
+#NC: No Case (case insensitive), S=2: skip next 2 rules
+
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>
