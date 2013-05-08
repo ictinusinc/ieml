@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en" class="wf-proximanovaaltcondensed-i4-active wf-proximanovaaltcondensed-i7-active wf-proximanovaaltcondensed-n4-active wf-proximanovaaltcondensed-n7-active wf-proximanovaextracondensed-i3-active wf-proximanovaextracondensed-i7-active wf-proximanovaextracondensed-n3-active wf-proximanovaextracondensed-n7-active wf-active"><head>
+        <meta charset="utf-8">
+        <title>IEML Dictionary</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <script type="text/javascript" src="//use.typekit.net/oga8trv.js"></script>
+        <style type="text/css">.tk-proxima-nova-extra-condensed{font-family:"proxima-nova-extra-condensed",sans-serif;}.tk-proxima-nova-alt-condensed{font-family:"proxima-nova-alt-condensed",sans-serif;}</style><link rel="stylesheet" href="http://use.typekit.net/c/7289d7/proxima-nova-alt-condensed:i4:i7:n4:n7,proxima-nova-extra-condensed:i3:i7:n3:n7.S9C:H:2,S97:H:2,S9B:H:2,S96:H:2,SCq:H:2,SCn:H:2,SCp:H:2,SCm:H:2/d?3bb2a6e53c9684ffdc9a9aff135b2a629c74e59eae32629bb0e3457cad8af9d6f16fbd9cea8645138989c177b7c6b166a13c6159685b0f1fb0e3d6035ebe1aadce39e08925527b759e8e66863a30b80f5b5de1e098987d906338fc0bad57190a8c98a0"><script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+        <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+        <!--[if lt IE 9]>
+            <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+        
+        <!-- Stylesheets -->
+        <link type="text/css" rel="stylesheet" href="/includes/css/bootstrap/css/bootstrap.css">
+        <link type="text/css" rel="stylesheet" href="/includes/css/style.css">
+        
+        <!-- Javascript Files -->
+        <script type="text/javascript" src="/includes/js/libs/jquery-1.7.2.min.js"></script>
+        <script type="text/javascript" src="/includes/js/libs/jquery.form-3.04.min.js"></script>
+        <script type="text/javascript" src="/includes/js/libs/bootstrap.js"></script>
+        <script type="text/javascript" src="/includes/js/functions.js?_=1366995967"></script>
+        <script type="text/javascript" src="/includes/js/javascript.js?_=1366995967"></script>
+        <script type="text/javascript" src="/includes/js/user.js?_=1366995967"></script>            </head>
+    <body>
+    
+    <div id="ajax"></div>
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                	<div class="row">
+	                    <div class="pull-right">
+	                        	                        	<span class="color-white">Ictinus</span>
+	                            <a class="btn" href="?a=logout">Logout</a>
+	                        	                    </div>
+                	</div>
+                                        <div class="row">
+	                    <form id="search-form" class="span12 navbar-search" action="/ajax.php" method="post">
+	                    	<a class="brand logo" href="/">&nbsp;</a>
+	                    	<div class="pull-left">
+	                    		<select id="search-spec-select" name="search-spec-select" class="span2"><option value="basic">Basic Lexicon</option></select>
+	                    		<select id="search-lang-select" name="search-lang-select" class="span2">
+	                    			<option value="en">English</option>
+	                    			<option value="fr">Français</option>
+	                    		</select>
+	                    	</div>
+	                    	<div class="pull-right"><input type="text" class="search-query span2" id="search" name="search" placeholder="Search"></div>
+	                    </form>
+                    </div>
+                                    </div>
+            </div>
+            <div class="subtop-bar">
+	            <div class="container">
+				    				    <div class="pull-left"><a href="/ajax.php?a=newDictionary" class="btn" id="add-ieml-record"><span class="icon-plus">&nbsp;</span> New Expression</a></div>
+				    				    <div class="pull-left"><div id="back-to-list-view" class="btn hide" style="display: block; ">Back to Results</div></div>
+				    
+				    <div class="pull-right">
+				    							<div class="edit-buttons-wrap hide" style="display: block; ">
+							<span class="non-edit-buttons hide"><a class="btn" id="ieml-desc-result-save">Save</a><a class="btn" id="ieml-desc-result-cancel">Cancel</a><a class="btn" id="ieml-desc-result-delete">Delete</a></span>
+							<a class="btn" id="ieml-desc-result-edit">Edit</a>
+						</div>
+												
+						<div class="btn-group">
+							<button class="btn" id="filter-results-button" style="display: none; ">Show All</button>
+							<button class="btn dropdown-toggle" data-toggle="dropdown">
+								<span class="caret"></span>
+							</button>
+							<ul class="dropdown-menu">
+								<li id="filter-results-keys"><a href="javascript:void(0);">Keys Only</a></li>
+							</ul>
+						</div>
+						
+						
+				    </div>
+			    </div>
+            </div>
+        </div>
+    
+    <div class="container contentzone user-padding">
+        <div id="user-view-container" class="hide" style="display: none; ">
+            <div class="row">
+                <div class="span9"><h3>Users</h3></div>
+                <div class="span3"><a href="#" id="addUser" class="btn pull-right">Add User</a></div>
+            </div>
+        	<table id="userlist" class="table table table-striped table-bordered"><thead><tr><th>Username/Email</th><th>Type</th><th>Created</th><th>&nbsp;</th></tr></thead><tbody></tbody></table>
+        </div>
+        
+        <div id="list-view-container" style="display: none; ">
+            <div class="row">
+                <div class="span12"><h3>Results</h3></div>
+            </div>
+        	<table id="listview" class="table table table-striped table-bordered"><thead><tr><th>Expression</th><th>Descriptor</th><th>&nbsp;</th></tr></thead><tbody><tr data-key="false" data-result-id="373"><td>a.i.-</td><td>to sell</td><td><a href="/ajax.php?id=373&amp;a=searchDictionary" class="btn editExp"><span class="icon-pencil"></span></a></td></tr></tbody></table>
+        </div>
+        
+        <div id="record-view-container" class="hide" style="display: block; ">
+            <form id="iemlRecord" method="POST" action="ajax.php">
+                <input type="hidden" name="id" id="desc-result-id" value="373">
+                <div class="row">
+	            	<div class="span12">
+	            		<div class="pull-left"><span class="pull-left" id="ieml-result-details">Verb Layer 2</span><span class="pull-left" id="ieml-result">a.i.-</span></div>
+	            		<label class="checkbox pull-right" for="iemlEnumCategoryModal"><input type="checkbox" disabled="disabled" class="checkbox" name="iemlEnumCategoryModal" id="iemlEnumCategoryModal" value="Y"> Key</label>
+	            	</div>
+                </div>
+                <div class="row">
+	            	<div class="span6" id="ieml-ex-wrap">
+	            		<span class="example-top-tag">Example</span>
+	            		<h3 id="ieml-ex-result">to sell</h3>
+	            	</div>
+	            	<div class="span6" id="ieml-desc-wrap">
+	            		<span class="desc-top-tag">Descriptor</span>
+	            		<div id="ieml-desc-result"></div>
+	            	</div>
+                </div>
+                <div class="row">
+	            	<div class="span12">
+						<span>Paradigmatic Circuits</span>
+		                <div class="hide edit-only">
+	            			<label class="checkbox" id="iemlEnumComplConcOffWrap" for="iemlEnumComplConcOff"><input type="checkbox" class="checkbox" name="iemlEnumComplConcOff" id="iemlEnumComplConcOff" value="Y"> Disable Complementary Concepts</label>
+	            			<div class="row">
+		            			<div class="span12">
+		            				<p>Disable</p>
+			            			<div class="span2">
+			            				<label class="checkbox" id="iemlEnumSubstanceOffWrap" for="iemlEnumSubstanceOff"><input type="checkbox" class="checkbox" name="iemlEnumSubstanceOff" id="iemlEnumSubstanceOff" value="Y"> Substance</label>
+			            			</div>
+			            			<div class="span2">
+			            				<label class="checkbox" id="iemlEnumAttributeOffWrap" for="iemlEnumAttributeOff"><input type="checkbox" class="checkbox" name="iemlEnumAttributeOff" id="iemlEnumAttributeOff" value="Y"> Attribute</label>
+			            			</div>
+			            			<div class="span2">
+			            				<label class="checkbox" id="iemlEnumModeOffWrap" for="iemlEnumModeOff"><input type="checkbox" class="checkbox" name="iemlEnumModeOff" id="iemlEnumModeOff" value="Y"> Mode</label>
+			            			</div>
+		            			</div>
+	            			</div>
+		                </div>
+	                	<ul class="nav nav-tabs">
+							<li class="active"><a href="#table" data-toggle="tab">Table</a></li>
+							<li><a href="#relations" data-toggle="tab">Lists of relations</a></li>
+							<li><a href="#graph" data-toggle="tab">Graph</a></li>
+						</ul>
+	            	</div>
+	            	<div class="tab-content span12">
+		                <div class="tab-pane active" id="table">
+		                	<div id="ieml-table-info-wrap">
+			                	<input type="hidden" id="iemlTableID" name="iemlTableID"></input>
+				                <div class="hide edit-only">
+			            			<label class="checkbox" id="iemlEnumShowTableWrap" for="iemlEnumShowTable"><input type="checkbox" class="checkbox" name="iemlEnumShowTable" id="iemlEnumShowTable" value="Y"> Show Empty Expressions</label>
+				                </div>
+				                <div id="ieml-table-span"><table class="relation"><tbody><tr><td class="empty_cell" rowspan="2" colspan="1" style=""></td><td colspan="6"><div class="cell_wrap relation-top-cell"><a href="/ajax.php?id=339&amp;a=searchDictionary" class="editExp"><span class="table-">O:M:.O:M:.-</span>to perform</a></div></td></tr><tr class="empty_head_tr hide" style="display: none; "><td colspan="3" class=" hide nonExistentCell" style="display: none; "><div><a href="javascript:void(0);" class="createEmptyExp">O:M:.U:M:.-</a></div></td><td colspan="3" class=" hide nonExistentCell" style="display: none; "><div><a href="javascript:void(0);" class="createEmptyExp">O:M:.A:M:.-</a></div></td></tr><tr><td><div class="cell_wrap"><a href="/ajax.php?id=340&amp;a=searchDictionary" class="editExp"><span class="table-">O:M:.y.-</span>to perform in knowledge</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=341&amp;a=searchDictionary" class="editExp"><span class="table-">O:M:.o.-</span>to perform in will</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=342&amp;a=searchDictionary" class="editExp"><span class="table-">O:M:.e.-</span>to perform in abilities</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=343&amp;a=searchDictionary" class="editExp"><span class="table-">O:M:.u.-</span>to perform in expression</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=344&amp;a=searchDictionary" class="editExp"><span class="table-">O:M:.a.-</span>to perform in social relationship</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=345&amp;a=searchDictionary" class="editExp"><span class="table-">O:M:.i.-</span>to perform in concrete things</a></div></td></tr><tr><td rowspan="3" class=" hide nonExistentCell" style="display: none; "><div><a href="javascript:void(0);" class="createEmptyExp">U:M:.O:M:.-</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=346&amp;a=searchDictionary" class="editExp"><span class="table-">y.O:M:.-</span>to perform on a basis of knowledge</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=347&amp;a=searchDictionary" class="editExp"><span class="table-">y.y.-</span>to master a knowledge field</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=348&amp;a=searchDictionary" class="editExp"><span class="table-">y.o.-</span>to establish priorities</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=349&amp;a=searchDictionary" class="editExp"><span class="table-">y.e.-</span>to analyze</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=350&amp;a=searchDictionary" class="editExp"><span class="table-">y.u.-</span>to interrogate</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=351&amp;a=searchDictionary" class="editExp"><span class="table-">y.a.-</span>to learn</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=352&amp;a=searchDictionary" class="editExp"><span class="table-">y.i.-</span>to explicitate | to formalize</a></div></td></tr><tr><td><div class="cell_wrap"><a href="/ajax.php?id=353&amp;a=searchDictionary" class="editExp"><span class="table-">o.O:M:.-</span>to perform on a basis of will</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=354&amp;a=searchDictionary" class="editExp"><span class="table-">o.y.-</span>to choose</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=355&amp;a=searchDictionary" class="editExp"><span class="table-">o.o.-</span>to aim at an objective</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=356&amp;a=searchDictionary" class="editExp"><span class="table-">o.e.-</span>to specify</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=357&amp;a=searchDictionary" class="editExp"><span class="table-">o.u.-</span>to campaign</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=358&amp;a=searchDictionary" class="editExp"><span class="table-">o.a.-</span>to lead</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=359&amp;a=searchDictionary" class="editExp"><span class="table-">o.i.-</span>to make an application</a></div></td></tr><tr><td><div class="cell_wrap"><a href="/ajax.php?id=360&amp;a=searchDictionary" class="editExp"><span class="table-">e.O:M:.-</span>to perform on a basis of capacities</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=1436&amp;a=searchDictionary" class="editExp"><span class="table-">e.y.-</span>to synthetize</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=1437&amp;a=searchDictionary" class="editExp"><span class="table-">e.o.-</span>to design | to plan</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=1438&amp;a=searchDictionary" class="editExp"><span class="table-">e.e.-</span>to exercise a competence</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=1439&amp;a=searchDictionary" class="editExp"><span class="table-">e.u.-</span>to deliberate</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=1440&amp;a=searchDictionary" class="editExp"><span class="table-">e.a.-</span>to demand</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=1441&amp;a=searchDictionary" class="editExp"><span class="table-">e.i.-</span>to give</a></div></td></tr><tr><td rowspan="3" class=" hide nonExistentCell" style="display: none; "><div><a href="javascript:void(0);" class="createEmptyExp">A:M:.O:M:.-</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=2484&amp;a=searchDictionary" class="editExp"><span class="table-">u.O:M:.-</span>to perform on an expressive basis</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=361&amp;a=searchDictionary" class="editExp"><span class="table-">u.y.-</span>to respond</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=362&amp;a=searchDictionary" class="editExp"><span class="table-">u.o.-</span>to adhere (to ideas)</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=363&amp;a=searchDictionary" class="editExp"><span class="table-">u.e.-</span>to judge</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=364&amp;a=searchDictionary" class="editExp"><span class="table-">u.u.-</span>to communicate</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=365&amp;a=searchDictionary" class="editExp"><span class="table-">u.a.-</span>to promise</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=366&amp;a=searchDictionary" class="editExp"><span class="table-">u.i.-</span>to lend</a></div></td></tr><tr><td><div class="cell_wrap"><a href="/ajax.php?id=367&amp;a=searchDictionary" class="editExp"><span class="table-">a.O:M:.-</span>to perform on a social basis</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=368&amp;a=searchDictionary" class="editExp"><span class="table-">a.y.-</span>to teach</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=369&amp;a=searchDictionary" class="editExp"><span class="table-">a.o.-</span>to follow</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=370&amp;a=searchDictionary" class="editExp"><span class="table-">a.e.-</span>to offer | to supply</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=371&amp;a=searchDictionary" class="editExp"><span class="table-">a.u.-</span>to keep one's word</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=372&amp;a=searchDictionary" class="editExp"><span class="table-">a.a.-</span>to contract</a></div></td><td><div class="cell_wrap relation-sel-cell"><a href="/ajax.php?id=373&amp;a=searchDictionary" class="editExp"><span class="table-">a.i.-</span>to sell</a></div></td></tr><tr><td><div class="cell_wrap"><a href="/ajax.php?id=374&amp;a=searchDictionary" class="editExp"><span class="table-">i.O:M:.-</span>to perform on a concrete basis</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=375&amp;a=searchDictionary" class="editExp"><span class="table-">i.y.-</span>to compute</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=376&amp;a=searchDictionary" class="editExp"><span class="table-">i.o.-</span>to obtain (a position) | to get (a position)</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=377&amp;a=searchDictionary" class="editExp"><span class="table-">i.e.-</span>to take</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=378&amp;a=searchDictionary" class="editExp"><span class="table-">i.u.-</span>to borrow</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=379&amp;a=searchDictionary" class="editExp"><span class="table-">i.a.-</span>to buy</a></div></td><td><div class="cell_wrap"><a href="/ajax.php?id=380&amp;a=searchDictionary" class="editExp"><span class="table-">i.i.-</span>to manufacture</a></div></td></tr></tbody></table></div>
+		                	</div>
+		                </div>
+		                
+						<div class="tab-pane" id="relations">
+							<div id="ieml-relations-wrap">
+								<h3 class="heading_underline">Taxonomic</h3>
+								<div class="row">
+									<div class="span6">
+										<span class=""><strong>Contained by</strong></span>
+										<div id="ieml-contained-wrap" style=""><ul class="relation-list"><li><a href="/ajax.php?id=367&amp;a=searchDictionary" class="editExp">to perform on a social basis (first degree)</a></li><li><a href="/ajax.php?id=345&amp;a=searchDictionary" class="editExp">to perform in concrete things (first degree)</a></li></ul></div>
+									</div>
+									<div class="span6">
+										<span class=""><strong>Containing</strong></span>
+										<div id="ieml-containing-wrap" style="">Nothing.</div>
+									</div>
+								</div>
+								<h3 class="heading_underline">Concurring Concepts</h3>
+								<div id="ieml-concurrent-wrap" style=""><div class="row"><div class="concurring-relation span6"><span class="concurring-relation-text"><strong>In relation to "to perform on a social basis"</strong></span><ul class="relation-list"><li><a href="/ajax.php?id=368&amp;a=searchDictionary" class="editExp">to teach</a></li><li><a href="/ajax.php?id=369&amp;a=searchDictionary" class="editExp">to follow</a></li><li><a href="/ajax.php?id=370&amp;a=searchDictionary" class="editExp">to offer | to supply</a></li><li><a href="/ajax.php?id=371&amp;a=searchDictionary" class="editExp">to keep one's word</a></li><li><a href="/ajax.php?id=372&amp;a=searchDictionary" class="editExp">to contract</a></li><li><a href="/ajax.php?id=373&amp;a=searchDictionary" class="editExp">to sell</a></li></ul></div><div class="concurring-relation span6"><span class="concurring-relation-text"><strong>In relation to "to perform in concrete things"</strong></span><ul class="relation-list"><li><a href="/ajax.php?id=352&amp;a=searchDictionary" class="editExp">to explicitate | to formalize</a></li><li><a href="/ajax.php?id=359&amp;a=searchDictionary" class="editExp">to make an application</a></li><li><a href="/ajax.php?id=1441&amp;a=searchDictionary" class="editExp">to give</a></li><li><a href="/ajax.php?id=366&amp;a=searchDictionary" class="editExp">to lend</a></li><li><a href="/ajax.php?id=373&amp;a=searchDictionary" class="editExp">to sell</a></li><li><a href="/ajax.php?id=380&amp;a=searchDictionary" class="editExp">to manufacture</a></li></ul></div></div></div>
+								<div id="ieml-complementary-section" style="">
+									<h3 class="heading_underline">Complementary Concept</h3>
+									<div id="ieml-complementary-wrap" style=""><p><a href="/ajax.php?id=379&amp;a=searchDictionary" class="editExp">to buy (i.a.-)</a></p></div>
+								</div>
+								<h3 class="heading_underline">Etymology</h3>
+								<div id="ieml-etymology-wrap" style=""><ul><li><a href="/ajax.php?id=62&amp;a=searchDictionary" class="editExp">to commit oneself (a.)</a></li><li><a href="/ajax.php?id=64&amp;a=searchDictionary" class="editExp">to do (i.)</a></li></ul></div>
+							</div>
+						</div>
+						<div class="tab-pane" id="graph">...</div>
+					</div>
+                </div>
+            </form>
+        </div>
+        
+        <div class="modal hide" id="iemlConfirmModal">
+        	<div class="modal-header"><a class="close" data-dismiss="modal" id="iemlConfirmXModal">x</a><h3>Add Record</h3></div>
+        	<div class="modal-body"></div>
+        	<div class="modal-footer">
+        	    <a id="iemlConfirmYesModal" class="btn" href="#">Yes</a><a id="iemlConfirmCancelModal" data-dismiss="modal" class="btn" href="#">Cancel</a>
+        	</div>
+        </div>
+        
+        <div class="modal hide" id="iemlAddUserModal">
+        	<div class="modal-header"><a class="close" data-dismiss="modal" id="iemlConfirmXModal">x</a><h3>Add User</h3></div>
+        	<div class="modal-body">
+            	<form class="form-horizontal" id="iemlUser" method="POST" action="ajax.php">
+                	<input type="hidden" name="a" value="addUser">
+                	
+                	<div class="control-group">
+                        <label class="control-label" for="addUserModalUsername">Username</label>
+                    	<div class="controls">
+                        	<input type="text" id="addUserModalUsername" name="addUserModalUsername" placeholder="username">
+                    	</div>
+                	</div>
+                	<div class="control-group">
+                        <label class="control-label" for="addUserModalType">Type</label>
+                    	<div class="controls">
+                        	    <select id="addUserModalType" name="addUserModalType">
+                        	       <option value="user">User</option>
+                        	       <option value="admin">Admin</option>
+                        	    </select>
+                    	</div>
+                	</div>
+                	<div class="control-group">
+                        <label class="control-label" for="addUserModalUsername">Password</label>
+                    	<div class="controls">
+                            <input type="password" id="addUserModalPass" name="addUserModalPass" placeholder="password">
+                    	</div>
+                	</div>
+                	<div class="control-group">
+                        <label class="control-label" for="addUserModalUsername">Confirm Password</label>
+                    	<div class="controls">
+                    	    <input type="password" id="addUserModalConfPass" name="addUserModalConfPass" placeholder="confirm password">
+                    	</div>
+                	</div>
+            	</form>
+        	</div>
+        	<div class="modal-footer">
+        	    <a id="iemlAddUserModalAdd" class="btn btn-primary" href="#">Add</a><a data-dismiss="modal" class="btn" href="javascript:void(0);">Cancel</a>
+        	</div>
+        </div>
+        
+    	<div id="confirmCancelModal" class="modal hide" data-backdrop="static">
+    		<div class="modal-body no-bot-margin"><a class="close" data-dismiss="modal" id="workPrintModalX">x</a><span id="confirmCancelModalText"></span></div>
+    		<div class="modal-footer">
+    			<a id="confirmCancelModalYes" class="btn btn-primary" href="#" data-dismiss="modal">Yes</a><a class="btn" data-dismiss="modal" href="#">No</a>
+    		</div>
+    	</div><!--/confirmCancelModal-->
+    </div>
+			
+	
+</body></html>
