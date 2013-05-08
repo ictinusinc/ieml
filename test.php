@@ -1,5 +1,11 @@
 <?php
 
+include_once('includes/config.php');
+
+echo '<pre>';
+var_dump(APPROOT);
+echo '</pre>';
+
 die('Dead.');
 
 header('Content-Type: text/html; charset=utf-8;q=0.7,*;q=0.3');

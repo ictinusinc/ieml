@@ -9,8 +9,8 @@ define('DEBUG', TRUE);
 
 header('Content-Type: text/html; charset=utf-8;q=0.7,*;q=0.3');
 include_once('includes/config.php');
-include_once('includes/functions.php');
-include_once('includes/table_related/table_functions.php');
+include_once(APPROOT.'/includes/functions.php');
+include_once(APPROOT.'/includes/table_related/table_functions.php');
 
 ?>
 <style>
@@ -38,10 +38,9 @@ table tbody tr td {
 $exp = "s.";
 $etym = gen_etymology($exp);
 
-echo pre_dump($etym);
-
 $keys = array();
-$keys[] = array('expression' => "(O:+S:+T:)(A:+M:).");
+//$keys[] = array('expression' => "M:M:.-O:M:.-(E:.- + s.y.-)' + M:M:.-M:O:.-(E:.- + s.y.-)'");
+$keys[] = array('expression' => "(O:+M:)(A:+M:).");
 
 unset($key);
 foreach ($keys as &$key) {
@@ -49,7 +48,11 @@ foreach ($keys as &$key) {
 	
 	$info = IEML_gen_table_info($key['expression'], $IEML_lowToVowelReg);
 	
-	echo 'info: '.pre_dump($info);
+	echo IEML_render_tables($info, function($el) {
+		echo $el;
+	});
+	
+	echo 'info: '.pre_dump($info['post_raw_table']);
 }
 
 ?>

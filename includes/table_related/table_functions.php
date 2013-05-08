@@ -321,7 +321,7 @@ function IEML_table_collect_headers($tree) {
         $sub_heads = array();
         
         for ($i=0; $i<count($tree); $i++) {
-            if (array_key_exists('head', $tree[$i])) {
+            if (isset($tree[$i]) && array_key_exists('head', $tree[$i])) {
                 array_append($heads, $tree[$i]['head']);
                 if (array_key_exists('rest', $tree[$i])) {
                     $sub = IEML_table_collect_headers($tree[$i]['rest']);
@@ -337,7 +337,7 @@ function IEML_table_collect_headers($tree) {
             }
         }
         
-        if (count($heads)>0) array_push($sub_heads, $heads);
+        if (count($heads) > 0) array_push($sub_heads, $heads);
         return count($sub_heads) > 0 ? $sub_heads : FALSE;
     }
     
@@ -430,10 +430,10 @@ function IEML_concat_tables($tables, $top) {
 }
 
 function IEML_force_concat_check($AST) {
-	if ($AST['type'] == 'internal' && $AST['value']['type'] == 'LAYER') {
+	if ($AST['internal'] && $AST['value']['type'] == 'LAYER') {
 		return true;
 	} else {
-		if ($AST['type'] == 'internal') {
+		if ($AST['internal']) {
 			for ($i=0; $i<count($AST['children']); $i++) {
 				if (IEML_force_concat_check($AST['children'][$i])) {
 					return true;
@@ -450,7 +450,8 @@ function IEML_gen_table_info($top, $IEML_lowToVowelReg) {
 	$AST = \IEML_ExpParse\tokens_to_AST($tokens);	
 	
 	//echo pre_dump(\IEML_ExpParse\AST_to_infix_str($AST, $top));
-	
+	//echo pre_dump($AST, $top);
+
 	if (IEML_force_concat_check($AST)) {
 		$concats = \IEML_ExpParse\split_by_concats($AST);
 	} else {
@@ -713,7 +714,7 @@ function gen_etymology($exp) {
 	
 	$ret = array();
 	for ($i=0; $i<count($etym); $i++) {
-		if ($etym[$i]['type'] == 'value') {
+		if ($etym[$i]['internal'] == FALSE) {
 			$ret[] = $etym[$i]['value'][0]['value'].':';
 		} else {
 			$ret[] = \IEML_ExpParse\AST_original_str($etym[$i], $exp);

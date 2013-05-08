@@ -388,6 +388,7 @@ function token_SYA($tokens) {
 }
 
 function highest_LAYER_AST($AST) {
+	global $sym_to_lvl;
 	if ($AST['internal']) {
 		if ($AST['value']['type'] == 'LAYER') {
 			return $sym_to_lvl[$AST['value']['value']];
@@ -518,6 +519,12 @@ function AST_to_pretty_str($AST) {
 	if ($AST['internal']) {
 		if ($AST['value']['type'] == 'LAYER') {
 			$out = AST_to_pretty_str($AST['children'][0]).$AST['value']['value'];
+		} else if ($AST['value']['type'] == 'PLUS') {
+			$out .= '(';
+			for ($i=0; $i<count($AST['children']); $i++) {
+				$out .= ($i>0?$AST['value']['value']:'').AST_to_pretty_str($AST['children'][$i]);
+			}
+			$out .= ')';
 		} else {
 			for ($i=0; $i<count($AST['children']); $i++) {
 				$out .= AST_to_pretty_str($AST['children'][$i]);

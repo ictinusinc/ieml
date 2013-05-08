@@ -33,7 +33,7 @@ function IEML_gen_var($AST) {
 			}
 		} else if ($AST['value']['type'] == 'MUL') {
 			for ($i=0; $i<count($AST['children']); $i++) {
-				$sub = IEML_gen_var($AST['children'][$i], $pre, $post);
+				$sub = IEML_gen_var($AST['children'][$i]);
 				
 				if (count($sub) > 0) {
 					$new_out = array();
@@ -51,7 +51,7 @@ function IEML_gen_var($AST) {
 			}
 		} else if ($AST['value']['type'] == 'PLUS') {
 			for ($i=0; $i<count($AST['children']); $i++) {
-				array_append($out, IEML_gen_var($AST['children'][$i], $pre, $post));
+				array_append($out, IEML_gen_var($AST['children'][$i]));
 			}
 		}
 	} else {
@@ -69,13 +69,22 @@ function cons_variance_arr($AST, $exp) {
 	$out = array();
 	
 	if ($AST['internal']) {
-		if ($AST['value']['type'] == 'LAYER') {
-			$out = cons_variance_arr($AST['children'][0], $exp);
-			$out[] = $AST['value']['value'];
-		} else if ($AST['value']['type'] == 'MUL') {
+		if ($AST['value']['type'] == 'MUL') {
 			for ($i=0; $i<count($AST['children']); $i++) {
 				array_append($out, cons_variance_arr($AST['children'][$i], $exp));
 			}
+		} else if ($AST['type'] == 'L0PLUS') {
+			$out[] = '(';
+			for ($i=0; $i<count($AST['children']); $i++) {
+				if ($i > 0) {
+					$out[] = $AST['value']['value'];
+				}
+				array_append($out, cons_variance_arr($AST['children'][$i], $exp));
+			}
+			$out[] = ')';
+		} else if ($AST['value']['type'] == 'LAYER') {
+			$out = cons_variance_arr($AST['children'][0], $exp);
+			$out[] = $AST['value']['value'];
 		} else if ($AST['value']['type'] == 'PLUS') {
 			$out[] = array(IEML_gen_var($AST), \IEML_ExpParse\AST_original_str($AST, $exp));
 		}
@@ -107,14 +116,12 @@ function IEML_walk_cvarr_BFS($cvarr, $cur, $last, $pre = '') {
 		$out[] = $pre;
 	} else {
 		if (is_array($cvarr[$cur])) {
-			$sub_pre = '';
 			for ($i=0; $i < count($cvarr[$cur][0]); $i++) {
-				$sub_pre = $pre.$cvarr[$cur][0][$i];
-				
-				array_append($out, IEML_walk_cvarr_BFS($cvarr, $cur+1, $last, $sub_pre));
+				array_append($out, IEML_walk_cvarr_BFS($cvarr, $cur+1, $last, $pre.$cvarr[$cur][0][$i]));
 			}
 		} else {
 			$out = IEML_walk_cvarr_BFS($cvarr, $cur+1, $last, $pre.$cvarr[$cur]);
+			//echo 'non-arr: '.pre_dump($cvarr[$cur], $pre, $out);
 		}
 	}
 	
@@ -123,6 +130,7 @@ function IEML_walk_cvarr_BFS($cvarr, $cur, $last, $pre = '') {
 
 function IEML_gen_var_BFS($AST, $exp) {
 	$cvarr = cons_variance_arr($AST, $exp);
+	//echo 'cvarr gen_var_bfs: '.pre_dump($cvarr);
 	return IEML_walk_cvarr_BFS($cvarr, 0, count($cvarr)-1);
 }
 
@@ -132,6 +140,9 @@ function IEML_gen_possibilities($cur_exp) {
 	$arr_AST = \IEML_ExpParse\AST_eliminate_empties($arr_AST);
 	
 	$temp_arr = IEML_gen_var_BFS($arr_AST, $cur_exp);
+	
+	//return $temp_arr;
+	
 	$body_candidate = array();
 	
 	for ($j=0; $j<count($temp_arr); $j++) {
@@ -182,26 +193,28 @@ function IEML_sub_gen_header($cvarr, $cur, $last, $pre, $post) {
 				$sub = IEML_sub_gen_header($cvarr, $cur+1, $last, $pre.$cvarr[$cur][0][$i], $post);
 				
 				$span = 0;
-				if (array_key_exists('head', $sub)) {
-					for ($j=0; $j<count($sub['head']); $j++) {
-						$span += $sub['head'][$j][1];
-					}
-				}
-				$out['head'][] = array($cur_exp, max(1, $span));
 				
 				if (NULL !== $sub) {
 					$out['rest'][] = $sub;
+					
+					if (array_key_exists('head', $sub)) {
+						for ($j=0; $j<count($sub['head']); $j++) {
+							$span += $sub['head'][$j][1];
+						}
+					}
 				} else {
 					$out['body'][] = IEML_gen_possibilities($cur_exp);
 				}
+				
+				$out['head'][] = array($cur_exp, max(1, $span));
 			}
 		}
 	} else {
 		$out = IEML_sub_gen_header($cvarr, $cur+1, $last, $pre.$cvarr[$cur], $post);
 	}
 	
-	if (count($out['rest']) == 0) unset($out['rest']);
-	if (count($out['body']) == 0) unset($out['body']);
+	if (isset($out) && array_key_exists('rest', $out) && count($out['rest']) == 0) unset($out['rest']);
+	if (isset($out) && array_key_exists('body', $out) && count($out['body']) == 0) unset($out['body']);
 	
 	return $out;
 }
@@ -240,7 +253,8 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 			
 	    	for ($i=0; $i<$tpv_len; $i++) {
 	    		$cvarr = cons_variance_arr($tally_part_varied[$i], $exp);
-				echo 'cvarr: '.pre_dump($cvarr);
+				//echo 'cvarr: '.pre_dump($cvarr);
+				//echo pre_dump(IEML_cvarr_to_str($cvarr, 0, count($cvarr) - 1));
 				//echo 'parts: '.pre_dump($pre, $tpv_out_str[$i][0], $tpv_out_str[$i][1], $post);
 	    		$sub = IEML_sub_gen_header($cvarr, 0, count($cvarr)-1, $tpv_out_str[$i][0], $tpv_out_str[$i][1]);
 	    		//echo 'sub_gen_head: '.pre_dump($sub);

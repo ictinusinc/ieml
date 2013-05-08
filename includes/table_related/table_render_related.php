@@ -4,7 +4,7 @@ function IEML_render_tables($info, $exp_des_call = NULL, $filter_call = NULL) {
     ob_start();
     $heads = $info['headers'];
     $body = $info['body'];
-    $hor_tally = array_fill(0, $info['hor_header_depth'], array(0, 0));
+    $hor_tally = array_fill(0, max(1, $info['hor_header_depth']), array(0, 0));
     $empty_head_tally = array(0, count($info['empty_head_count'][0][1]) - 1);
     
     echo '<table class="relation"><tbody>';
