@@ -41,7 +41,7 @@ $etym = gen_etymology($exp);
 echo pre_dump($etym);
 
 $keys = array();
-$keys[] = array('expression' => "(O:+M:)(A:+M:).");
+$keys[] = array('expression' => "(O:+S:+T:)(A:+M:).");
 
 unset($key);
 foreach ($keys as &$key) {
