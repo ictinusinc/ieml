@@ -153,6 +153,8 @@
 		            
 		    		IEMLQuery.receiveExpression(responseData);
 				});
+			} else {
+				return false;
 			}
 			
 			return true;
@@ -547,7 +549,7 @@
 			reqVars['iemlEnumAttributeOff'] = $('#iemlEnumAttributeOff').is(':checked') ? $('#iemlEnumAttributeOff').val() : 'N';
 			reqVars['iemlEnumModeOff'] = $('#iemlEnumModeOff').is(':checked') ? $('#iemlEnumModeOff').val() : 'N';
 			
-			IEMLQuery.submit(reqvars);
+			IEMLQuery.submit(reqVars);
 			
 			return false;
 		}).on('click', '#ieml-desc-result-cancel', function() {
