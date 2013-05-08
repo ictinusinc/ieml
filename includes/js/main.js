@@ -145,6 +145,14 @@
 						$('#userlist tbody').append(formatUserRow(responseData));
 					}
 				});
+			} else if (rvars['a'] == 'editDictionary') {
+				$.getJSON(url, rvars, function(responseData) {
+		            if ($('#desc-result-id').val() == '') {
+		                $('#desc-result-id').val(responseData['id']);
+		            }
+		            
+		    		IEMLQuery.receiveExpression(responseData);
+				});
 			}
 			
 			return true;
@@ -539,14 +547,8 @@
 			reqVars['iemlEnumAttributeOff'] = $('#iemlEnumAttributeOff').is(':checked') ? $('#iemlEnumAttributeOff').val() : 'N';
 			reqVars['iemlEnumModeOff'] = $('#iemlEnumModeOff').is(':checked') ? $('#iemlEnumModeOff').val() : 'N';
 			
-			$.post('/ajax.php', reqVars, function(response) {
-			    var respO = $.parseJSON(response);
-	            if ($('#desc-result-id').val() == '') {
-	                $('#desc-result-id').val(respO['id']);
-	            }
-	            
-	    		IEMLQuery.receiveExpression(respO);
-			});
+			IEMLQuery.submit(reqvars);
+			
 			return false;
 		}).on('click', '#ieml-desc-result-cancel', function() {
 		    writeToRead();
