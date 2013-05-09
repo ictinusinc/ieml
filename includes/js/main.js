@@ -215,8 +215,8 @@
 	
 	function cons_url(path, search, hash) {
 		return '/' + array_map(path, function(i,el) { return window.encodeURIComponent(el); }).join('/')
-			+ (typeof search == 'undefined' && search.length > 0 ? '' : '?' + map_to_url(search))
-			+ (typeof hash == 'undefined' && hash.length > 0 ? '' : '#' + window.encodeURIComponent(hash));
+			+ (typeof search != 'undefined' && search.length > 0 ? '?' + map_to_url(search) : '')
+			+ (typeof hash != 'undefined' && hash.length > 0 ? '#' + window.encodeURIComponent(hash) : '');
 	}
 	
 	function reset_views() {
