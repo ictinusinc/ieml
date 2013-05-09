@@ -84,7 +84,9 @@
 	IEMLApp.switch_lang = function(new_lang) {
 		var cur_path = path_split(window.location.pathname), cur_state = History.getState().data;
 		cur_path[0] = new_lang;
-		cur_state['req']['lang'] = new_lang;
+		if (cur_state && cur_state['req']) {
+			cur_state['req']['lang'] = new_lang;
+		}
 		
 		IEMLApp.pushState(cur_state, '', cons_url(cur_path, window.location.search, window.location.hash));
 		
@@ -694,8 +696,7 @@
 		IEMLApp.load_url = window.location;
 		
 		if (window.location.pathname.length == 1) {
-			var def_url_obj = url_to_location_obj(cons_url([IEMLApp.lang, IEMLApp.lexicon]));
-			IEMLApp.replaceState(null, '', cons_url(def_url_obj.pathname, def_url_obj.search, def_url_obj.hash));
+			IEMLApp.replaceState(null, '', cons_url([IEMLApp.lang, IEMLApp.lexicon], def_url_obj.search, def_url_obj.hash));
 		}
 		
 		IEMLApp.init_from_url(window.location);
