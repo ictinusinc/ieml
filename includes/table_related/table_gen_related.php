@@ -225,7 +225,7 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 	//the total number of things which can be varied, in all subtrees
     $num_var = IEML_count_num_var($AST);
 	
-	echo 'num_var: '.$num_var.'<br/>';
+	//echo 'num_var: '.$num_var.'<br/>';
 	//echo 'AST: '.pre_dump($pre, $post, IEML_ExpParse\AST_to_Infix_str($AST, $exp));
     
     if ($num_var == 1) {
@@ -234,7 +234,7 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
     	//the number of parts of the current AST tree which has elements to be varied
     	$num_parts_in_lev = IEML_get_num_parts_in_lev($AST);
 		
-		echo 'num_parts_in_lev: '.$num_parts_in_lev.'<br/>';
+		//echo 'num_parts_in_lev: '.$num_parts_in_lev.'<br/>';
     	
     	if ($num_parts_in_lev == 1) {
 	    	$out = IEML_gen_header($AST, $exp, $pre, $post);
@@ -248,11 +248,11 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 			
 	    	$tpv_len = count($tally_part_varied);
 			//echo 'tally_part_varied: '.pre_dump($tally_part_varied).'<br/>';
-			echo 'tpv_len: '.$tpv_len.'<br/>';
+			//echo 'tpv_len: '.$tpv_len.'<br/>';
 	    	//echo 'tpv_out_str: '.pre_dump($tpv_out_str).'<br/>';
 	    	
 	    	if ($tpv_len != $num_parts_in_lev && $tpv_len == 1) {
-		    	echo 'tpv_out_str: '.pre_dump($tpv_out_str).'<br/>';
+		    	//echo 'tpv_out_str: '.pre_dump($tpv_out_str).'<br/>';
 		    	return IEML_gen_header($tally_part_varied[0], $exp, $pre.$tpv_out_str[0][0], $tpv_out_str[0][1].$post);
 	    	}
 	    	
