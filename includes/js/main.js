@@ -145,7 +145,7 @@
 						$('#userlist tbody').append(formatUserRow(responseData));
 					}
 				});
-			} else if (rvars['a'] == 'editDictionary') {
+			} else if (rvars['a'] == 'editDictionary' || rvars['a'] == 'newDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
 		            if ($('#desc-result-id').val() == '') {
 		                $('#desc-result-id').val(responseData['id']);
@@ -522,7 +522,7 @@
 		    writeToRead();
 		    
 		    var reqVars = {}, cur_id = $('#desc-result-id').val();
-	        if ($('#desc-result-id').val() == '') {
+	        if ($('#desc-result-id').val().length == 0) {
 	            reqVars['a'] = 'newDictionary';
 	        } else {
 	            reqVars['a'] = 'editDictionary';
