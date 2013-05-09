@@ -291,13 +291,10 @@ function IEML_tally_part_varied($AST, $exp, $pre = '', $post = '') {
 		} else if ($AST['value']['type'] == 'MUL' || $AST['type'] == 'L0PLUS') {
 			for ($i=0; $i<count($AST['children']); $i++) {
 				if ($AST['children'][$i]['internal'] && ($AST['children'][$i]['value']['type'] == 'MUL' || $AST['children'][$i]['type'] == 'L0PLUS')) {
-					$tpre = '';
+					$tpre = substr_ab($exp, $AST['_str_ref'][0], $AST['children'][$i]['_str_ref'][0]);
+					$tpost = substr_ab($exp, $AST['children'][$i]['_str_ref'][1], $AST['_str_ref'][1]);
 					
-					for ($j=0; $j < $i; $j++) {
-						$tpre .= \IEML_ExpParse\AST_original_str($AST['children'][$j], $exp);
-					}
-					
-					$sub = IEML_tally_part_varied($AST['children'][$i], $exp, $pre.$tpre, $post);
+					$sub = IEML_tally_part_varied($AST['children'][$i], $exp, $pre.$tpre, $tpost.$post);
 				
 					array_append($tally_part_varied, $sub[0]);
 					array_append($prime_tpv, $sub[1]);

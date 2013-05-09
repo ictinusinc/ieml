@@ -41,8 +41,9 @@ $etym = gen_etymology($exp);
 $keys = array();
 //$keys[] = array('expression' => "M:M:.-O:M:.-(E:.- + s.y.-)' + M:M:.-M:O:.-(E:.- + s.y.-)'");
 //$keys[] = array('expression' => "(O:+M:)(O:+M:).");
-$keys[] = array('expression' => "(U:+S:)(O:+M:). + (A:+S:)(O:+M:). + (U:+B:)(O:+M:). + (A:+B:)(O:+M:). + (U:+T:)(O:+M:). + (A:+T:)(O:+M:).");
+//$keys[] = array('expression' => "(U:+S:)(O:+M:). + (A:+S:)(O:+M:). + (U:+B:)(O:+M:). + (A:+B:)(O:+M:). + (U:+T:)(O:+M:). + (A:+T:)(O:+M:).");
 //$keys[] = array('expression' => "(U:+M:)(O:+M:). + (A:+M:)(O:+M:).");
+$keys[] = array('expression' => "(A:+S:+U:)(M:+E:+O:).");
 
 unset($key);
 foreach ($keys as &$key) {
