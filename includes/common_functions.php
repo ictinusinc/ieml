@@ -178,6 +178,11 @@ function getTableForElement($ret, $goodID, $options) {
         }, function($el) use ($flat_assoc) {
             return array_key_exists('descriptor', $flat_assoc[$el['expression']]);
         });
+        
+        $ret['bin_table'] = array(
+        	'headers' => $table_info['headers'],
+        	'body' => $table_info['body']
+        );
     }
     
     return $ret;

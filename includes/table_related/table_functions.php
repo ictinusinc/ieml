@@ -449,12 +449,14 @@ function IEML_gen_table_info($top, $IEML_lowToVowelReg) {
 	$post_raws = array();
 	
 	for ($i=0; $i<count($concats); $i++) {
+		//echo 'concats('.$i.'): '.pre_dump(\IEML_ExpParse\AST_to_infix_str($concats[$i], $top));
 		$sub_top = \IEML_ExpParse\AST_original_str($concats[$i], $top);
 		$raw_tab = IEML_gen_header($concats[$i], $top);
 		$raws[] = $raw_tab;
 		
 		$post_tab = IEML_postproc_tables($raw_tab, $IEML_lowToVowelReg);
 		$post_raws[] = $post_tab;
+		//echo 'pow_raw('.$i.'): '.pre_dump($post_tab);
 		
 		$tab_concat[] = IEML_coll_info($post_tab, $sub_top);
 		

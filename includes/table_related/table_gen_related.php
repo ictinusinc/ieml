@@ -222,31 +222,38 @@ function IEML_sub_gen_header($cvarr, $cur, $last, $pre, $post) {
 function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 	$out = NULL;
 	
+	//the total number of things which can be varied, in all subtrees
     $num_var = IEML_count_num_var($AST);
 	
-	//echo 'num_var: '.$num_var.'<br/>';
+	echo 'num_var: '.$num_var.'<br/>';
 	//echo 'AST: '.pre_dump($pre, $post, IEML_ExpParse\AST_to_Infix_str($AST, $exp));
     
     if ($num_var == 1) {
         $out = array(array('body' => array_2d_transpose(array(IEML_gen_var($AST)))));
     } else if ($num_var >= 2) {
+    	//the number of parts of the current AST tree which has elements to be varied
     	$num_parts_in_lev = IEML_get_num_parts_in_lev($AST);
 		
-		//echo 'num_parts_in_lev: '.$num_parts_in_lev.'<br/>';
+		echo 'num_parts_in_lev: '.$num_parts_in_lev.'<br/>';
     	
     	if ($num_parts_in_lev == 1) {
 	    	$out = IEML_gen_header($AST, $exp, $pre, $post);
     	} else {
+    		/*
+    			$tally_part_varied = parts of the current AST node that should be varied
+    			$primt_tpv = parts of the current AST node that should NOT be varied
+    			$tpv_out_str = an array of arrays of the form($pre, $post), with length count($tally_part_varied)
+    		*/
 	    	list($tally_part_varied, $prime_tpv, $tpv_out_str) = IEML_tally_part_varied($AST, $exp, $pre, $post);
 			
 	    	$tpv_len = count($tally_part_varied);
-			//echo 'tpv_len: '.$tpv_len.'<br/>';
+			//echo 'tally_part_varied: '.pre_dump($tally_part_varied).'<br/>';
+			echo 'tpv_len: '.$tpv_len.'<br/>';
+	    	//echo 'tpv_out_str: '.pre_dump($tpv_out_str).'<br/>';
 	    	
-	    	if ($tpv_len != $num_parts_in_lev) {
-		    	if ($tpv_len == 1) {
-			    	//echo 'tpv_out_str: '.pre_dump($tpv_out_str).'<br/>';
-			    	return IEML_gen_header($tally_part_varied[0], $exp, $pre.$tpv_out_str[0][0], $tpv_out_str[0][1].$post);
-		    	}
+	    	if ($tpv_len != $num_parts_in_lev && $tpv_len == 1) {
+		    	echo 'tpv_out_str: '.pre_dump($tpv_out_str).'<br/>';
+		    	return IEML_gen_header($tally_part_varied[0], $exp, $pre.$tpv_out_str[0][0], $tpv_out_str[0][1].$post);
 	    	}
 	    	
 	    	$out = array();
@@ -281,10 +288,11 @@ function IEML_tally_part_varied($AST, $exp, $pre = '', $post = '') {
 				array_append($prime_tpv, $sub[1]);
 				array_append($tpv_out_str, $sub[2]);
 			}
-		} else if ($AST['value']['type'] == 'MUL') {
+		} else if ($AST['value']['type'] == 'MUL' || $AST['type'] == 'L0PLUS') {
 			for ($i=0; $i<count($AST['children']); $i++) {
-				if ($AST['children'][$i]['internal'] && $AST['children'][$i]['value']['type'] == 'MUL') {
+				if ($AST['children'][$i]['internal'] && ($AST['children'][$i]['value']['type'] == 'MUL' || $AST['children'][$i]['type'] == 'L0PLUS')) {
 					$tpre = '';
+					
 					for ($j=0; $j < $i; $j++) {
 						$tpre .= \IEML_ExpParse\AST_original_str($AST['children'][$j], $exp);
 					}
@@ -299,15 +307,10 @@ function IEML_tally_part_varied($AST, $exp, $pre = '', $post = '') {
 				
 					if ($sub > 0) {
 						$tally_part_varied[] = $AST['children'][$i];
-						$tpre = ''; $tpost = '';
 						
-						for ($j=0; $j<count($AST['children']); $j++) {
-							if ($j < $i) {
-								$tpre .= \IEML_ExpParse\AST_original_str($AST['children'][$j], $exp);
-							} else if ($j > $i) {
-								$tpost .= \IEML_ExpParse\AST_original_str($AST['children'][$j], $exp);
-							}
-						}
+						$tpre = substr_ab($exp, $AST['_str_ref'][0], $AST['children'][$i]['_str_ref'][0]);
+						$tpost = substr_ab($exp, $AST['children'][$i]['_str_ref'][1], $AST['_str_ref'][1]);
+						
 						$tpv_out_str[] = array($pre.$tpre, $tpost.$post);
 					} else {
 						$prime_tpv[] = $AST['children'][$i];
@@ -326,7 +329,7 @@ function IEML_count_num_var($AST) {
 	$out = 0;
 	
 	if ($AST['internal']) {
-		if ($AST['value']['type'] == 'MUL' || $AST['value']['type'] == 'LAYER') {
+		if ($AST['value']['type'] == 'MUL' || $AST['value']['type'] == 'LAYER' || $AST['type'] == 'L0PLUS') {
 			for ($i=0; $i<count($AST['children']); $i++) {
 				$out += IEML_count_num_var($AST['children'][$i]);
 			}
@@ -338,24 +341,29 @@ function IEML_count_num_var($AST) {
 	return $out;
 }
 
+/**
+ * determine the number of 
+ * 
+ * @access public
+ * @param mixed $AST
+ * @return void
+ */
 function IEML_get_num_parts_in_lev($AST) {
 	$out = 1;
 	
 	if ($AST['internal']) {
 		if ($AST['value']['type'] == 'LAYER') {
 			$out = IEML_get_num_parts_in_lev($AST['children'][0]);
-		} else if ($AST['value']['type'] == 'MUL') {
+		} else if ($AST['value']['type'] == 'MUL' || $AST['type'] == 'L0PLUS') {
 			$out = 0;
+			
 			for ($i=0; $i<count($AST['children']); $i++) {
-				if (($AST['children'][$i]['internal'] && ($AST['children'][$i]['value']['type'] == 'LAYER' || $AST['children'][$i]['value']['type'] == 'PLUS'))
-					|| $AST['children'][$i]['value']['type'] == 'ATOM') {
+				if ($AST['children'][$i]['internal'] && $AST['children'][$i]['value']['type'] == 'LAYER') {
 					$out += 1;
 				} else {
 					$out += IEML_get_num_parts_in_lev($AST['children'][$i]);
 				}
 			}
-		} else {
-			$out = 1;
 		}
 	}
 	
