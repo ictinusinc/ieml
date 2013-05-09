@@ -83,7 +83,11 @@
 	};
 	
 	IEMLApp.switch_lang = function(new_lang) {
-		//TODO: this thing.
+		 for (var i in window.UI_lang[new_lang]) {
+			 $('[data-lang-switch="'+i+'"]').html(window.UI_lang[new_lang][i]);
+		 }
+		 
+		 return true;
 	};
 	
 	IEMLApp.pushState = function() {
