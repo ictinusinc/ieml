@@ -192,6 +192,8 @@
 			}
 			
 			$('#listview tbody').html(tstr);
+		} else {
+			$('#listview tbody').empty();
 		}
 			
 		
