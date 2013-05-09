@@ -1,4 +1,4 @@
-(function(window) {
+(function(window, $) {
 	'use strict';
 	
 	var api_offset = 'http://ieml.ictinusdesign.com/api/';
@@ -18,7 +18,7 @@
 		IEMLApp.load_url = window.location;
 		
 		if (path_arr[0] == 'users') {
-	        IEMLQuery.submit({'a': 'viewUsers'});
+	        IEMLApp.submit({'a': 'viewUsers'});
 		} else if (path_arr[0] == 'login') {
 			switch_to_view('login');
 		} else if (path_arr.length > 0) {
@@ -37,12 +37,12 @@
 			if (path_arr[2] == 'search') {
 				$('#search').val(path_arr[3]);
 				
-				IEMLQuery.submit({'a': 'searchDictionary', 'lexicon': lexicon, 'lang': lang, 'search': path_arr[3]});
+				IEMLApp.submit({'a': 'searchDictionary', 'lexicon': lexicon, 'lang': lang, 'search': path_arr[3]});
 			} else {
 				if (isNaN(parseInt(path_arr[2]))) {
-					IEMLQuery.submit({ 'a': 'expression', 'lexicon': lexicon, 'lang': lang, 'exp': path_arr[2] });
+					IEMLApp.submit({ 'a': 'expression', 'lexicon': lexicon, 'lang': lang, 'exp': path_arr[2] });
 				} else {
-					IEMLQuery.submit({ 'a': 'expression', 'lexicon': lexicon, 'lang': lang, 'id': path_arr[2] });
+					IEMLApp.submit({ 'a': 'expression', 'lexicon': lexicon, 'lang': lang, 'id': path_arr[2] });
 				}
 			}
 		} else {
@@ -63,11 +63,11 @@
 			var req = state['req'], resp = state['resp'];
 			
 			if (req['a'] == 'viewUsers') {
-				IEMLQuery.receiveUserList(resp);
+				IEMLApp.receiveUserList(resp);
 			} else if (req['a'] == 'searchDictionary') {
-				IEMLQuery.receiveSearch(resp);
+				IEMLApp.receiveSearch(resp);
 			} else if (req['a'] == 'expression') {
-				IEMLQuery.receiveExpression(resp);
+				IEMLApp.receiveExpression(resp);
 			} else {
 				return false;
 			}
@@ -76,7 +76,7 @@
 				$('a[href="'+url_obj.hash+'"]').tab('show');
 			}
 		} else {
-			IEMLQuery.receiveSearch([]);
+			IEMLApp.receiveSearch([]);
 		}
 		
 		return true;
@@ -98,11 +98,7 @@
 		window.History.replaceState.apply(null, arguments);
 	};
 	
-	function IEMLQuery() {
-		
-	}
-	
-	IEMLQuery.submit = function (rvars, url, prev_state) {
+	IEMLApp.submit = function (rvars, url, prev_state) {
 		if (typeof url == 'undefined') {
 			url = api_offset;
 		}
@@ -117,13 +113,13 @@
 				$.getJSON(url, rvars, function(responseData) {
 					state_call(cons_state(rvars, responseData), '', '/'+rvars['lexicon']+'/'+rvars['lang']+'/search/'+rvars['search']);
 					
-					IEMLQuery.receiveSearch(responseData);
+					IEMLApp.receiveSearch(responseData);
 				});
 			} else if (rvars['a'] == 'expression') {
 				$.getJSON(url, rvars, function(responseData) {
 					state_call(cons_state(rvars, responseData), '', '/'+rvars['lexicon']+'/'+rvars['lang']+'/'+(rvars['id'] ? rvars['id'] : rvars['exp']));
 					
-			    	IEMLQuery.receiveExpression(responseData);
+			    	IEMLApp.receiveExpression(responseData);
 			    });
 			} else if (rvars['a'] == 'login') {
 				$.getJSON(url, rvars, function(responseData) {
@@ -137,7 +133,7 @@
 				$.getJSON(url, rvars, function(responseData) {
 					state_call(cons_state(rvars, responseData), '', '/users/');
 					
-					IEMLQuery.receiveUserList(responseData);
+					IEMLApp.receiveUserList(responseData);
 				});
 			} else if (rvars['a'] == 'addUser') {
 				$.getJSON(url, rvars, function(responseData) {
@@ -152,7 +148,15 @@
 		                $('#desc-result-id').val(responseData['id']);
 		            }
 		            
-		    		IEMLQuery.receiveExpression(responseData);
+		    		IEMLApp.receiveExpression(responseData);
+				});
+			} else if (rvars['a'] == 'deleteDictionary') {
+				$.getJSON(url, rvars, function(responseData) {
+		            switch_to_list();
+		            
+					$('[data-result-id="'+$('#desc-result-id').val()+'"]').remove();
+					
+					$('#iemlConfirmModal').modal('hide');
 				});
 			} else {
 				return false;
@@ -164,7 +168,7 @@
 		return false;
 	};
 	
-	IEMLQuery.receiveSearch = function (respObj) {
+	IEMLApp.receiveSearch = function (respObj) {
 		var tstr = '';
 					
 		for (var i in respObj) {
@@ -176,12 +180,12 @@
 		switch_to_list();
 	};
 	
-	IEMLQuery.receiveExpression = function (responseData) {
-		window.__lastRetrievedData = responseData;
+	IEMLApp.receiveExpression = function (responseData) {
+		IEMLApp.lastRetrievedData = responseData;
 		fillForm(responseData);
 	};
 	
-	IEMLQuery.receiveUserList = function (responseData) {
+	IEMLApp.receiveUserList = function (responseData) {
 		var hstr = '';
 		
 		for (var i=0; i<responseData.length; i++) {
@@ -192,6 +196,8 @@
 		
 		switch_to_view('user');
 	};
+	
+	function 
 	
 	function reset_views() {
 		$('.edit-buttons-wrap').hide();
@@ -464,11 +470,11 @@
 		
 		$(document).on('submit', '#search-form', function() {
 			var form_data = form_arr_to_map($(this).serializeArray());
-			IEMLQuery.submit(form_data);
+			IEMLApp.submit(form_data);
 			
 			return false;
 		}).on('change', '#iemlEnumShowTable', function() {
-			var info = window.__lastRetrievedData;
+			var info = IEMLApp.lastRetrievedData;
 			
 	        if($('#iemlEnumShowTable').is(':checked')) {
 				$('.nonExistentCell').show();
@@ -496,23 +502,20 @@
 				sub_data['id'] = id;
 			}
 			
-			IEMLQuery.submit(sub_data);
+			IEMLApp.submit(sub_data);
 			
 			return false;
 		}).on('click', '#back-to-list-view', function() {
 			switch_to_list();
 		}).on('change', '#search-lang-select', function() {
-			var reqvars = get_URL_params(window.location.search);
-			reqvars['lang'] = $('#search-lang-select').val();
-			
-			window.location.href = window.location.origin + window.location.pathname + '?' + map_to_url(reqvars);
+			IEMLApp.switch_lang($(this).val());
 		}).on('click', '#filter-results-button', function() {
 			$('#listview tbody [data-key="false"]').show();
 		}).on('click', '#filter-results-keys', function() {
 			$('#listview tbody [data-key="false"]').hide();
 		}).on('click', '#add-ieml-record', function() {
-		    window.__lastRetrievedData = {'expression':'', 'descriptor':'', 'enumCategory':'N', 'enumShowEmpties': 'N'};
-		    fillForm(window.__lastRetrievedData);
+		    IEMLApp.lastRetrievedData = {'expression':'', 'descriptor':'', 'enumCategory':'N', 'enumShowEmpties': 'N'};
+		    fillForm(IEMLApp.lastRetrievedData);
 		    
 		    readToWrite();
 		    
@@ -532,14 +535,14 @@
 	            reqVars['id'] = parseInt($('#desc-result-id').val(), 10);
 	        }
 	        
-	        reqVars['pkTable2D'] = window.__lastRetrievedData['pkTable2D'];
+	        reqVars['pkTable2D'] = IEMLApp.lastRetrievedData['pkTable2D'];
 	        reqVars['enumShowEmpties'] = $('#iemlEnumShowTable').is(':checked') ? 'Y' : 'N';
 	        
 	        reqVars['enumCategory'] = $('#iemlEnumCategoryModal').is(':checked') ? 'Y' : 'N';
-	        reqVars['oldEnumCategory'] = window.__lastRetrievedData['enumCategory'];
-	        window.__lastRetrievedData['enumCategory'] = window.__lastRetrievedData['enumCategory'] == 'Y' ? 'N' : 'Y';
+	        reqVars['oldEnumCategory'] = IEMLApp.lastRetrievedData['enumCategory'];
+	        IEMLApp.lastRetrievedData['enumCategory'] = IEMLApp.lastRetrievedData['enumCategory'] == 'Y' ? 'N' : 'Y';
 	        reqVars['exp'] = $('#ieml-result').text();
-	        reqVars['oldExp'] = window.__lastRetrievedData['expression'];
+	        reqVars['oldExp'] = IEMLApp.lastRetrievedData['expression'];
 	        
 	        reqVars['descriptor'] = $('#ieml-ex-result').text();
 			reqVars['lang'] = $('#search-lang-select').val();
@@ -550,12 +553,12 @@
 			reqVars['iemlEnumAttributeOff'] = $('#iemlEnumAttributeOff').is(':checked') ? $('#iemlEnumAttributeOff').val() : 'N';
 			reqVars['iemlEnumModeOff'] = $('#iemlEnumModeOff').is(':checked') ? $('#iemlEnumModeOff').val() : 'N';
 			
-			IEMLQuery.submit(reqVars);
+			IEMLApp.submit(reqVars);
 			
 			return false;
 		}).on('click', '#ieml-desc-result-cancel', function() {
 		    writeToRead();
-			fillForm(window.__lastRetrievedData);
+			fillForm(IEMLApp.lastRetrievedData);
 		    
 		}).on('click', '#ieml-desc-result-edit', function() {
 			if (!$('#ieml-desc-result-edit').hasClass('disabled'))
@@ -577,13 +580,13 @@
 			$.post('/ajax.php?a=setTableEl&id=' + thisID + '&enumEnabled=' + thisval, function(response) {});
 	    }).on('click', '.createEmptyExp', function() {
 	    	var jthis = $(this);
-		    window.__lastRetrievedData['expression'] = jthis.text();
-		    window.__lastRetrievedData['descriptor_en'] = '';
-		    window.__lastRetrievedData['descriptor_fr'] = '';
-		    window.__lastRetrievedData['enumCategory'] = 'N';
-		    window.__lastRetrievedData['enumShowEmpties'] = $('#iemlEnumShowTable').is(':checked') ? 'Y' : 'N';
+		    IEMLApp.lastRetrievedData['expression'] = jthis.text();
+		    IEMLApp.lastRetrievedData['descriptor_en'] = '';
+		    IEMLApp.lastRetrievedData['descriptor_fr'] = '';
+		    IEMLApp.lastRetrievedData['enumCategory'] = 'N';
+		    IEMLApp.lastRetrievedData['enumShowEmpties'] = $('#iemlEnumShowTable').is(':checked') ? 'Y' : 'N';
 		    
-		    fillForm(window.__lastRetrievedData);
+		    fillForm(IEMLApp.lastRetrievedData);
 		    
 		    readToWrite();
 		    
@@ -594,15 +597,11 @@
 		    
 		    return false;
 	    }).on('click', '#iemlConfirmModal #iemlConfirmYesModal', function() {
-			$.post('/ajax.php', {'a':'deleteDictionary', 'id':$('#desc-result-id').val()}, function(responseText) {
-				switch_to_list();
-				$('[data-result-id="'+$('#desc-result-id').val()+'"]').remove();
-	
-				$('#iemlConfirmModal').modal('hide');
-			});
+			IEMLApp.submit({'a':'deleteDictionary', 'id':$('#desc-result-id').val()});
+			
 			return false;
 	    }).on('click', '#ieml-view-users', function() {
-	        IEMLQuery.submit({'a': 'viewUsers'});
+	        IEMLApp.submit({'a': 'viewUsers'});
 	        
 	        return false;
 	    }).on('click', '#addUser', function() {
@@ -614,7 +613,7 @@
 	        
 	        $('#iemlAddUserModal').modal('hide');
 	        
-	        IEMLQuery.submit({ 'a' : formData['a'], 'username' : formData['addUserModalUsername'], 'pass' : formData['addUserModalPass'], 'enumType' : formData['addUserModalType'] });
+	        IEMLApp.submit({ 'a' : formData['a'], 'username' : formData['addUserModalUsername'], 'pass' : formData['addUserModalPass'], 'enumType' : formData['addUserModalType'] });
 	        
 	        return false;
 	    }).on('click', '.delUser', function() {
@@ -641,13 +640,13 @@
 			
 			return false;
 		}).on('click', '.logout-btn', function() {
-			IEMLQuery.submit({'a': 'logout'});
+			IEMLApp.submit({'a': 'logout'});
 			
 			return false;
 		}).on('submit', '#formLogin', function() {
 	        var formData = form_arr_to_map($(this).serializeArray());
 	        formData['a'] = 'login';
-			IEMLQuery.submit(formData);
+			IEMLApp.submit(formData);
 			
 			return false;
 		}).on('shown', 'a[data-toggle="tab"]', function(e) {
@@ -667,4 +666,4 @@
 	$(window).on('hashchange', function(ev) {
 		//console.log(ev.fragment);
 	});
-})(window);
+})(window, jQuery);
