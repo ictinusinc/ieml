@@ -116,13 +116,13 @@
 		if (rvars) {
 			if (rvars['a'] == 'searchDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
-					state_call(IEMLApp.const_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], 'search', rvars['search']]));
+					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], 'search', rvars['search']]));
 					
 					IEMLApp.receiveSearch(responseData);
 				});
 			} else if (rvars['a'] == 'expression') {
 				$.getJSON(url, rvars, function(responseData) {
-					state_call(IEMLApp.const_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], (rvars['id'] ? rvars['id'] : rvars['exp'])]));
+					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], (rvars['id'] ? rvars['id'] : rvars['exp'])]));
 					
 			    	IEMLApp.receiveExpression(responseData);
 			    });
@@ -137,7 +137,7 @@
 				$.getJSON(url, rvars, init_anon_user);
 			} else if (rvars['a'] == 'viewUsers') {
 				$.getJSON(url, rvars, function(responseData) {
-					state_call(IEMLApp.const_state(rvars, responseData), '', cons_url(IEMLApp.lang, 'users'));
+					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url(IEMLApp.lang, 'users'));
 					
 					IEMLApp.receiveUserList(responseData);
 				});
@@ -150,7 +150,7 @@
 			} else if (rvars['a'] == 'editDictionary' || rvars['a'] == 'newDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
 		            if ($('#desc-result-id').val() == '') {
-						state_call(IEMLApp.const_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], rvars['exp']]));
+						state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], rvars['exp']]));
 		                $('#desc-result-id').val(responseData['id']);
 		            }
 		            
