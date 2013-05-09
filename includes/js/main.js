@@ -696,7 +696,7 @@
 		IEMLApp.load_url = window.location;
 		
 		if (window.location.pathname.length == 1) {
-			IEMLApp.replaceState(null, '', cons_url([IEMLApp.lang, IEMLApp.lexicon], def_url_obj.search, def_url_obj.hash));
+			IEMLApp.replaceState(null, '', cons_url([IEMLApp.lang, IEMLApp.lexicon]));
 		}
 		
 		IEMLApp.init_from_url(window.location);
