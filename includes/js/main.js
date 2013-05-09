@@ -183,13 +183,17 @@
 	};
 	
 	IEMLApp.receiveSearch = function (respObj) {
-		var tstr = '';
-					
-		for (var i in respObj) {
-			tstr += formatResultRow(respObj[i]);
+		
+		if (respObj && respObj.length > 0) {
+			var tstr = '';
+			
+			for (var i in respObj) {
+				tstr += formatResultRow(respObj[i]);
+			}
+			
+			$('#listview tbody').html(tstr);
 		}
 			
-		$('#listview tbody').html(tstr);
 		
 		switch_to_list();
 	};
