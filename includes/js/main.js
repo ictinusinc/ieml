@@ -691,17 +691,18 @@
 			//$(window).trigger('hashchange');
 		});
 		
+		IEMLApp.load_url = window.location;
+		
 		if (window.location.pathname.length == 1) {
-			IEMLApp.init_from_url(url_to_location_obj(cons_url([IEMLApp.lang, IEMLApp.lexicon])));
-		} else {
-			IEMLApp.init_from_url(window.location);
+			var def_url_obj = url_to_location_obj(cons_url([IEMLApp.lang, IEMLApp.lexicon]));
+			IEMLApp.replaceState(null, '', cons_url(def_url_obj.pathname, def_url_obj.search, def_url_obj.hash));
 		}
+		
+		IEMLApp.init_from_url(window.location);
 		
 	    if (location.hash !== '') {
 	    	$('a[href="' + location.hash + '"]').tab('show');
 	    }
-	    
-		IEMLApp.load_url = window.location;
 	});
 	
 	$(window).on('hashchange', function(ev) {
