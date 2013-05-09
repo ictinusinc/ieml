@@ -15,23 +15,22 @@
 	IEMLApp.init_from_url = function (url_obj) {
 		var path = url_obj.pathname, qry = url_obj.search, qry_obj = get_URL_params(qry), path_arr = path_split(path);
 		
-		IEMLApp.load_url = window.location;
+		var lang = path_arr[0];
+		if (lang !== IEMLApp.lang) {
+			IEMLApp.switch_lang(lang);
+			IEMLApp.lang = lang;
+		}
+		$('#search-lang-select').val(lang);
 		
-		if (path_arr[0] == 'users') {
+		if (path_arr[1] == 'users') {
 	        IEMLApp.submit({'a': 'viewUsers'});
-		} else if (path_arr[0] == 'login') {
+		} else if (path_arr[1] == 'login') {
 			switch_to_view('login');
 		} else if (path_arr.length > 0) {
-			var lexicon = path_arr[0], lang = path_arr[1];
+			var lexicon = path_arr[1];
 			
-			if (lang !== IEMLApp.lang) {
-				
-			}
-			
-			IEMLApp.lang = lang;
 			IEMLApp.lexicon = lexicon;
 			
-			$('#search-lang-select').val(lang);
 			$('#search-spec-select').val(lexicon);
 			
 			if (path_arr[2] == 'search') {
@@ -83,8 +82,10 @@
 	};
 	
 	IEMLApp.switch_lang = function(new_lang) {
-		 for (var i in window.UI_lang[new_lang]) {
-			 $('[data-lang-switch="'+i+'"]').html(window.UI_lang[new_lang][i]);
+		IEMLApp.lang = new_lang.toUpperCase();
+		
+		 for (var i in window.UI_lang[IEMLApp.lang]) {
+			 $('[data-lang-switch="'+i+'"]').html(window.UI_lang[IEMLApp.lang][i]);
 		 }
 		 
 		 return true;
@@ -115,18 +116,19 @@
 		if (rvars) {
 			if (rvars['a'] == 'searchDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
-					state_call(cons_state(rvars, responseData), '', '/'+rvars['lexicon']+'/'+rvars['lang']+'/search/'+rvars['search']);
+					state_call(IEMLApp.const_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], 'search', rvars['search']]));
 					
 					IEMLApp.receiveSearch(responseData);
 				});
 			} else if (rvars['a'] == 'expression') {
 				$.getJSON(url, rvars, function(responseData) {
-					state_call(cons_state(rvars, responseData), '', '/'+rvars['lexicon']+'/'+rvars['lang']+'/'+(rvars['id'] ? rvars['id'] : rvars['exp']));
+					state_call(IEMLApp.const_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], (rvars['id'] ? rvars['id'] : rvars['exp'])]));
 					
 			    	IEMLApp.receiveExpression(responseData);
 			    });
 			} else if (rvars['a'] == 'login') {
 				$.getJSON(url, rvars, function(responseData) {
+					History.back(); //TODO: find a more elegant solution
 					init_user_login(responseData);
 					
 					IEMLApp.init_from_state(History.getState());
@@ -135,7 +137,7 @@
 				$.getJSON(url, rvars, init_anon_user);
 			} else if (rvars['a'] == 'viewUsers') {
 				$.getJSON(url, rvars, function(responseData) {
-					state_call(cons_state(rvars, responseData), '', '/users/');
+					state_call(IEMLApp.const_state(rvars, responseData), '', cons_url(IEMLApp.lang, 'users'));
 					
 					IEMLApp.receiveUserList(responseData);
 				});
@@ -148,7 +150,7 @@
 			} else if (rvars['a'] == 'editDictionary' || rvars['a'] == 'newDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
 		            if ($('#desc-result-id').val() == '') {
-						state_call(cons_state(rvars, responseData), '', '/'+rvars['lexicon']+'/'+rvars['lang']+'/'+rvars['exp']);
+						state_call(IEMLApp.const_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], rvars['exp']]));
 		                $('#desc-result-id').val(responseData['id']);
 		            }
 		            
@@ -156,7 +158,7 @@
 				});
 			} else if (rvars['a'] == 'deleteDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
-		            switch_to_list();
+		            History.back(); //TODO: find a more elegant solution
 		            
 					$('[data-result-id="'+$('#desc-result-id').val()+'"]').remove();
 					
@@ -200,6 +202,14 @@
 		
 		switch_to_view('user');
 	};
+	
+	IEMLApp.cons_state = function (req, resp) {
+		return {'req': req, 'resp': resp};
+	};
+	
+	function cons_url(path, search, hash) {
+		return '/' + array_map(path, function(i,el) { return window.encodeURIComponent(el); }).join('/') + (typeof search == 'undefined' ? '' : '?' + map_to_url(search)) + (typeof hash == 'undefined' ? '' : '#' + hash);
+	}
 	
 	function reset_views() {
 		$('.edit-buttons-wrap').hide();
@@ -283,14 +293,19 @@
 	    	contained_html += '<ul class="relation-list">';
 		    for (var i=0; i<info['relations']['contained'].length; i++) {
 		    	if (info['relations']['contained'][i]['desc'] != null) {
-			    	contained_html += '<li><a href="/ajax.php?id='+info['relations']['contained'][i]['id']+'&a=searchDictionary" data-exp="'+info['relations']['contained'][i]['exp'][0]+'" data-id="'+info['relations']['contained'][i]['id']+'" class="editExp">' + info['relations']['contained'][i]['desc'] + ' (' + ordinal_str(info['relations']['contained'][i]['exp'][1]) + ' degree)</a></li>';
+			    	contained_html += '<li><a href="/ajax.php?id='+info['relations']['contained'][i]['id']
+				    	+ '&a=searchDictionary" data-exp="'+info['relations']['contained'][i]['exp'][0]+'" data-id="'
+				    	+ info['relations']['contained'][i]['id']+'" class="editExp">' + info['relations']['contained'][i]['desc'] 
+				    	+ ' (' + ordinal_str(info['relations']['contained'][i]['exp'][1]) + ' degree)</a></li>';
 			    	
 			    	var concurrent_rel = info['relations']['concurrent'][info['relations']['contained'][i]['exp'][0]];
 			    	if (concurrent_rel.length > 0) {
-				    	concurrent_html += '<div class="concurring-relation span6"><span class="concurring-relation-text"><strong>In relation to "' + info['relations']['contained'][i]['desc'] + '"</strong></span><ul class="relation-list">';
+				    	concurrent_html += '<div class="concurring-relation span6"><span class="concurring-relation-text"><strong>In relation to "'
+				    		+ info['relations']['contained'][i]['desc'] + '"</strong></span><ul class="relation-list">';
 				    	for (var j=0; j<concurrent_rel.length; j++) {
 				    		if (concurrent_rel[j]['desc'] != null) {
-				    			concurrent_html += '<li><a href="/ajax.php?id='+concurrent_rel[j]['id']+'&a=searchDictionary" data-exp="'+concurrent_rel[j]['exp'][0]+'" data-id="'+concurrent_rel[j]['id']+'" class="editExp">' + concurrent_rel[j]['desc'] + '</a></li>';
+				    			concurrent_html += '<li><a href="/ajax.php?id='+concurrent_rel[j]['id']+'&a=searchDictionary" data-exp="'
+				    				+ concurrent_rel[j]['exp'][0]+'" data-id="'+concurrent_rel[j]['id']+'" class="editExp">' + concurrent_rel[j]['desc'] + '</a></li>';
 				    		}
 				    	}
 				    	concurrent_html += '</ul></div>';
@@ -307,7 +322,9 @@
 		    containing_html += '<ul class="relation-list">';
 		    for (var i=0; i<info['relations']['containing'].length; i++) {
 		    	if (info['relations']['containing'][i]['desc']) {
-		    		containing_html += '<li><a href="/ajax.php?id='+info['relations']['containing'][i]['id']+'&a=searchDictionary" data-exp="'+info['relations']['containing'][i]['exp'][0]+'" data-id="'+info['relations']['containing'][i]['id']+'" class="editExp">'+info['relations']['containing'][i]['desc']+'</a></li>';
+		    		containing_html += '<li><a href="/ajax.php?id='+info['relations']['containing'][i]['id']
+			    		+ '&a=searchDictionary" data-exp="'+info['relations']['containing'][i]['exp'][0]+'" data-id="'
+			    		+ info['relations']['containing'][i]['id'] + '" class="editExp">'+info['relations']['containing'][i]['desc']+'</a></li>';
 		    	}
 		    }
 		    containing_html += '</ul>';
@@ -323,7 +340,9 @@
 	    
 	    comp_concept_html = '<p>';
 	    if (info['relations']['comp_concept'] && info['relations']['comp_concept']['exp']) {
-		    comp_concept_html += '<a href="/ajax.php?id='+info['relations']['comp_concept']['id']+'&a=searchDictionary" data-exp="'+info['relations']['comp_concept']['exp'][0]+'" data-id="'+info['relations']['comp_concept']['id']+'" class="editExp">' + info['relations']['comp_concept']['desc'] + ' (' + info['relations']['comp_concept']['exp'][0] + ')</a>';
+		    comp_concept_html += '<a href="/ajax.php?id='+info['relations']['comp_concept']['id']+'&a=searchDictionary" data-exp="'
+		    	+ info['relations']['comp_concept']['exp'][0]+'" data-id="'+info['relations']['comp_concept']['id']+'" class="editExp">'
+		    	+ info['relations']['comp_concept']['desc'] + ' (' + info['relations']['comp_concept']['exp'][0] + ')</a>';
 	    } else {
 		    comp_concept_html += 'None.';
 	    }
@@ -338,7 +357,8 @@
 		var etym = info['etymology'], ret = '<ul>';
 		
 		for (var i=0; i<etym.length; i++) {
-			ret += '<li><a href="/ajax.php?id='+etym[i]['id']+'&a=searchDictionary" data-exp="'+etym[i]['exp']+'" data-id="'+etym[i]['id']+'" class="editExp">'+etym[i]['desc'] + ' (' + etym[i]['exp'] + ')</a></li>';
+			ret += '<li><a href="/ajax.php?id='+etym[i]['id']+'&a=searchDictionary" data-exp="'+etym[i]['exp']
+				+ '" data-id="'+etym[i]['id']+'" class="editExp">'+etym[i]['desc'] + ' (' + etym[i]['exp'] + ')</a></li>';
 		}
 		
 		ret += '</ul>';
@@ -409,11 +429,17 @@
 	}
 	
 	function formatResultRow(obj) {
-		return '<tr data-key="' + (obj['enumCategory'] == 'Y' ? 'true' : 'false') + '" data-result-id="' + obj['id'] + '"><td>' + obj['expression'] + '</td><td>' + obj['descriptor'] + '</td><td><a href="/ajax.php?id=' + obj['id'] + '&a=searchDictionary" data-exp="'+obj['expression']+'" data-id="' + obj['id'] + '" class="btn editExp"><span class="icon-pencil"></span></a></td></tr>';
+		return '<tr data-key="' + (obj['enumCategory'] == 'Y' ? 'true' : 'false') + '" data-result-id="' + obj['id'] + '"><td>' 
+			+ obj['expression'] + '</td><td>' + obj['descriptor'] + '</td><td><a href="/ajax.php?id=' + obj['id']
+			+ '&a=searchDictionary" data-exp="'+obj['expression']+'" data-id="' + obj['id']
+			+ '" class="btn editExp"><span class="icon-pencil"></span></a></td></tr>';
 	}
 	
 	function formatUserRow(user) {
-	    return '<tr><td>'+user['strEmail']+'</td><td>'+user['enumType']+'</td><td>'+LightDate.date('Y-m-d H:i:s', LightDate.date_timezone_adjust(user['tsDateCreated']*1000))+'</td><td><!--a href="/ajax.php?a=editUser&pkUser='+user['pkUser']+'" class="editUser btn">Edit</a--><a href="/ajax.php?a=delUser&pkUser='+user['pkUser']+'" class="delUser btn">Delete</a></td></tr>';
+	    return '<tr><td>'+user['strEmail']+'</td><td>'+user['enumType']+'</td><td>'
+	    	+ LightDate.date('Y-m-d H:i:s', LightDate.date_timezone_adjust(user['tsDateCreated']*1000))
+	    	+ '</td><td><!--a href="/ajax.php?a=editUser&pkUser='+user['pkUser']+'" class="editUser btn">Edit</a--><a href="/ajax.php?a=delUser&pkUser='
+	    	+user['pkUser']+'" class="delUser btn">Delete</a></td></tr>';
 	}
 	
 	function showConfirmDialog(text, callback, etc) {
@@ -455,10 +481,6 @@
 		$('.edit-only').hide();
 	}
 	
-	function cons_state(req, resp) {
-		return {'req': req, 'resp': resp};
-	}
-	
 	$(function() {
 		History.Adapter.bind(window, 'popstate', function(ev) {
 			if (window.History.ready) {
@@ -484,7 +506,8 @@
 				if (info['edit_vertical_head_length'] <= 0 && info['edit_horizontal_head_length'] <= 0) {
 					$('table.relation td.empty_cell').hide();
 				} else {
-					$('table.relation td.empty_cell').show().attr('rowspan', parseInt(info['edit_vertical_head_length'], 10) + 1).attr('colspan', info['edit_horizontal_head_length']);
+					$('table.relation td.empty_cell').show()
+						.attr('rowspan', parseInt(info['edit_vertical_head_length'], 10) + 1).attr('colspan', info['edit_horizontal_head_length']);
 				}
 	        } else {
 				$('.nonExistentCell').hide();
@@ -492,7 +515,8 @@
 				if (info['render_vertical_head_length'] <= 0 && info['render_horizontal_head_length'] <= 0) {
 					$('table.relation td.empty_cell').hide();
 				} else {
-					$('table.relation td.empty_cell').show().attr('rowspan', parseInt(info['render_vertical_head_length'], 10) + 1).attr('colspan', info['render_horizontal_head_length']);
+					$('table.relation td.empty_cell').show()
+						.attr('rowspan', parseInt(info['render_vertical_head_length'], 10) + 1).attr('colspan', info['render_horizontal_head_length']);
 				}
 	        }
 		}).on('click', '.editExp', function() {
@@ -639,6 +663,7 @@
 			return false;
 		}).on('click', '.login-btn', function() {
 			switch_to_view('login');
+			state_call(null, '', '/' + cons_url(['login']));
 			
 			return false;
 		}).on('click', '.logout-btn', function() {
@@ -658,11 +683,17 @@
 			//$(window).trigger('hashchange');
 		});
 		
-		IEMLApp.init_from_url(window.location);
+		if (window.location.pathname.length == 1) {
+			IEMLApp.init_from_url(url_to_location_obj(cons_url([IEMLApp.lang, IEMLApp.lexicon])));
+		} else {
+			IEMLApp.init_from_url(window.location);
+		}
 		
 	    if (location.hash !== '') {
 	    	$('a[href="' + location.hash + '"]').tab('show');
 	    }
+	    
+		IEMLApp.load_url = window.location;
 	});
 	
 	$(window).on('hashchange', function(ev) {
