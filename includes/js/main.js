@@ -197,8 +197,6 @@
 		switch_to_view('user');
 	};
 	
-	function 
-	
 	function reset_views() {
 		$('.edit-buttons-wrap').hide();
 		$('#back-to-list-view').hide();
