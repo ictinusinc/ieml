@@ -82,13 +82,19 @@
 	};
 	
 	IEMLApp.switch_lang = function(new_lang) {
+		var cur_path = path_split(window.location.pathname), cur_state = History.getState().data;
+		cur_path[0] = new_lang;
+		cur_state['req']['lang'] = new_lang;
+		
+		IEMLApp.pushState(cur_state, '', cons_url(cur_path, window.location.search, window.location.hash));
+		
 		IEMLApp.lang = new_lang.toUpperCase();
 		
-		 for (var i in window.UI_lang[IEMLApp.lang]) {
-			 $('[data-lang-switch="'+i+'"]').html(window.UI_lang[IEMLApp.lang][i]);
-		 }
-		 
-		 return true;
+		for (var i in window.UI_lang[IEMLApp.lang]) {
+			$('[data-lang-switch="'+i+'"]').html(window.UI_lang[IEMLApp.lang][i]);
+		}
+		
+		return true;
 	};
 	
 	IEMLApp.pushState = function() {
