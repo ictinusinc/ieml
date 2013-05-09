@@ -112,7 +112,7 @@
 	};
 	
 	IEMLApp.submit = function (rvars, url, prev_state) {
-		if (typeof url == 'undefined') {
+		if (url && url.length > 0) {
 			url = api_offset;
 		}
 		if (typeof prev_state == 'undefined') {
@@ -136,7 +136,9 @@
 			    });
 			} else if (rvars['a'] == 'login') {
 				$.getJSON(url, rvars, function(responseData) {
-					History.back(); //TODO: find a more elegant solution
+					if (obj_size(prev_state.data) == 0) {
+						History.back();
+					}
 					init_user_login(responseData);
 					
 					IEMLApp.init_from_state(History.getState());
@@ -679,7 +681,7 @@
 			return false;
 		}).on('click', '.login-btn', function() {
 			switch_to_view('login');
-			state_call(null, '', '/' + cons_url(['login']));
+			IEMLApp.pushState(null, '', '/' + cons_url(['login']));
 			
 			return false;
 		}).on('click', '.logout-btn', function() {
@@ -689,7 +691,7 @@
 		}).on('submit', '#formLogin', function() {
 	        var formData = form_arr_to_map($(this).serializeArray());
 	        formData['a'] = 'login';
-			IEMLApp.submit(formData);
+			IEMLApp.submit(formData, null, History.getState());
 			
 			return false;
 		}).on('shown', 'a[data-toggle="tab"]', function(e) {
