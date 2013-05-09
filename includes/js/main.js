@@ -148,6 +148,7 @@
 			} else if (rvars['a'] == 'editDictionary' || rvars['a'] == 'newDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
 		            if ($('#desc-result-id').val() == '') {
+						state_call(cons_state(rvars, responseData), '', '/'+rvars['lexicon']+'/'+rvars['lang']+'/'+rvars['exp']);
 		                $('#desc-result-id').val(responseData['id']);
 		            }
 		            
