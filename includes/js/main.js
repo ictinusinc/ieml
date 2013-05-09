@@ -26,7 +26,7 @@
 	        IEMLApp.submit({'a': 'viewUsers'});
 		} else if (path_arr[1] == 'login') {
 			switch_to_view('login');
-		} else if (path_arr.length > 0) {
+		} else if (path_arr.length > 2) {
 			var lexicon = path_arr[1];
 			
 			IEMLApp.lexicon = lexicon;
@@ -214,7 +214,9 @@
 	};
 	
 	function cons_url(path, search, hash) {
-		return '/' + array_map(path, function(i,el) { return window.encodeURIComponent(el); }).join('/') + (typeof search == 'undefined' ? '' : '?' + map_to_url(search)) + (typeof hash == 'undefined' ? '' : '#' + hash);
+		return '/' + array_map(path, function(i,el) { return window.encodeURIComponent(el); }).join('/')
+			+ (typeof search == 'undefined' && search.length > 0 ? '' : '?' + map_to_url(search))
+			+ (typeof hash == 'undefined' && hash.length > 0 ? '' : '#' + window.encodeURIComponent(hash));
 	}
 	
 	function reset_views() {
