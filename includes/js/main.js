@@ -706,7 +706,7 @@
 		IEMLApp.load_url = window.location;
 		
 		if (window.location.pathname.length == 1) {
-			IEMLApp.pushState(null, '', cons_url([IEMLApp.lang, IEMLApp.lexicon]));
+			IEMLApp.pushState(IEMLApp.cons_state({'a': 'searchDictionary'}, []), '', cons_url([IEMLApp.lang, IEMLApp.lexicon]));
 		}
 		
 		IEMLApp.init_from_url(window.location);
