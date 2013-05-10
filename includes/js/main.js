@@ -67,6 +67,8 @@
 				IEMLApp.receiveSearch(resp);
 			} else if (req['a'] == 'expression') {
 				IEMLApp.receiveExpression(resp);
+			} else if (req['a'] == 'pre-login') {
+				IEMLApp.init_from_state(resp);
 			} else {
 				return false;
 			}
@@ -112,7 +114,7 @@
 	};
 	
 	IEMLApp.submit = function (rvars, url, prev_state) {
-		if (url && url.length > 0) {
+		if (!url || url.length <= 0) {
 			url = api_offset;
 		}
 		if (typeof prev_state == 'undefined') {
@@ -681,7 +683,7 @@
 			return false;
 		}).on('click', '.login-btn', function() {
 			switch_to_view('login');
-			IEMLApp.pushState(null, '', '/' + cons_url([IEMLApp.lang, 'login']));
+			IEMLApp.pushState(IEMLApp.cons_state({'a': 'pre-login'}, History.getState()), '', '/' + cons_url([IEMLApp.lang, 'login']));
 			
 			return false;
 		}).on('click', '.logout-btn', function() {
