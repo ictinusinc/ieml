@@ -98,6 +98,12 @@
 		}
 
 		IEMLApp.lang = new_lang.toUpperCase();
+		
+		var lang_els = $('[data-lang-switch]');
+		
+		for (var i in lang_els) {
+			
+		}
 			
 		for (var i in window.UI_lang[IEMLApp.lang]) {
 			$('[data-lang-switch="'+i+'"]').html(window.UI_lang[IEMLApp.lang][i]);
@@ -283,6 +289,7 @@
 		$('.logout-btn-wrap').show();
 		$('#add-ieml-record-wrap').show();
 		$('#ieml-view-users-wrap').show();
+		$('.edit-buttons-wrap').show();
 		
 		$('.user-display-name').html(userObj['strDisplayName']);
 	
@@ -294,6 +301,7 @@
 		$('.login-btn-wrap').show();
 		$('#add-ieml-record-wrap').hide();
 		$('#ieml-view-users-wrap').hide();
+		$('.edit-buttons-wrap').hide();
 		
 		IEMLApp.user = null;
 	}
