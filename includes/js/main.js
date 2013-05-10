@@ -100,7 +100,7 @@
 		IEMLApp.lang = new_lang.toUpperCase();
 		
 		$('[data-lang-switch]').each(function(i, el) {
-			var jel = $(el), lang_els = jel.data('lang-switch').split(','), lang_attrs = jel.data('lang-switch-attrs');
+			var jel = $(el), lang_els = jel.data('lang-switch').split(','), lang_attrs = jel.data('lang-switch-attr');
 			
 			if (lang_attrs && lang_attrs.length > 0) {
 				var lang_attrs_str = lang_attrs.split(',');
