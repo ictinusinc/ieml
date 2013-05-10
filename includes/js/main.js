@@ -15,13 +15,6 @@
 	IEMLApp.init_from_url = function (url_obj) {
 		var path = url_obj.pathname, qry = url_obj.search, qry_obj = get_URL_params(qry), path_arr = path_split(path);
 		
-		var lang = path_arr[0];
-		if (lang !== IEMLApp.lang) {
-			IEMLApp.switch_lang(lang);
-			IEMLApp.lang = lang;
-		}
-		$('#search-lang-select').val(lang.toLowerCase());
-		
 		if (path_arr[1] == 'users') {
 	        IEMLApp.submit({'a': 'viewUsers'});
 		} else if (path_arr[1] == 'login') {
@@ -47,6 +40,18 @@
 		} else {
 			switch_to_list();
 		}
+		
+		IEMLApp.init_from_url_NO_STATE_CHANGE(url_obj);
+	};
+	
+	IEMLApp.init_from_url_NO_STATE_CHANGE = function (url_obj) {
+		var path_arr = path_split(path), lang = path_arr[0];
+
+		if (lang !== IEMLApp.lang) {
+			IEMLApp.switch_lang(lang);
+			IEMLApp.lang = lang;
+		}
+		$('#search-lang-select').val(lang.toLowerCase());
 		
 		if (_SESSION['user']) {
 			init_user_login(_SESSION['user']);
@@ -74,13 +79,11 @@
 			} else {
 				return false;
 			}
-			
-			if (url_obj.hash) {
-				$('a[href="'+url_obj.hash+'"]').tab('show');
-			}
 		} else {
 			IEMLApp.receiveSearch([]);
 		}
+			
+		IEMLApp.init_from_url_NO_STATE_CHANGE(url_obj);
 		
 		return true;
 	};
