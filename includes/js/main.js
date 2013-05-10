@@ -20,7 +20,7 @@
 			IEMLApp.switch_lang(lang);
 			IEMLApp.lang = lang;
 		}
-		$('#search-lang-select').val(lang);
+		$('#search-lang-select').val(lang.toLowerCase());
 		
 		if (path_arr[1] == 'users') {
 	        IEMLApp.submit({'a': 'viewUsers'});
@@ -99,7 +99,7 @@
 
 		IEMLApp.lang = new_lang.toUpperCase();
 		
-		$('[data-lang-switch]').foreach(function(i, el) {
+		$('[data-lang-switch]').each(function(i, el) {
 			var lang_els = el.data('lang-switch').split(','), lang_attrs = el.data('lang-switch-attrs');
 			
 			if (lang_attrs && lang_attrs.length > 0) {
