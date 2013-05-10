@@ -13,7 +13,8 @@
 	IEMLApp.lexicon = 'BasicLexicon';
 	
 	IEMLApp.init_from_url = function (url_obj) {
-		var path = url_obj.pathname, qry = url_obj.search, qry_obj = get_URL_params(qry), path_arr = path_split(path);
+		var qry = url_obj.search, qry_obj = get_URL_params(qry),
+			path_arr = path_split(url_obj.pathname), lang = path_arr[0];
 		
 		if (path_arr[1] == 'users') {
 	        IEMLApp.submit({'a': 'viewUsers'});
