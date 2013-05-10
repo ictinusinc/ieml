@@ -293,15 +293,19 @@
 	}
 	
 	function init_user_login(userObj) {
+		IEMLApp.user = userObj;
+		
 		$('.login-btn-wrap').hide();
 		$('.logout-btn-wrap').show();
 		$('#add-ieml-record-wrap').show();
-		$('#ieml-view-users-wrap').show();
 		$('.edit-buttons-wrap').show();
+		
+		if (IEMLApp.user.enumType == 'admin') {
+			$('#ieml-view-users-wrap').show();
+		}
 		
 		$('.user-display-name').html(userObj['strDisplayName']);
 	
-		IEMLApp.user = userObj;
 	}
 	
 	function init_anon_user() {
