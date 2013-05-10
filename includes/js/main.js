@@ -179,6 +179,7 @@
 				$.getJSON(url, rvars, function(responseData) {
 		            if ($('#desc-result-id').val() == '') {
 						state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], rvars['exp']]));
+						
 		                $('#desc-result-id').val(responseData['id']);
 		            }
 		            
