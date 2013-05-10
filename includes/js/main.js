@@ -165,7 +165,7 @@
 				$.getJSON(url, rvars, init_anon_user);
 			} else if (rvars['a'] == 'viewUsers') {
 				$.getJSON(url, rvars, function(responseData) {
-					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url(IEMLApp.lang, 'users'));
+					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([IEMLApp.lang, 'users']));
 					
 					IEMLApp.receiveUserList(responseData);
 				});
