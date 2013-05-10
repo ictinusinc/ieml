@@ -681,7 +681,7 @@
 			return false;
 		}).on('click', '.login-btn', function() {
 			switch_to_view('login');
-			IEMLApp.pushState(null, '', '/' + cons_url(['login']));
+			IEMLApp.pushState(null, '', '/' + cons_url([IEMLApp.lang, 'login']));
 			
 			return false;
 		}).on('click', '.logout-btn', function() {
