@@ -68,6 +68,7 @@
 			} else if (req['a'] == 'expression') {
 				IEMLApp.receiveExpression(resp);
 			} else if (req['a'] == 'pre-login') {
+				console.log(resp);
 				IEMLApp.init_from_state(resp);
 			} else {
 				return false;
