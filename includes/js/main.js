@@ -100,20 +100,20 @@
 		IEMLApp.lang = new_lang.toUpperCase();
 		
 		$('[data-lang-switch]').each(function(i, el) {
-			var lang_els = el.data('lang-switch').split(','), lang_attrs = el.data('lang-switch-attrs');
+			var jel = $(el), lang_els = jel.data('lang-switch').split(','), lang_attrs = jel.data('lang-switch-attrs');
 			
 			if (lang_attrs && lang_attrs.length > 0) {
 				var lang_attrs_str = lang_attrs.split(',');
 				
 				for (var i in lang_els) {
 					if (lang_attrs_str[i] && lang_attrs_str[i].length > 0) {
-						el.prop(lang_attrs_str[i], window.UI_lang[lang_els[i]]);
+						jel.prop(lang_attrs_str[i], window.UI_lang[IEMLApp.lang][lang_els[i]]);
 					} else {
-						el.html(window.UI_lang[lang_els[i]]);
+						jel.html(window.UI_lang[IEMLApp.lang][lang_els[i]]);
 					}
 				}
 			} else {
-				el.html(window.UI_lang[lang_els[0]]);
+				jel.html(window.UI_lang[IEMLApp.lang][lang_els[0]]);
 			}
 		});
 		
