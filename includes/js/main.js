@@ -45,7 +45,7 @@
 	};
 	
 	IEMLApp.init_from_url_NO_STATE_CHANGE = function (url_obj) {
-		var path_arr = path_split(path), lang = path_arr[0];
+		var path_arr = path_split(url_obj.pathname), lang = path_arr[0];
 
 		if (lang !== IEMLApp.lang) {
 			IEMLApp.switch_lang(lang);
