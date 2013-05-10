@@ -88,9 +88,11 @@
 	IEMLApp.switch_lang = function(new_lang) {
 		var cur_path = path_split(window.location.pathname), cur_state = History.getState().data;
 		cur_path[0] = new_lang;
+		
 		if (cur_state && cur_state['req']) {
 			cur_state['req']['lang'] = new_lang;
-			IEMLApp.submit(cur_path['req']);
+			
+			IEMLApp.submit(cur_state['req']);
 		} else {
 			IEMLApp.pushState(cur_state, '', cons_url(cur_path, window.location.search, window.location.hash));
 		}
