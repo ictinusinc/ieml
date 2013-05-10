@@ -90,12 +90,13 @@
 		cur_path[0] = new_lang;
 		if (cur_state && cur_state['req']) {
 			cur_state['req']['lang'] = new_lang;
+			IEMLApp.submit(cur_path['req']);
+		} else {
+			IEMLApp.pushState(cur_state, '', cons_url(cur_path, window.location.search, window.location.hash));
 		}
-		
-		IEMLApp.pushState(cur_state, '', cons_url(cur_path, window.location.search, window.location.hash));
-		
+
 		IEMLApp.lang = new_lang.toUpperCase();
-		
+			
 		for (var i in window.UI_lang[IEMLApp.lang]) {
 			$('[data-lang-switch="'+i+'"]').html(window.UI_lang[IEMLApp.lang][i]);
 		}
