@@ -53,6 +53,10 @@
 		} else {
 			init_anon_user();
 		}
+		
+	    if (url_obj.hash !== '') {
+	    	$('a[href="' + url_obj.hash + '"]').tab('show');
+	    }
 	};
 	
 	IEMLApp.init_from_state = function(full_state) {
@@ -67,9 +71,6 @@
 				IEMLApp.receiveSearch(resp);
 			} else if (req['a'] == 'expression') {
 				IEMLApp.receiveExpression(resp);
-			} else if (req['a'] == 'pre-login') {
-				console.log(resp);
-				IEMLApp.init_from_state(resp);
 			} else {
 				return false;
 			}
@@ -139,9 +140,6 @@
 			    });
 			} else if (rvars['a'] == 'login') {
 				$.getJSON(url, rvars, function(responseData) {
-					if (obj_size(prev_state.data) == 0) {
-						History.back();
-					}
 					init_user_login(responseData);
 					
 					IEMLApp.init_from_state(History.getState());
@@ -224,6 +222,16 @@
 	
 	IEMLApp.cons_state = function (req, resp) {
 		return {'req': req, 'resp': resp};
+	};
+	
+	IEMLApp.popstateCallback = function(ev) {
+		if (window.History.ready) {
+			var id = ev.state, state_obj = window.History.getStateById(id);
+			
+			if (state_obj) {
+				IEMLApp.init_from_state(state_obj);
+			}
+		}
 	};
 	
 	function cons_url(path, search, hash) {
@@ -503,15 +511,7 @@
 	}
 	
 	$(function() {
-		History.Adapter.bind(window, 'popstate', function(ev) {
-			if (window.History.ready) {
-				var id = ev.state, state_obj = History.getStateById(id);
-				
-				if (state_obj) {
-					IEMLApp.init_from_state(state_obj);
-				}
-			}
-		});
+		History.Adapter.bind(window, 'popstate', IEMLApp.popstateCallback);
 		
 		$(document).on('submit', '#search-form', function() {
 			var form_data = form_arr_to_map($(this).serializeArray());
@@ -684,7 +684,6 @@
 			return false;
 		}).on('click', '.login-btn', function() {
 			switch_to_view('login');
-			IEMLApp.pushState(IEMLApp.cons_state({'a': 'pre-login'}, History.getState()), '', '/' + cons_url([IEMLApp.lang, 'login']));
 			
 			return false;
 		}).on('click', '.logout-btn', function() {
@@ -694,7 +693,7 @@
 		}).on('submit', '#formLogin', function() {
 	        var formData = form_arr_to_map($(this).serializeArray());
 	        formData['a'] = 'login';
-			IEMLApp.submit(formData, null, History.getState());
+			IEMLApp.submit(formData);
 			
 			return false;
 		}).on('shown', 'a[data-toggle="tab"]', function(e) {
@@ -711,10 +710,6 @@
 		}
 		
 		IEMLApp.init_from_url(window.location);
-		
-	    if (location.hash !== '') {
-	    	$('a[href="' + location.hash + '"]').tab('show');
-	    }
 	});
 	
 	$(window).on('hashchange', function(ev) {
