@@ -99,15 +99,23 @@
 
 		IEMLApp.lang = new_lang.toUpperCase();
 		
-		var lang_els = $('[data-lang-switch]');
-		
-		for (var i in lang_els) {
+		$('[data-lang-switch]').foreach(function(i, el) {
+			var lang_els = el.data('lang-switch').split(','), lang_attrs = el.data('lang-switch-attrs');
 			
-		}
-			
-		for (var i in window.UI_lang[IEMLApp.lang]) {
-			$('[data-lang-switch="'+i+'"]').html(window.UI_lang[IEMLApp.lang][i]);
-		}
+			if (lang_attrs && lang_attrs.length > 0) {
+				var lang_attrs_str = lang_attrs.split(',');
+				
+				for (var i in lang_els) {
+					if (lang_attrs_str[i] && lang_attrs_str[i].length > 0) {
+						el.prop(lang_attrs_str[i], window.UI_lang[lang_els[i]]);
+					} else {
+						el.html(window.UI_lang[lang_els[i]]);
+					}
+				}
+			} else {
+				el.html(window.UI_lang[lang_els[0]]);
+			}
+		});
 		
 		return true;
 	};
@@ -565,12 +573,20 @@
 			return false;
 		}).on('click', '#back-to-list-view', function() {
 			switch_to_list();
+			
+			return false;
 		}).on('change', '#search-lang-select', function() {
 			IEMLApp.switch_lang($(this).val());
+			
+			return false;
 		}).on('click', '#filter-results-button', function() {
 			$('#listview tbody [data-key="false"]').show();
+			
+			return false;
 		}).on('click', '#filter-results-keys', function() {
 			$('#listview tbody [data-key="false"]').hide();
+			
+			return false;
 		}).on('click', '#add-ieml-record', function() {
 		    IEMLApp.lastRetrievedData = {'expression':'', 'descriptor':'', 'enumCategory':'N', 'enumShowEmpties': 'N'};
 		    fillForm(IEMLApp.lastRetrievedData);
@@ -619,9 +635,11 @@
 			fillForm(IEMLApp.lastRetrievedData);
 		    
 		}).on('click', '#ieml-desc-result-edit', function() {
-			if (!$('#ieml-desc-result-edit').hasClass('disabled'))
+			if (!$('#ieml-desc-result-edit').hasClass('disabled')) {
 		    	readToWrite();
+		    }
 		    
+		    return false;
 		}).on('click', '#ieml-desc-result-delete', function() {
 		    if ($('#desc-result-id').val() != '') {
 	    		$('#iemlConfirmModal .modal-body').html('<div><span>Are you sure you want to delete "' + $('#ieml-result input').eq(0).val() + '"?<br /></span></div>');
