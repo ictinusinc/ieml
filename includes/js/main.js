@@ -90,38 +90,41 @@
 	};
 	
 	IEMLApp.switch_lang = function(new_lang) {
-		var cur_path = path_split(window.location.pathname), cur_state = History.getState().data;
-		cur_path[0] = new_lang;
-		
-		if (cur_state && cur_state['req']) {
-			cur_state['req']['lang'] = new_lang;
+		new_lang = new_lang && new_lang.toUpperCase();
+		if (IEMLApp.lang !== IEMLApp.lang) {
+			var cur_path = path_split(window.location.pathname), cur_state = History.getState().data;
+			cur_path[0] = new_lang;
 			
-			IEMLApp.submit(cur_state['req']);
-		} else {
-			IEMLApp.pushState(cur_state, '', cons_url(cur_path, window.location.search, window.location.hash));
-		}
-
-		IEMLApp.lang = (new_lang && new_lang.toUpperCase()) || IEMLApp.lang.toUpperCase();
-		
-		$('[data-lang-switch]').each(function(i, el) {
-			var jel = $(el), lang_els = jel.data('lang-switch').split(','), lang_attrs = jel.data('lang-switch-attr');
-			
-			if (lang_attrs && lang_attrs.length > 0) {
-				var lang_attrs_str = lang_attrs.split(',');
+			if (cur_state && cur_state['req']) {
+				cur_state['req']['lang'] = new_lang;
 				
-				for (var i in lang_els) {
-					if (lang_attrs_str[i] && lang_attrs_str[i].length > 0) {
-						jel.prop(lang_attrs_str[i], window.UI_lang[IEMLApp.lang][lang_els[i]]);
-					} else {
-						jel.html(window.UI_lang[IEMLApp.lang][lang_els[i]]);
-					}
-				}
+				IEMLApp.submit(cur_state['req']);
 			} else {
-				jel.html(window.UI_lang[IEMLApp.lang][lang_els[0]]);
+				IEMLApp.pushState(cur_state, '', cons_url(cur_path, window.location.search, window.location.hash));
 			}
-		});
-		
-		return true;
+			
+			$('[data-lang-switch]').each(function(i, el) {
+				var jel = $(el), lang_els = jel.data('lang-switch').split(','), lang_attrs = jel.data('lang-switch-attr');
+				
+				if (lang_attrs && lang_attrs.length > 0) {
+					var lang_attrs_str = lang_attrs.split(',');
+					
+					for (var i in lang_els) {
+						if (lang_attrs_str[i] && lang_attrs_str[i].length > 0) {
+							jel.prop(lang_attrs_str[i], window.UI_lang[IEMLApp.lang][lang_els[i]]);
+						} else {
+							jel.html(window.UI_lang[IEMLApp.lang][lang_els[i]]);
+						}
+					}
+				} else {
+					jel.html(window.UI_lang[IEMLApp.lang][lang_els[0]]);
+				}
+			});
+			
+			return true;
+		} else {
+			return false;
+		}
 	};
 	
 	IEMLApp.pushState = function() {
