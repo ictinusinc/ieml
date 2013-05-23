@@ -7,7 +7,7 @@
 	
 	IEMLApp.user = null;
 	IEMLApp.load_url = null;
-	IEMLApp.lang = 'en';
+	IEMLApp.lang = 'EN';
 	IEMLApp.lexicon = 'BasicLexicon';
 	
 	IEMLApp.init_from_url = function (url_obj) {
@@ -101,7 +101,7 @@
 			IEMLApp.pushState(cur_state, '', cons_url(cur_path, window.location.search, window.location.hash));
 		}
 
-		IEMLApp.lang = (new_lang && new_lang.toUpperCase()) || IEMLApp.lang;
+		IEMLApp.lang = (new_lang && new_lang.toUpperCase()) || IEMLApp.lang.toUpperCase();
 		
 		$('[data-lang-switch]').each(function(i, el) {
 			var jel = $(el), lang_els = jel.data('lang-switch').split(','), lang_attrs = jel.data('lang-switch-attr');
