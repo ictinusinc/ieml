@@ -163,6 +163,8 @@
 				$.getJSON(url, rvars, function(responseData) {
 					init_user_login(responseData);
 					
+					console.log(responseData);
+					
 					IEMLApp.init_from_state(History.getState());
 				});
 			} else if (rvars['a'] == 'logout') {
@@ -307,6 +309,8 @@
 		
 		if (IEMLApp.user.enumType == 'admin') {
 			$('#ieml-view-users-wrap').show();
+		} else {
+			$('#ieml-view-users-wrap').hide();
 		}
 		
 		$('.user-display-name').html(userObj['strDisplayName']);
