@@ -1,7 +1,7 @@
 (function(window, $) {
 	'use strict';
 	
-	var api_offset = 'http://ieml.ictinusdesign.com/api/';
+	var api_offset = '/api/';
 	
 	function IEMLApp() {}
 	

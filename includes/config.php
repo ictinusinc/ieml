@@ -14,7 +14,6 @@ define("DATABASE","ieml");
 define('TOPDOMAIN', 'punchclock.ictinusdesign.com');
 define('DOCROOT', $_SERVER['DOCUMENT_ROOT']);
 define('WEBROOT', 'http://'.$_SERVER['HTTP_HOST']);
-//define('OFFROOT', '/../../../Users/bence/Sites/ieml'); //quick hack to get it running locally, please ignore
 define('OFFROOT', ''); //in case the app needs to be in a subdirectory
 define('APPROOT', DOCROOT . OFFROOT);
 define('WEBAPPROOT', WEBROOT . OFFROOT);

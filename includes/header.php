@@ -14,8 +14,10 @@
         <![endif]-->
         
         <!-- Stylesheets -->
-        <link type="text/css" rel="stylesheet" href="/includes/css/bootstrap/css/bootstrap.css"/>
-        <link type="text/css" rel="stylesheet" href="/includes/css/style.css" />
+        <!-- bootstrap-2.0.1.css -->
+        <style><?php echo file_get_contents(APPROOT.'/includes/css/bootstrap-2.0.1.min.css'); ?></style>
+        <!-- style.css -->
+        <style><?php echo file_get_contents(APPROOT.'/includes/css/style.css'); ?></style>
     </head>
     <body>
     

@@ -250,9 +250,16 @@ function api_login($userName, $password) {
 }
 
 function api_log($msg) {
-	$lfile = fopen(APPROOT.'/access_log.log', 'a');
-	fwrite($lfile, $msg);
-	fclose($lfile);
+	$lfile = @fopen(APPROOT.'/access_log.log', 'a');
+	
+	if (FALSE !== $lfile) {
+		fwrite($lfile, $msg);
+		fclose($lfile);
+		
+		return TRUE;
+	}
+	
+	return FALSE;
 }
 
 function api_message($msg = NULL) {
