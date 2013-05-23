@@ -127,7 +127,11 @@
 	IEMLApp.pushState = function() {
 		window.History.ready = true;
 		
-		window.History.pushState.apply(null, arguments);
+		try {
+			window.History.pushState.apply(null, arguments);
+		} catch (e) {
+			console.log('[History.js] ' + e.toString()); //probably "...states with fragment-identifiers..."
+		}
 	};
 	
 	IEMLApp.replaceState = function() {
