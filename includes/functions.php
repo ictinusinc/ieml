@@ -91,17 +91,8 @@ function assert_arr($vars, $arr) {
 	return TRUE;
 }
 
-function api_assert_message($vars, $arr) {
-	$ret = assert_arr($vars, $arr);
-	if ($ret !== TRUE) {
-		echo 'Error: "'.$ret.'" must be set.';
-	}
-	return $ret;
-}
-
-function api_assert($vars, $arr = NULL) {
-	if (!isset($arr)) $arr = $_REQUEST;
-	if (TRUE !== api_assert_message($vars, $arr)) die("\r\nDead.");
+function assert_format($var) {
+	return array('result' => 'error', 'error' => '"'.$var.'" must be set');
 }
 
 //custom session functions--------------------------------------------------------------------------
