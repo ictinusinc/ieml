@@ -101,7 +101,7 @@
 			IEMLApp.pushState(cur_state, '', cons_url(cur_path, window.location.search, window.location.hash));
 		}
 
-		IEMLApp.lang = new_lang.toUpperCase();
+		IEMLApp.lang = (new_lang && new_lang.toUpperCase()) || IEMLApp.lang;
 		
 		$('[data-lang-switch]').each(function(i, el) {
 			var jel = $(el), lang_els = jel.data('lang-switch').split(','), lang_attrs = jel.data('lang-switch-attr');
@@ -430,18 +430,25 @@
 	        writeToRead();
 	    }
 	    
-		$('#ieml-result').html(info['expression']);
-		$('#ieml-ex-result').html(info['descriptor']);
 	    $('#desc-result-id').val(info['id'] ? info['id'] : '');
-	    $('#iemlEnumCategoryModal').prop('checked', info['enumCategory'] == 'Y');
-	
-		if (info['expression'] && info['expression'].length > 0) {
-	    	var details = getVerbLayer(info['expression']);
 	    
-	    	$('#ieml-result-details').html(details['gram']+' Layer '+details['layer']);
+		if (info['expression']) {
+			$('#ieml-result').html(info['expression']);
+	
+			if (info['expression'].length > 0) {
+		    	var details = getVerbLayer(info['expression']);
+		    
+		    	$('#ieml-result-details').html(details['gram']+' Layer '+details['layer']);
+			} else {
+		    	$('#ieml-result-details').html('NEW ENTRY');
+			}
 		} else {
-	    	$('#ieml-result-details').html('NEW ENTRY');
+			
 		}
+		
+		if (info['descriptor']) $('#ieml-ex-result').html(info['descriptor']);
+	    
+	    $('#iemlEnumCategoryModal').prop('checked', info['enumCategory'] == 'Y');
 		
 		if (info['table']) {
 			$('#ieml-table-span').html(info['table']);
