@@ -231,6 +231,26 @@ function obj_size(obj) {
 	return c;
 }
 
+function array_indexOf(arr, el) {
+	for (var i = (arguments[2] || 0); i < arr.length; i++) {
+		if (arr[i] == el) {
+			return i;
+		}
+	}
+	
+	return -1;
+}
+
+function array_lastIndexOf(arr, el) {
+	for (var i = (arguments[2] || arr.length); i >= 0; i--) {
+		if (arr[i] == el) {
+			return i;
+		}
+	}
+	
+	return -1;
+}
+
 function array_map(arr, callback) {
     var ret = [];
     for (var i in arr) {

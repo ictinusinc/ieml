@@ -332,10 +332,10 @@
 		var gram = '';
 		var layer = '';
 	
-		if (gram_classes_verbs.indexOf(exp.substr(0,2))>=0 || gram_classes_verbs.indexOf(exp.substr(0,3))>=0) gram = 'Verb';
-		if (gram_classes_nouns.indexOf(exp.substr(0,2))>=0) gram = 'Noun';
+		if (array_indexOf(gram_classes_verbs, exp.substr(0,2))>=0 || array_indexOf(gram_classes_verbs, exp.substr(0,3))>=0) gram = 'Verb';
+		if (array_indexOf(gram_classes_nouns, exp.substr(0,2))>=0) gram = 'Noun';
 		if (exp.substr(0,2) == 'E:') gram = 'AUXILIARY';
-		if (gram_classes_hybrid_nouns.indexOf(exp.substr(0,2))>=0 || exp.lastIndexOf('+')>=0) gram = 'Hybrid';
+		if (array_indexOf(gram_classes_hybrid_nouns, exp.substr(0,2))>=0 || array_lastIndexOf(exp, '+')>=0) gram = 'Hybrid';
 	
 		if (exp.substr(-1)==':') layer = '0';
 		else if (exp.substr(-1)=='.') layer = '1';
