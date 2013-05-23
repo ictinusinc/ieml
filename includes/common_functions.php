@@ -8,18 +8,26 @@ function getTableForElement($ret, $goodID, $options) {
     if ($ret['enumCategory'] == 'Y') {
         $table_head_query = Conn::queryArray("
             SELECT
-            	pkTable2D, enumShowEmpties, intWidth, intHeight,
-            	intHorHeaderDepth, intVerHeaderDepth, jsonTableLogic,
-            	enumCompConc, strEtymSwitch
-            FROM table_2d_id
-            WHERE enumDeleted = 'N' AND fkExpression = ".$goodID." LIMIT 1");
+            	pkTable2D, enumShowEmpties, intWidth, intHeight, intHorHeaderDepth, intVerHeaderDepth,
+            	prim.strExpression as expression, sublang.strDescriptor as descriptor, jsonTableLogic,
+            	t2d.fkExpression as id, enumCompConc, strEtymSwitch
+            FROM table_2d_id t2d
+            JOIN expression_primary prim ON t2d.fkExpression = prim.pkExpressionPrimary
+            LEFT JOIN
+                (
+                    SELECT fkExpressionPrimary, strDescriptor
+                    FROM expression_descriptors
+                    WHERE strLanguageISO6391 = ".goodInput($options['lang'])."
+                ) sublang
+                ON sublang.fkExpressionPrimary = t2d.fkExpression
+            WHERE t2d.enumDeleted = 'N' AND fkExpression = ".$goodID." LIMIT 1");
         $top = $ret;
     } else {
         $table_head_query = Conn::queryArray("
             SELECT
                 pkTable2D, enumShowEmpties, intWidth, intHeight, intHorHeaderDepth, intVerHeaderDepth,
                 prim.strExpression AS expression, sublang.strDescriptor AS descriptor, jsonTableLogic,
-                prim.pkExpressionPrimary as id, t2dref.enumEnabled, enumCompConc, strEtymSwitch
+                prim.pkExpressionPrimary as id, enumCompConc, strEtymSwitch, t2dref.enumEnabled
             FROM table_2d_id t2d
             JOIN expression_primary prim ON prim.pkExpressionPrimary = t2d.fkExpression
             JOIN table_2d_ref t2dref ON fkTable2D = pkTable2D

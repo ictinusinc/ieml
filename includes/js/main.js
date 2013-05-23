@@ -425,8 +425,12 @@
 		var etym = info['etymology'], ret = '<ul>';
 		
 		for (var i=0; i<etym.length; i++) {
-			ret += '<li><a href="/ajax.php?id='+etym[i]['id']+'&a=searchDictionary" data-exp="'+etym[i]['exp']
-				+ '" data-id="'+etym[i]['id']+'" class="editExp">'+etym[i]['desc'] + ' (' + etym[i]['exp'] + ')</a></li>';
+			if (etym[i]['id'] && etym[i]['exp'] && etym[i]['desc']) {
+				ret += '<li><a href="/ajax.php?id='+etym[i]['id']+'&a=searchDictionary" data-exp="'+etym[i]['exp']
+					+ '" data-id="'+etym[i]['id']+'" class="editExp">'+etym[i]['desc'] + ' (' + etym[i]['exp'] + ')</a></li>';
+			} else {
+				ret += '<li><a href="javascript:void(0);" class="createEmptyExp">' + etym[i]['exp'] + '</a></li>';
+			}
 		}
 		
 		ret += '</ul>';
@@ -441,21 +445,23 @@
 	    
 	    $('#desc-result-id').val(info['id'] ? info['id'] : '');
 	    
-		if (info['expression']) {
-			$('#ieml-result').html(info['expression']);
-	
-			if (info['expression'].length > 0) {
-		    	var details = getVerbLayer(info['expression']);
-		    
-		    	$('#ieml-result-details').html(details['gram']+' Layer '+details['layer']);
-			} else {
-		    	$('#ieml-result-details').html('NEW ENTRY');
-			}
-		} else {
+		if (info['expression'] && info['expression'].length > 0) {
+			var details = getVerbLayer(info['expression']);
 			
+			$('#ieml-result').html(info['expression']);
+	    
+	    	$('#ieml-result-details').html(details['gram']+' Layer '+details['layer']);
+		} else {
+			$('#ieml-result').empty();
+			
+			$('#ieml-result-details').html('NEW ENTRY');
 		}
 		
-		if (info['descriptor']) $('#ieml-ex-result').html(info['descriptor']);
+		if (info['descriptor'] && info['descriptor'].length > 0) {
+			$('#ieml-ex-result').html(info['descriptor']);
+		} else {
+			$('#ieml-ex-result').empty();
+		}
 	    
 	    $('#iemlEnumCategoryModal').prop('checked', info['enumCategory'] == 'Y');
 		

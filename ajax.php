@@ -49,7 +49,8 @@ function handle_request($action, $req) {
 			        LEFT JOIN expression_descriptors sublang
 			        	ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
 			        WHERE strLanguageISO6391 = ".goodInput($req['lang'])."
-			        AND   prim.strExpression = '".goodString($req['exp'])."'");
+			        AND   prim.strExpression = '".goodString($req['exp'])."'
+			        AND   prim.enumDeleted = 'N'");
 			    
 			    if (!isset($req['disableTableGen']) || $req['disableTableGen'] != 'true') {
 			        $ret = getTableForElement($ret, $ret['id'], $req);
@@ -73,7 +74,7 @@ function handle_request($action, $req) {
 			        FROM expression_primary prim
 			        LEFT JOIN expression_descriptors sublang
 			        	ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
-			        WHERE enumDeleted = 'N'
+			        WHERE prim.enumDeleted = 'N'
 			        AND   strLanguageISO6391 = ".goodInput($req['lang'])."
 			        ".(strlen($req['search']) > 0 ? "AND   (strExpression LIKE '%".goodString($req['search'])."%' OR sublang.strDescriptor LIKE '%".goodString($req['search'])."%')" : '')."
 			        ORDER BY expression");
