@@ -556,8 +556,8 @@ function split_by_concats($AST) {
 function fetch_etymology_from_AST($AST, $level = 0) {
 	$ret = NULL;
 	
-	if ($AST['internal'] && $level > 0) {
-		if ($AST['value']['type'] == 'LAYER') {
+	if ($AST['internal']) {
+		if ($AST['value']['type'] == 'LAYER' && $level > 0) {
 			return array($AST);
 		} else {
 			$ret = array();
