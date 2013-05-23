@@ -161,9 +161,9 @@
 			    });
 			} else if (rvars['a'] == 'login') {
 				$.getJSON(url, rvars, function(responseData) {
-					init_user_login(responseData);
-					
 					IEMLApp.init_from_state(History.getState());
+					
+					init_user_login(responseData);
 				});
 			} else if (rvars['a'] == 'logout') {
 				$.getJSON(url, rvars, init_anon_user);
@@ -304,8 +304,6 @@
 		$('.logout-btn-wrap').show();
 		$('#add-ieml-record-wrap').show();
 		$('.edit-buttons-wrap').show();
-		
-		console.log($('.login-btn-wrap'));
 		
 		if (IEMLApp.user.enumType == 'admin') {
 			$('#ieml-view-users-wrap').show();
