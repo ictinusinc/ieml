@@ -112,8 +112,6 @@
 					var lang_attrs = lang_attrs_str.split(',');
 					
 					for (var i in lang_els) {
-						console.log('lang_attrs_str[i]:', lang_attrs[i], 'lang_els[i]:', lang_els[i], 'IEMLApp.lang:', IEMLApp.lang);
-						
 						if (lang_attrs_str[i] && lang_attrs_str[i].length > 0) {
 							jel.prop(lang_attrs[i], window.UI_lang[IEMLApp.lang][lang_els[i]]);
 						} else {
