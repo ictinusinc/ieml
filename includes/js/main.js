@@ -609,7 +609,7 @@
 		}).on('click', '#filter-results-button', function() {
 			var state_data = History.getState().data;
 			
-			if (!state_data['resp'] || state_data['resp'].length == 0 || (state_data['req'] && state_data['req']['search'].length > 0)) {
+			if (!state_data['resp'] || state_data['resp'].length == 0) {
 				IEMLApp.submit({'a': 'searchDictionary', 'lexicon': IEMLApp.lexicon, 'lang': IEMLApp.lang, 'search': ''});
 			} else {
 				$('#listview tbody [data-key="false"]').show();
