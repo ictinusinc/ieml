@@ -3,8 +3,8 @@
         <!-- Javascript Files -->
         <!-- native.history-1.7.1.js -->
         <script type="text/javascript"><?php echo file_get_contents(APPROOT.'/includes/js/libs/native.history-1.7.1.min.js'); ?></script>
-        <!-- jquery-2.0.0.min.js -->
-        <script type="text/javascript"><?php echo file_get_contents(APPROOT.'/includes/js/libs/jquery-2.0.0.min.js'); ?></script>
+        <!-- jquery-1.9.1.min.js -->
+        <script type="text/javascript"><?php echo file_get_contents(APPROOT.'/includes/js/libs/jquery-1.9.1.min.js'); ?></script>
         <!-- jquery.form-3.34.js -->
         <script type="text/javascript"><?php echo file_get_contents(APPROOT.'/includes/js/libs/jquery.form-3.34.0.js'); ?></script>
         <!-- bootstrap-2.3.1.min.js -->

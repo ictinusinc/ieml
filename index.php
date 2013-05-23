@@ -122,7 +122,7 @@ require_once(APPROOT.'/includes/header.php');
 				<input type="text" name="loginEmail" id="loginEmail" /><br />
 				<label for="loginPassword" data-lang-switch="password"><?php echo trans_phrase('password', $lang); ?>:</label>
 				<input type="password" name="loginPassword" id="loginPassword" /><br />
-				<input class="btn" type="submit" name="submit" value="Login" />
+				<input class="btn" type="submit" name="submit" data-lang-switch-attr="value" value="<?php echo trans_phrase('login', $lang); ?>" />
 			</form>
         </div>
         
