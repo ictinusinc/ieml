@@ -607,7 +607,13 @@
 			
 			return false;
 		}).on('click', '#filter-results-button', function() {
-			$('#listview tbody [data-key="false"]').show();
+			var state_data = History.getState().data;
+			
+			if (!state_data['resp'] || state_data['resp'].length == 0) {
+				IEMLApp.submit({'a': 'searchDictionary', 'lexicon': lexicon, 'lang': lang, 'search': ''});
+			} else {
+				$('#listview tbody [data-key="false"]').show();
+			}
 			
 			return false;
 		}).on('click', '#filter-results-keys', function() {
