@@ -610,7 +610,7 @@
 			var state_data = History.getState().data;
 			
 			if (!state_data['resp'] || state_data['resp'].length == 0) {
-				IEMLApp.submit({'a': 'searchDictionary', 'lexicon': lexicon, 'lang': lang, 'search': ''});
+				IEMLApp.submit({'a': 'searchDictionary', 'lexicon': IEMLApp.lexicon, 'lang': IEMLApp.lang, 'search': ''});
 			} else {
 				$('#listview tbody [data-key="false"]').show();
 			}
