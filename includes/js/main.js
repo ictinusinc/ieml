@@ -416,16 +416,16 @@
 	    }
 	    comp_concept_html += '</p>';
 	    
-	    etymology_html = 'None.';
-	    
-	    return {'contained': contained_html, 'containing': containing_html, 'concurrent': concurrent_html, 'comp_concept': comp_concept_html, 'etymology': etymology_html};
+	    return {'contained': contained_html, 'containing': containing_html, 'concurrent': concurrent_html, 'comp_concept': comp_concept_html};
 	}
 	
 	function format_etymology(info) {
 		var etym = info['etymology'], ret = '<ul>';
 		
 		for (var i=0; i<etym.length; i++) {
-			if (etym[i]['id'] && etym[i]['exp'] && etym[i]['desc']) {
+			if (etym[i]['id'] && etym[i]['id'].length > 0
+				&& etym[i]['exp'] && etym[i]['exp'].length > 0
+				&& etym[i]['desc'] && etym[i]['desc'].length > 0) {
 				ret += '<li><a href="/ajax.php?id='+etym[i]['id']+'&a=searchDictionary" data-exp="'+etym[i]['exp']
 					+ '" data-id="'+etym[i]['id']+'" class="editExp">'+etym[i]['desc'] + ' (' + etym[i]['exp'] + ')</a></li>';
 			} else {

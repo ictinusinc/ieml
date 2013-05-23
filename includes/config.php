@@ -21,6 +21,6 @@ define('WEBAPPROOT', WEBROOT . OFFROOT);
 //name of custom session table in db if using custom sessions
 define('SESSIONTABLE', 'sessions');
 
-$lang = strtolower($_REQUEST['lang']) == 'fr' ? 'FR' : 'EN';
+$lang = ((array_key_exists('lang', $_REQUEST) && strtolower($_REQUEST['lang']) == 'fr') ? 'FR' : 'EN');
 
 ?>

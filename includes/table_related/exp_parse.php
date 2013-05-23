@@ -557,8 +557,14 @@ function fetch_etymology_from_AST($AST, $level = 0) {
 	$ret = NULL;
 	
 	if ($AST['internal']) {
-		if ($AST['value']['type'] == 'LAYER' && $level > 0) {
+		/*
+			if we've detected a layer node and we're at lesat one level down the tree (aka a layer subnode)
+			OR if we've detected something which is a character that has been expanded
+		*/
+		if ((($AST['value']['type'] == 'LAYER' || $AST['value']['type'] == 'L0PLUS') && $level > 0)
+			|| ($AST['value']['type'] == 'PLUS' && strlen($AST['value']['_original']) == 1)) {
 			return array($AST);
+			
 		} else {
 			$ret = array();
 			
