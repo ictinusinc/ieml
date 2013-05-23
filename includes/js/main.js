@@ -3,9 +3,7 @@
 	
 	var api_offset = 'http://ieml.ictinusdesign.com/api/';
 	
-	function IEMLApp() {
-		
-	}
+	function IEMLApp() {}
 	
 	IEMLApp.user = null;
 	IEMLApp.load_url = null;
@@ -14,7 +12,9 @@
 	
 	IEMLApp.init_from_url = function (url_obj) {
 		var qry = url_obj.search, qry_obj = get_URL_params(qry),
-			path_arr = path_split(url_obj.pathname), lang = path_arr[0];
+			path_arr = array_map(path_split(url_obj.pathname), function (i, el) {
+				return window.decodeURI(el);
+			}), lang = path_arr[0];
 		
 		if (path_arr[1] == 'users') {
 	        IEMLApp.submit({'a': 'viewUsers'});
@@ -430,10 +430,10 @@
 	    
 		$('#ieml-result').html(info['expression']);
 		$('#ieml-ex-result').html(info['descriptor']);
-	    $('#desc-result-id').val(info['id']?info['id']:'');
+	    $('#desc-result-id').val(info['id'] ? info['id'] : '');
 	    $('#iemlEnumCategoryModal').prop('checked', info['enumCategory'] == 'Y');
 	
-		if (info['expression'].length > 0) {
+		if (info['expression'] && info['expression'].length > 0) {
 	    	var details = getVerbLayer(info['expression']);
 	    
 	    	$('#ieml-result-details').html(details['gram']+' Layer '+details['layer']);
@@ -748,6 +748,8 @@
 		}
 		
 		IEMLApp.init_from_url(window.location);
+		
+		console.log('Load URL:', IEMLApp.load_url);
 	});
 	
 	$(window).on('hashchange', function(ev) {

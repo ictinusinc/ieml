@@ -233,20 +233,19 @@ function obj_size(obj) {
 
 function array_map(arr, callback) {
     var ret = [];
-    for (var i in arr)
-        ret[i] = callback(i, arr[i]);
+    for (var i in arr) {
+        ret[i] = callback.apply(el, [i, el]);
+    }
     return ret;
 }
 
 function array_filter(arr, callback) {
     var ret = [];
-    
     for (var i in arr) {
-    	if (callback(i, arr[i])) {
+    	if (callback.apply(el, [i, arr[i]])) {
         	ret.push(arr[i]);
         }
     }
-    
     return ret;
 }
 
