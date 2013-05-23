@@ -91,7 +91,7 @@
 	
 	IEMLApp.switch_lang = function(new_lang) {
 		new_lang = new_lang && new_lang.toUpperCase();
-		if (IEMLApp.lang !== IEMLApp.lang) {
+		if (IEMLApp.lang !== new_lang) {
 			var cur_path = path_split(window.location.pathname), cur_state = History.getState().data;
 			cur_path[0] = new_lang;
 			
