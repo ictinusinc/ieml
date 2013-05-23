@@ -103,15 +103,19 @@
 				IEMLApp.pushState(cur_state, '', cons_url(cur_path, window.location.search, window.location.hash));
 			}
 			
+			IEMLApp.lang = new_lang;
+			
 			$('[data-lang-switch]').each(function(i, el) {
-				var jel = $(el), lang_els = jel.data('lang-switch').split(','), lang_attrs = jel.data('lang-switch-attr');
+				var jel = $(el), lang_els = jel.data('lang-switch').split(','), lang_attrs_str = jel.data('lang-switch-attr');
 				
-				if (lang_attrs && lang_attrs.length > 0) {
-					var lang_attrs_str = lang_attrs.split(',');
+				if (lang_attrs_str && lang_attrs_str.length > 0) {
+					var lang_attrs = lang_attrs_str.split(',');
 					
 					for (var i in lang_els) {
+						console.log('lang_attrs_str[i]:', lang_attrs[i], 'lang_els[i]:', lang_els[i], 'IEMLApp.lang:', IEMLApp.lang);
+						
 						if (lang_attrs_str[i] && lang_attrs_str[i].length > 0) {
-							jel.prop(lang_attrs_str[i], window.UI_lang[IEMLApp.lang][lang_els[i]]);
+							jel.prop(lang_attrs[i], window.UI_lang[IEMLApp.lang][lang_els[i]]);
 						} else {
 							jel.html(window.UI_lang[IEMLApp.lang][lang_els[i]]);
 						}
