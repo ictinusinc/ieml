@@ -553,17 +553,17 @@ function split_by_concats($AST) {
 	return $out;
 }
 
-function fetch_etymology_from_AST($AST) {
+function fetch_etymology_from_AST($AST, $level = 0) {
 	$ret = NULL;
 	
-	if ($AST['internal']) {
+	if ($AST['internal'] && $level > 0) {
 		if ($AST['value']['type'] == 'LAYER') {
-			$ret = fetch_etymology_from_AST($AST['children'][0]);
+			return array($AST);
 		} else {
 			$ret = array();
 			
 			for ($i=0; $i<count($AST['children']); $i++) {
-				$ret[] = $AST['children'][$i];
+				array_append($ret, fetch_etymology_from_AST($AST['children'][$i], $level+1));
 			}
 		}
 	} else {
