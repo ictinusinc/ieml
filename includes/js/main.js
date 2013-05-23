@@ -766,8 +766,6 @@
 		}
 		
 		IEMLApp.init_from_url(window.location);
-		
-		console.log('Load URL:', IEMLApp.load_url);
 	});
 	
 	$(window).on('hashchange', function(ev) {
