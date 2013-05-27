@@ -5,6 +5,8 @@ function getTableForElement($ret, $goodID, $options) {
     $table_body_query = NULL;
     $top = NULL;
     $ret['table'] = NULL;
+    $lang = strtolower($options['lang']);
+    
     if ($ret['enumCategory'] == 'Y') {
         $table_head_query = Conn::queryArray("
             SELECT
@@ -17,7 +19,7 @@ function getTableForElement($ret, $goodID, $options) {
                 (
                     SELECT fkExpressionPrimary, strDescriptor
                     FROM expression_descriptors
-                    WHERE strLanguageISO6391 = ".goodInput($options['lang'])."
+                    WHERE strLanguageISO6391 = ".goodInput($lang)."
                 ) sublang
                 ON sublang.fkExpressionPrimary = t2d.fkExpression
             WHERE t2d.enumDeleted = 'N' AND fkExpression = ".$goodID." LIMIT 1");
@@ -35,7 +37,7 @@ function getTableForElement($ret, $goodID, $options) {
                 (
                     SELECT fkExpressionPrimary, strDescriptor
                     FROM expression_descriptors
-                    WHERE strLanguageISO6391 = ".goodInput($options['lang'])."
+                    WHERE strLanguageISO6391 = ".goodInput($lang)."
                 ) sublang
                 ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
             WHERE t2d.enumDeleted = 'N' AND t2dref.strCellExpression = ".goodInput($ret['expression'])." LIMIT 1");
@@ -65,7 +67,7 @@ function getTableForElement($ret, $goodID, $options) {
                 (
                     SELECT fkExpressionPrimary, strDescriptor
                     FROM expression_descriptors
-                    WHERE strLanguageISO6391 = ".goodInput($options['lang'])."
+                    WHERE strLanguageISO6391 = ".goodInput($lang)."
                 ) sublang
                 ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
             WHERE enumDeleted = 'N'
@@ -139,7 +141,7 @@ function getTableForElement($ret, $goodID, $options) {
 	                (
 	                    SELECT fkExpressionPrimary, strDescriptor
 	                    FROM expression_descriptors
-	                    WHERE strLanguageISO6391 = ".goodInput($options['lang'])."
+	                    WHERE strLanguageISO6391 = ".goodInput($lang)."
 	                ) sublang
 	                ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
 	            WHERE enumDeleted = 'N'

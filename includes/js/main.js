@@ -7,7 +7,7 @@
 	
 	IEMLApp.user = null;
 	IEMLApp.load_url = null;
-	IEMLApp.lang = 'EN';
+	IEMLApp.lang = 'EN';z
 	IEMLApp.lexicon = 'BasicLexicon';
 	
 	IEMLApp.init_from_url = function (url_obj) {
@@ -164,7 +164,7 @@
 				});
 			} else if (rvars['a'] == 'expression') {
 				$.getJSON(url, rvars, function(responseData) {
-					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], (rvars['id'] ? rvars['id'] : rvars['exp'])]));
+					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], (rvars['exp'] ? rvars['exp'] : rvars['id'])]));
 					
 			    	IEMLApp.receiveExpression(responseData);
 			    });
@@ -593,15 +593,15 @@
 				}
 	        }
 		}).on('click', '.editExp', function() {
-			var jthis = $(this), sub_data = { 'a': 'expression', 'lang': IEMLApp.lang, 'lexicon': IEMLApp.lexicon }, exp = jthis.data('exp'), id = jthis.data('id');
+			var jthis = $(this);
 			
-			if (exp) {
-				sub_data['exp'] = exp;
-			} else {
-				sub_data['id'] = id;
-			}
-			
-			IEMLApp.submit(sub_data);
+			IEMLApp.submit({
+				'a': 'expression',
+				'lang': IEMLApp.lang,
+				'lexicon': IEMLApp.lexicon,
+				'exp': jthis.data('exp'),
+				'id': jthis.data('id')
+			});
 			
 			return false;
 		}).on('click', '#back-to-list-view', function() {
