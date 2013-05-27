@@ -7,7 +7,7 @@
 	
 	IEMLApp.user = null;
 	IEMLApp.load_url = null;
-	IEMLApp.lang = 'EN';z
+	IEMLApp.lang = 'EN';
 	IEMLApp.lexicon = 'BasicLexicon';
 	
 	IEMLApp.init_from_url = function (url_obj) {
