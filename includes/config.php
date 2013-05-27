@@ -3,7 +3,7 @@
 
 date_default_timezone_set('UTC');
 
-define("MYSQLSERVER","localhost");
+define("MYSQLSERVER","127.0.0.1");
 define("USERNAME","ieml");
 define("PASSWORD","ieml#ictinus");
 define("DATABASE","ieml");

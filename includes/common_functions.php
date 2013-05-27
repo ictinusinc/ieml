@@ -19,7 +19,7 @@ function getTableForElement($ret, $goodID, $options) {
                 (
                     SELECT fkExpressionPrimary, strDescriptor
                     FROM expression_descriptors
-                    WHERE strLanguageISO6391 = ".goodInput($lang)."
+                    WHERE strLanguageISO6391 = '".goodString($lang)."'
                 ) sublang
                 ON sublang.fkExpressionPrimary = t2d.fkExpression
             WHERE t2d.enumDeleted = 'N' AND fkExpression = ".$goodID." LIMIT 1");
@@ -37,10 +37,10 @@ function getTableForElement($ret, $goodID, $options) {
                 (
                     SELECT fkExpressionPrimary, strDescriptor
                     FROM expression_descriptors
-                    WHERE strLanguageISO6391 = ".goodInput($lang)."
+                    WHERE strLanguageISO6391 = '".goodString($lang)."'
                 ) sublang
                 ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
-            WHERE t2d.enumDeleted = 'N' AND t2dref.strCellExpression = ".goodInput($ret['expression'])." LIMIT 1");
+            WHERE t2d.enumDeleted = 'N' AND t2dref.strCellExpression = '".goodString($ret['expression'])."' LIMIT 1");
         
         $top = array(
             'expression' => $table_head_query['expression'],

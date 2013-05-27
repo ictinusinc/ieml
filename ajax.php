@@ -1,6 +1,5 @@
 <?php
 
-
 include_once('includes/config.php');
 include_once(APPROOT.'/includes/functions.php');
 include_once(APPROOT.'/includes/table_related/table_functions.php');
@@ -28,34 +27,39 @@ function handle_request($action, $req) {
 		    if (TRUE === $asserts_ret) {
 		    	$lang = strtolower($req['lang']);
 		    	
-				if (isset($req['id'])) {
-				    $goodID = goodInt($req['id']);
-				    $ret = Conn::queryArray("
-				        SELECT
-				            pkExpressionPrimary as id, strExpression as expression,
-				            enumCategory, sublang.strDescriptor AS descriptor
-				        FROM expression_primary prim
-				        LEFT JOIN expression_descriptors sublang
-				        	ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
-				        WHERE strLanguageISO6391 = ".goodInput($lang)."
-				        AND   pkExpressionPrimary = ".$goodID);
-				    
-				    if (!isset($req['disableTableGen']) || $req['disableTableGen'] != 'true') {
-				        $ret = getTableForElement($ret, $ret['id'], $req);
+		    	if (isset($req['id']) || isset($req['exp'])) {
+					if (isset($req['id'])) {
+					    $goodID = goodInt($req['id']);
+					    $ret = Conn::queryArray("
+					        SELECT
+					            pkExpressionPrimary as id, strExpression as expression,
+					            enumCategory, sublang.strDescriptor AS descriptor
+					        FROM expression_primary prim
+					        LEFT JOIN expression_descriptors sublang
+					        	ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
+					        WHERE strLanguageISO6391 = ".goodInput($lang)."
+					        AND   pkExpressionPrimary = ".$goodID);
+				    } else if (isset($req['exp'])) {
+					    $ret = Conn::queryArray("
+					        SELECT
+					            pkExpressionPrimary as id, strExpression as expression,
+					            enumCategory, sublang.strDescriptor AS descriptor
+					        FROM expression_primary prim
+					        LEFT JOIN expression_descriptors sublang
+					        	ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
+					        WHERE strLanguageISO6391 = ".goodInput($lang)."
+					        AND   prim.strExpression = '".goodString($req['exp'])."'
+					        AND   prim.enumDeleted = 'N'");
 				    }
 				    
-				    $request_ret = $ret;
-			    } else if (isset($req['exp'])) {
-				    $ret = Conn::queryArray("
-				        SELECT
-				            pkExpressionPrimary as id, strExpression as expression,
-				            enumCategory, sublang.strDescriptor AS descriptor
-				        FROM expression_primary prim
-				        LEFT JOIN expression_descriptors sublang
-				        	ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
-				        WHERE strLanguageISO6391 = ".goodInput($lang)."
-				        AND   prim.strExpression = '".goodString($req['exp'])."'
-				        AND   prim.enumDeleted = 'N'");
+				    //if the query above failed because no descriptor exists for current expression
+				    if (!$ret) {
+					    $ret = Conn::queryArray("
+					        SELECT
+					            pkExpressionPrimary as id, strExpression as expression, enumCategory
+					        FROM expression_primary prim
+					        WHERE pkExpressionPrimary = ".$goodID);
+				    }
 				    
 				    if (!isset($req['disableTableGen']) || $req['disableTableGen'] != 'true') {
 				        $ret = getTableForElement($ret, $ret['id'], $req);
@@ -109,13 +113,20 @@ function handle_request($action, $req) {
 	        break;
 	        
 	    case 'editDictionary':
-	        if (!isset($req['exp']) || !isset($req['id'])) die('Bad data.');
-	        
 	    	$asserts_ret = assert_arr(array('enumCategory', 'exp', 'descriptor', 'lang', 'id', 'enumShowEmpties', 'iemlEnumComplConcOff', 'iemlEnumSubstanceOff', 'iemlEnumAttributeOff', 'iemlEnumModeOff', 'pkTable2D'), $req);
 	    	
 		    if (TRUE === $asserts_ret) {
 		    	$lang = strtolower($req['lang']);
-		        $oldState = Conn::queryArray("SELECT pkExpressionPrimary AS id, strExpression as expression, enumCategory FROM expression_primary WHERE pkExpressionPrimary = ".goodInt($req['id']));
+		        $oldState = Conn::queryArray("
+			        SELECT
+			        	pkExpressionPrimary AS id, strExpression as expression, enumCategory
+			        FROM expression_primary
+			        WHERE pkExpressionPrimary = ".goodInt($req['id']));
+		        $oldDescriptor = Conn::queryArrays("
+		            SELECT pkExpressionDescriptors
+		            FROM expression_descriptors
+		            WHERE strLanguageISO6391 = '".goodString($lang)."'
+		            AND fkExpressionPrimary = ".goodInt($req['id']));
 		        
 		        Conn::query("
 		            UPDATE expression_primary
@@ -141,13 +152,20 @@ function handle_request($action, $req) {
 		        	'descriptor' => $req['descriptor']
 		        );
 		        
-		        
-		        Conn::query("
-		            UPDATE expression_descriptors
-		            SET
-		                strDescriptor = ".goodInput($req['descriptor'])."
-		            WHERE fkExpressionPrimary = ".goodInt($req['id'])."
-		            AND   strLanguageISO6391 = ".goodInput($lang)." LIMIT 1");
+		        if (count($oldDescriptor) > 0) {
+			        Conn::query("
+			            UPDATE expression_descriptors
+			            SET
+			                strDescriptor = ".goodInput($req['descriptor'])."
+			            WHERE fkExpressionPrimary = ".goodInt($req['id'])."
+			            AND   strLanguageISO6391 = ".goodInput($lang)." LIMIT 1");
+		        } else {
+			        Conn::query("
+			            INSERT INTO expression_descriptors
+			            	(fkExpressionPrimary, strDescriptor, strLanguageISO6391)
+			            VALUES
+			            	(".goodInt($req['id']).", ".goodInput($req['descriptor']).", ".goodInput($lang).")");
+		        }
 	        
 		        if ($ret['enumCategory'] == 'Y' && $oldState['enumCategory'] == 'N') {
 		        	ensure_table_for_key($ret, $IEML_lowToVowelReg);
