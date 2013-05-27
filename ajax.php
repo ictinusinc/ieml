@@ -23,42 +23,50 @@ function handle_request($action, $req) {
 	
 	switch ($action) {
 		case 'expression':
-			if (isset($req['id'])) {
-			    $goodID = goodInt($req['id']);
-			    $ret = Conn::queryArray("
-			        SELECT
-			            pkExpressionPrimary as id, strExpression as expression,
-			            enumCategory, sublang.strDescriptor AS descriptor
-			        FROM expression_primary prim
-			        LEFT JOIN expression_descriptors sublang
-			        	ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
-			        WHERE strLanguageISO6391 = ".goodInput($req['lang'])."
-			        AND   pkExpressionPrimary = ".$goodID);
-			    
-			    if (!isset($req['disableTableGen']) || $req['disableTableGen'] != 'true') {
-			        $ret = getTableForElement($ret, $ret['id'], $req);
+	    	$asserts_ret = assert_arr(array('lang'), $req);
+	    	
+		    if (TRUE === $asserts_ret) {
+		    	$lang = strtolower($req['lang']);
+		    	
+				if (isset($req['id'])) {
+				    $goodID = goodInt($req['id']);
+				    $ret = Conn::queryArray("
+				        SELECT
+				            pkExpressionPrimary as id, strExpression as expression,
+				            enumCategory, sublang.strDescriptor AS descriptor
+				        FROM expression_primary prim
+				        LEFT JOIN expression_descriptors sublang
+				        	ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
+				        WHERE strLanguageISO6391 = ".goodInput($lang)."
+				        AND   pkExpressionPrimary = ".$goodID);
+				    
+				    if (!isset($req['disableTableGen']) || $req['disableTableGen'] != 'true') {
+				        $ret = getTableForElement($ret, $ret['id'], $req);
+				    }
+				    
+				    $request_ret = $ret;
+			    } else if (isset($req['exp'])) {
+				    $ret = Conn::queryArray("
+				        SELECT
+				            pkExpressionPrimary as id, strExpression as expression,
+				            enumCategory, sublang.strDescriptor AS descriptor
+				        FROM expression_primary prim
+				        LEFT JOIN expression_descriptors sublang
+				        	ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
+				        WHERE strLanguageISO6391 = ".goodInput($lang)."
+				        AND   prim.strExpression = '".goodString($req['exp'])."'
+				        AND   prim.enumDeleted = 'N'");
+				    
+				    if (!isset($req['disableTableGen']) || $req['disableTableGen'] != 'true') {
+				        $ret = getTableForElement($ret, $ret['id'], $req);
+				    }
+				    
+			    	$request_ret = $ret;
+			    } else {
+				    $request_ret = array('result' => 'error', 'error' => "Neither 'id' nor 'exp' are set.");
 			    }
-			    
-			    $request_ret = $ret;
-		    } else if (isset($req['exp'])) {
-			    $ret = Conn::queryArray("
-			        SELECT
-			            pkExpressionPrimary as id, strExpression as expression,
-			            enumCategory, sublang.strDescriptor AS descriptor
-			        FROM expression_primary prim
-			        LEFT JOIN expression_descriptors sublang
-			        	ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
-			        WHERE strLanguageISO6391 = ".goodInput($req['lang'])."
-			        AND   prim.strExpression = '".goodString($req['exp'])."'
-			        AND   prim.enumDeleted = 'N'");
-			    
-			    if (!isset($req['disableTableGen']) || $req['disableTableGen'] != 'true') {
-			        $ret = getTableForElement($ret, $ret['id'], $req);
-			    }
-			    
-		    	$request_ret = $ret;
 		    } else {
-			    $request_ret = array('result' => 'error', 'error' => "Neither 'id' nor 'exp' are set.");
+			    $request_ret = assert_format($asserts_ret);
 		    }
 		    
 			break;
@@ -103,54 +111,63 @@ function handle_request($action, $req) {
 	    case 'editDictionary':
 	        if (!isset($req['exp']) || !isset($req['id'])) die('Bad data.');
 	        
-	        $oldState = Conn::queryArray("SELECT pkExpressionPrimary AS id, strExpression as expression, enumCategory FROM expression_primary WHERE pkExpressionPrimary = ".goodInt($req['id']));
+	    	$asserts_ret = assert_arr(array('enumCategory', 'exp', 'descriptor', 'lang', 'id', 'enumShowEmpties', 'iemlEnumComplConcOff', 'iemlEnumSubstanceOff', 'iemlEnumAttributeOff', 'iemlEnumModeOff', 'pkTable2D'), $req);
+	    	
+		    if (TRUE === $asserts_ret) {
+		    	$lang = strtolower($req['lang']);
+		        $oldState = Conn::queryArray("SELECT pkExpressionPrimary AS id, strExpression as expression, enumCategory FROM expression_primary WHERE pkExpressionPrimary = ".goodInt($req['id']));
+		        
+		        Conn::query("
+		            UPDATE expression_primary
+		            SET
+		                enumCategory = ".goodInput($req['enumCategory']).",
+		                strExpression = ".goodInput($req['exp'])."
+		            WHERE pkExpressionPrimary = ".goodInt($req['id']));
+		        
+		        Conn::query("
+		        	UPDATE table_2d_id
+		        	SET
+		        		enumShowEmpties = ".goodInput($req['enumShowEmpties']).",
+		        		enumCompConc = '".invert_bool($req['iemlEnumComplConcOff'], 'Y', 'N')."',
+		        		strEtymSwitch = '".invert_bool($req['iemlEnumSubstanceOff'], 'Y', 'N')
+		        						.invert_bool($req['iemlEnumAttributeOff'], 'Y', 'N')
+		        						.invert_bool($req['iemlEnumModeOff'], 'Y', 'N')."'
+		        	WHERE pkTable2D = ".goodInt($req['pkTable2D']));
+		            
+		        $ret = array(
+		        	'id' => $req['id'],
+		        	'expression' => $req['exp'],
+		        	'enumCategory' => $req['enumCategory'],
+		        	'descriptor' => $req['descriptor']
+		        );
+		        
+		        
+		        Conn::query("
+		            UPDATE expression_descriptors
+		            SET
+		                strDescriptor = ".goodInput($req['descriptor'])."
+		            WHERE fkExpressionPrimary = ".goodInt($req['id'])."
+		            AND   strLanguageISO6391 = ".goodInput($lang)." LIMIT 1");
 	        
-	        Conn::query("
-	            UPDATE expression_primary
-	            SET
-	                enumCategory = ".goodInput($req['enumCategory']).",
-	                strExpression = ".goodInput($req['exp'])."
-	            WHERE pkExpressionPrimary = ".goodInt($req['id']));
-	        
-	        Conn::query("
-	        	UPDATE table_2d_id
-	        	SET
-	        		enumShowEmpties = ".goodInput($req['enumShowEmpties']).",
-	        		enumCompConc = '".invert_bool($req['iemlEnumComplConcOff'], 'Y', 'N')."',
-	        		strEtymSwitch = '".invert_bool($req['iemlEnumSubstanceOff'], 'Y', 'N')
-	        						.invert_bool($req['iemlEnumAttributeOff'], 'Y', 'N')
-	        						.invert_bool($req['iemlEnumModeOff'], 'Y', 'N')."'
-	        	WHERE pkTable2D = ".goodInt($req['pkTable2D']));
-	            
-	        $ret = array(
-	        	'id' => $req['id'],
-	        	'expression' => $req['exp'],
-	        	'enumCategory' => $req['enumCategory'],
-	        	'descriptor' => $req['descriptor']
-	        );
-	        
-	        
-	        Conn::query("
-	            UPDATE expression_descriptors
-	            SET
-	                strDescriptor = ".goodInput($req['descriptor'])."
-	            WHERE fkExpressionPrimary = ".goodInt($req['id'])."
-	            AND   strLanguageISO6391 = ".goodInput($req['lang'])." LIMIT 1");
-	        
-	        if ($ret['enumCategory'] == 'Y' && $oldState['enumCategory'] == 'N') {
-	        	ensure_table_for_key($ret, $IEML_lowToVowelReg);
+		        if ($ret['enumCategory'] == 'Y' && $oldState['enumCategory'] == 'N') {
+		        	ensure_table_for_key($ret, $IEML_lowToVowelReg);
+		        }
+		        
+		        $ret = getTableForElement($ret, goodInt($ret['id']), $req);
+		        
+		        $request_ret = $ret;
+	        } else {
+			    $request_ret = assert_format($asserts_ret);
 	        }
-	        
-	        $ret = getTableForElement($ret, goodInt($ret['id']), $req);
-	        
-	        $request_ret = $ret;
 	        
 	        break;
 	        
 	    case 'newDictionary':
-	    	$asserts_ret = assert_arr(array('exp'), $req);
+	    	$asserts_ret = assert_arr(array('exp', 'lang', 'enumCategory', 'descriptor', 'enumShowEmpties', 'id'), $req);
 	    	
 		    if (TRUE === $asserts_ret) {
+		    	$lang = strtolower($req['lang']);
+		    	
 		        Conn::query("
 		            INSERT INTO expression_primary
 		                (strExpression, enumCategory)
@@ -169,7 +186,7 @@ function handle_request($action, $req) {
 		            INSERT INTO expression_descriptors
 		                (fkExpressionPrimary, strDescriptor, strLanguageISO6391)
 		            VALUES
-		                (".$ret['id'].", ".goodInput($req['descriptor']).", ".goodInput($req['lang']).")");
+		                (".$ret['id'].", ".goodInput($req['descriptor']).", ".goodInput($lang).")");
 		        
 		        if ($req['enumCategory'] == 'Y') {
 		        	ensure_table_for_key($ret, $IEML_lowToVowelReg);
@@ -247,7 +264,7 @@ function handle_request($action, $req) {
 	        break;
 	    
 	    case 'delUser':
-	    	$asserts_ret = assert_arr(array('search', 'lang'), $req);
+	    	$asserts_ret = assert_arr(array('pkUser'), $req);
 	    	
 		    if (TRUE === $asserts_ret) {
 		        if (!isset($req['enumDeleted'])) {
@@ -264,20 +281,27 @@ function handle_request($action, $req) {
 	        break;
 	        
 	    case 'viewUsers':
-	        $res = NULL;
-	        
-	        if ($req['deleted'] == 'yes') {
-	            $res = Conn::queryArrays("SELECT pkUser, strEmail, tsDateCreated, UNIX_TIMESTAMP(tsLastUpdate) AS tsLastUpdate, enumType, enumDeleted FROM users WHERE enumDeleted = 'yes'");
+	    	$asserts_ret = assert_arr(array('deleted'), $req);
+	    	
+		    if (TRUE === $asserts_ret) {
+		        $res = NULL;
+		        
+		        if ($req['deleted'] == 'yes') {
+		            $res = Conn::queryArrays("SELECT pkUser, strEmail, tsDateCreated, UNIX_TIMESTAMP(tsLastUpdate) AS tsLastUpdate, enumType, enumDeleted FROM users WHERE enumDeleted = 'yes'");
+		        } else {
+		            $res = Conn::queryArrays("SELECT pkUser, strEmail, tsDateCreated, UNIX_TIMESTAMP(tsLastUpdate) AS tsLastUpdate, enumType, enumDeleted FROM users WHERE enumDeleted = 'no'");
+		        }
+		        
+		        for ($i=0; $i<count($res); $i++) {
+		            $res[$i]['tsDateCreated'] = goodInt($res[$i]['tsDateCreated']);
+		            $res[$i]['tsLastUpdate'] = goodInt($res[$i]['tsLastUpdate']);
+		            $res[$i]['pkUser'] = goodInt($res[$i]['pkUser']);
+		        }
+		        
+		        $request_ret = $res;
 	        } else {
-	            $res = Conn::queryArrays("SELECT pkUser, strEmail, tsDateCreated, UNIX_TIMESTAMP(tsLastUpdate) AS tsLastUpdate, enumType, enumDeleted FROM users WHERE enumDeleted = 'no'");
+		    	$request_ret = assert_format($asserts_ret);
 	        }
-	        for ($i=0; $i<count($res); $i++) {
-	            $res[$i]['tsDateCreated'] = goodInt($res[$i]['tsDateCreated']);
-	            $res[$i]['tsLastUpdate'] = goodInt($res[$i]['tsLastUpdate']);
-	            $res[$i]['pkUser'] = goodInt($res[$i]['pkUser']);
-	        }
-	        
-	        $request_ret = $res;
 	        
 	        break;
 	    

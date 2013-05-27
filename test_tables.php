@@ -41,7 +41,7 @@ $keys = array();
 //$keys[] = array('expression' => "(U:+S:)(O:+M:). + (A:+S:)(O:+M:). + (U:+B:)(O:+M:). + (A:+B:)(O:+M:). + (U:+T:)(O:+M:). + (A:+T:)(O:+M:).");
 //$keys[] = array('expression' => "(U:+M:)(O:+M:). + (A:+M:)(O:+M:).");
 //$keys[] = array('expression' => "(A:+S:+U:)(M:+E:+O:).");
-$keys[] = array('expression' => "M:T:.");
+$keys[] = array('expression' => "(O:+M:)(O:+M:).");
 
 unset($key);
 foreach ($keys as &$key) {
