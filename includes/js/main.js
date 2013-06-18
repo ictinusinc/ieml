@@ -30,7 +30,7 @@
 			if (path_arr[2] == 'search') {
 				$('#search').val(path_arr[3]);
 				
-				IEMLApp.submit({'a': 'searchDictionary', 'lexicon': lexicon, 'lang': lang, 'search': path_arr[3]});
+				IEMLApp.submit({ 'a': 'searchDictionary', 'lexicon': lexicon, 'lang': lang, 'search': (typeof path_arr[3] == 'undefined' ? '' : path_arr[3]) });
 			} else {
 				if (isNaN(parseInt(path_arr[2]))) {
 					IEMLApp.submit({ 'a': 'expression', 'lexicon': lexicon, 'lang': lang, 'exp': path_arr[2] });
@@ -134,8 +134,8 @@
 		
 		try {
 			window.History.pushState.apply(null, arguments);
-		} catch (e) {
-			console.log('[History.js] ' + e.toString()); //probably "...states with fragment-identifiers..."
+		} catch (e) { //the error is probably "...states with fragment-identifiers..."
+			console.log('[History.js]:', e);
 		}
 	};
 	
@@ -217,9 +217,20 @@
 	};
 	
 	IEMLApp.receiveSearch = function (respObj) {
-		
 		if (respObj && respObj.length > 0) {
-			var tstr = '';
+			var tstr = '', gram_sort = { 'Verb': 1, 'Noun': 2, 'AUXILIARY': 3, 'Hybrid': 4 };
+			
+			for (var i in respObj) {
+				respObj[i]['verbLayer'] = getVerbLayer(respObj[i]['expression']);
+			}
+			
+			respObj.sort(function(a, b) {
+				if (a['verbLayer']['layer'] == b['verbLayer']['layer']) {
+					return gram_sort[a['verbLayer']['gram']] - gram_sort[b['verbLayer']['gram']];
+				} else {
+					return a['verbLayer']['layer'] - b['verbLayer']['layer'];
+				}
+			});
 			
 			for (var i in respObj) {
 				tstr += formatResultRow(respObj[i]);
@@ -229,13 +240,13 @@
 		} else {
 			$('#listview tbody').empty();
 		}
-			
 		
 		switch_to_list();
 	};
 	
 	IEMLApp.receiveExpression = function (responseData) {
 		IEMLApp.lastRetrievedData = responseData;
+		
 		fillForm(responseData);
 	};
 	
@@ -346,10 +357,13 @@
 		else if (exp.substr(0,2) == 'E:') gram = 'AUXILIARY';
 		else if (array_indexOf(gram_classes_hybrid_nouns, exp.substr(0,2))>=0 || array_lastIndexOf(exp, '+')>=0) gram = 'Hybrid';
 	
-		if (exp.substr(-1)==':') layer = '0';
-		else if (exp.substr(-1)=='.') layer = '1';
-		else if (exp.substr(-1)=='-') layer = '2';
-		else if (exp.substr(-1)=="'") layer = '3';
+		if (exp.substr(-1)==':') layer = 0;
+		else if (exp.substr(-1)=='.') layer = 1;
+		else if (exp.substr(-1)=='-') layer = 2;
+		else if (exp.substr(-1)=="'") layer = 3;
+		else if (exp.substr(-1)==',') layer = 4;
+		else if (exp.substr(-1)=='_') layer = 5;
+		else if (exp.substr(-1)==';') layer = 6;
 	
 		return {'layer':layer, 'gram':gram};
 	}

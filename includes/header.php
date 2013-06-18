@@ -20,8 +20,7 @@
         <style><?php echo file_get_contents(APPROOT.'/includes/css/style.css'); ?></style>
     </head>
     <body>
-    
-    <div id="ajax"></div>
+    	<div id="ajax"></div>
         <div class="navbar navbar-fixed-top">
             <div class="navbar-inner">
                 <div class="container">

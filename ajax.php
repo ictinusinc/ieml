@@ -1,9 +1,9 @@
 <?php
 
-include_once('includes/config.php');
-include_once(APPROOT.'/includes/functions.php');
-include_once(APPROOT.'/includes/table_related/table_functions.php');
-include_once(APPROOT.'/includes/common_functions.php');
+require_once('includes/config.php');
+require_once(APPROOT.'/includes/functions.php');
+require_once(APPROOT.'/includes/table_related/table_functions.php');
+require_once(APPROOT.'/includes/common_functions.php');
 
 function ensure_table_for_key($key, $IEML_lowToVowelReg) {
     Conn::query("DELETE FROM table_2d_id WHERE fkExpression = ".goodInt($key['id'])); //relations will auto delete dependent rows

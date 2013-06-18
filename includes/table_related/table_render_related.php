@@ -97,4 +97,8 @@ function IEML_render_tables($info, $exp_des_call = NULL, $filter_call = NULL) {
     return ob_get_clean();
 }
 
+function IEML_render_logical_tables($info, $exp_des_call = NULL, $filter_call = NULL) {
+	
+}
+
 ?>

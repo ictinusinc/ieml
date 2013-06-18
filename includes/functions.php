@@ -1,4 +1,4 @@
-<?
+<?php
 //string and int functions----------------------------------------------------------------------
 
 function int_clamp($val, $min, $max) {
