@@ -414,22 +414,6 @@ function IEML_concat_tables($tables, $top) {
 	return $ret;
 }
 
-function IEML_force_concat_check($AST) {
-	if ($AST['internal'] && $AST['value']['type'] == 'LAYER') {
-		return true;
-	} else {
-		if ($AST['internal']) {
-			for ($i=0; $i<count($AST['children']); $i++) {
-				if (IEML_force_concat_check($AST['children'][$i])) {
-					return true;
-				}
-			}
-		}
-	}
-	
-	return false;
-}
-
 function IEML_gen_table_info($top, $IEML_lowToVowelReg) {
 	$tokens = \IEML_ExpParse\str_to_tokens($top);
 	$AST = \IEML_ExpParse\tokens_to_AST($tokens);	

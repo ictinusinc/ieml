@@ -172,6 +172,7 @@ function IEML_vary_header($cvarr, $cur, $last, $pre, $post) {
 	if ($cur <= $last) {
 		if (is_array($cvarr[$cur])) {
 			$out = array('head' => array(), 'rest' => array(), 'body' => array());
+			
 			$sub_post = IEML_cvarr_to_str($cvarr, $cur+1, $last);
 			
 			if (is_array($cvarr[$cur][0]) && array_key_exists($cvarr[$cur][1], $IEML_toVary)) {
