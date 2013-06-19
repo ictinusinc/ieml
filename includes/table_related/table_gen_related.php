@@ -166,66 +166,7 @@ function IEML_gen_possibilities($cur_exp) {
 
 function IEML_vary_header($cvarr, $cur, $last, $pre, $post) {
 	global $IEML_toVary;
-
-	$out = NULL;
-
-	if ($cur <= $last) {
-		if (is_array($cvarr[$cur])) {
-			$out = array('head' => array(), 'rest' => array(), 'body' => array());
-			$sub_post = IEML_cvarr_to_str($cvarr, $cur+1, $last);
-			
-			if (is_array($cvarr[$cur][0]) && array_key_exists($cvarr[$cur][1], $IEML_toVary)) {
-				$sub_heads = $IEML_toVary[$cvarr[$cur][1]];
-				
-				for ($i=0; $i<count($sub_heads); $i++) {
-					$cur_exp = $pre.$sub_heads[$i][1].$sub_post.$post;
 	
-					$cvarr[$cur] = $sub_heads[$i];
-	
-					$sub = IEML_vary_header($cvarr, $cur, $last, $pre, $post);
-	
-					$span = 0;
-					if (array_key_exists('head', $sub)) {
-						for ($j=0; $j<count($sub['head']); $j++) {
-							$span += $sub['head'][$j][1];
-						}
-					}
-					$out['head'][] = array($cur_exp, max(1, $span));
-					
-					$out['rest'][] = $sub;
-				}
-			} else {
-				for ($i=0; $i<count($cvarr[$cur][0]); $i++) {
-					$cur_exp = $pre.$cvarr[$cur][0][$i].$sub_post.$post;
-					
-					$sub = IEML_vary_header($cvarr, $cur+1, $last, $pre.$cvarr[$cur][0][$i], $post);
-					
-					$span = 0;
-					
-					if (NULL !== $sub) {
-						$out['rest'][] = $sub;
-	
-						if (array_key_exists('head', $sub)) {
-							for ($j=0; $j<count($sub['head']); $j++) {
-								$span += $sub['head'][$j][1];
-							}
-						}
-					} else {
-						$out['body'][] = IEML_gen_possibilities($cur_exp);
-					}
-	
-					$out['head'][] = array($cur_exp, max(1, $span));
-				}
-			}
-		
-			if (isset($out) && array_key_exists('rest', $out) && count($out['rest']) == 0) unset($out['rest']);
-			if (isset($out) && array_key_exists('body', $out) && count($out['body']) == 0) unset($out['body']);
-		} else {
-			$out = IEML_vary_header($cvarr, $cur+1, $last, $pre.$cvarr[$cur], $post);
-		}
-	}
-
-	return $out;
 }
 
 function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
