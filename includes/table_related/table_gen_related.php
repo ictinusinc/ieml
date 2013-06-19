@@ -164,9 +164,56 @@ function IEML_gen_possibilities($cur_exp) {
 	return $body_candidate;
 }
 
+function IEML_gen_possible_headers($cvarr, $pre, $post) {
+	
+}
+
 function IEML_vary_header($cvarr, $cur, $last, $pre, $post) {
 	global $IEML_toVary;
 	
+	$out = NULL;
+	
+	if ($cur <= $last) {
+		if (is_array($cvarr[$cur])) {
+			$num_to_vary = 0;
+			
+			for ($i=$cur; $i<=$last; $i++) {
+				if (is_array($cvarr[$i])) $num_to_vary++;
+			}
+			
+			$out = array_fill(0, pow(2, $num_to_vary) - 1, array('head' => array(), 'rest' => array()));
+			
+			for ($i=$cur; $i<=$last; $i++) {
+				for ($j=1; $j<=$last-$i; $j++) {
+					$cur_mid = IEML_cvarr_to_str($cvarr, $cur, $i).$cvarr[$i][0][$k];
+					$cur_exp = $pre.$cur_mid.$post;
+					
+					for ($k=0; $k<count($cvarr[$i][0]); $k++) {
+						$sub = IEML_vary_header($cvarr, $i+$j, $last, $pre.$cur_mid, $post);
+						
+						$span = NULL;
+						
+						if (isset($sub)) {
+							$out[2*$i+$j]['rest'][] = $sub;
+							
+							for ($l=0; $l<count($sub))
+							
+						} else {
+							$span = 1;
+						}
+						
+						$out[2*$i+$j]['head'][] = array($chr_exp, $span;
+					}
+				}
+			}
+		} else {
+			$out = IEML_vary_header($cvarr, $cur+1, $last, $pre.$cvarr[$cur], $post);
+		}
+	} else {
+		//we've gone past the end, so just ignore
+	}
+	
+	return $out;
 }
 
 function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
