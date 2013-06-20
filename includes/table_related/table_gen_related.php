@@ -1,26 +1,5 @@
 <?php
 
-global $IEML_toVary, $IEML_short_exapnd;
-
-$IEML_toVary = array(
-    'F:' => array(
-    	array(array('U:', 'A:'), 'O:'),
-    	array(array('S:', 'B:', 'T:'), 'M:')
-    ),
-    'I:' => array(
-    	array(array('E:'), 'E:'),
-    	array(array('U:', 'A:'), 'O:'),
-    	array(array('S:', 'B:', 'T:'), 'M:')
-    )
-);
-
-$IEML_short_exapnd = array(
-	'O' => array('U', 'A'),
-	'M' => array('S', 'B', 'T'),
-	'F' => array('U', 'A', 'S', 'B', 'T'),
-	'I' => array('E', 'U', 'A', 'S', 'B', 'T'),
-);
-
 function IEML_gen_var($AST) {
 	$out = array();
 	
@@ -65,153 +44,231 @@ function IEML_gen_var($AST) {
 	return $out;
 }
 
-/**
- * Construct an array that is sued to greatly simplify the generation of tables.
- * 
- * @access public
- * @param mixed $AST an abstract syntax tree
- * @param mixed $exp the original expression that the AST was generated from
- * @return an array as described in this function's description
- */
-function cons_variance_arr($AST, $exp) {
-	$out = array();
+class IEMLVarrArr {
+	private $arr, $post;
+	
+	public static $IEML_toVary = array(
+	    'F:' => array(
+	    	array(array('U:', 'A:'), 'O:'),
+	    	array(array('S:', 'B:', 'T:'), 'M:')
+	    ),
+	    'I:' => array(
+	    	array(array('E:'), 'E:'),
+	    	array(array('U:', 'A:'), 'O:'),
+	    	array(array('S:', 'B:', 'T:'), 'M:')
+	    )
+	);
+	
+	public function __construct() {
+		$this->arr = array();
+		$this->post = '';
+	}
+	
+	public function pushElement($el) {
+		if (is_array($el)) {
+			$this->arr[] = array($this->post, $el);
+			$this->post = '';
+		} else {
+			$this->post .= $el;
+		}
+	}
+	
+	public function setCompleteElement($n, $el) {
+		$this->arr[$n] = $el;
+	}
+	
+	public function setArrayFor($n, $el) {
+		$this->arr[$n][1] = $el;
+	}
+	
+	public function setStringFor($n, $el) {
+		$this->arr[$n][0] = $el;
+	}
+	
+	public function pushCompleteElement($el) {
+		$this->arr[] = $el;
+	}
+	
+	public function getCompleteElement($n) {
+		return $this->arr[$n];
+	}
+	
+	public function stringFor($n) {
+		return $this->arr[$n][0];
+	}
+	public function arrayFor($n) {
+		return $this->arr[$n][1];
+	}
+	
+	public function length() {
+		return count($this->arr);
+	}
+	
+	public function lastIndex() {
+		return $this->length()-1;
+	}
+	
+	public function getPost() {
+		return $this->post;
+	}
+	
+	public function __toString() {
+		$str = '';
+		
+		for ($i=0; $i<$this->length(); $i++) {
+			$i_arr = $this->arrayFor($i);
+			
+			$str .= '('.$this->stringFor($i).'['.$i_arr[1].'])';
+		}
+		
+		$str .= $this->getPost();
+		
+		return $str;
+	}
+	
+	public function toString() {
+		return $this->__toString();
+	}
+	
+	public function toPrettyString($cur = 0, $last = NULL) {
+		$str = '';
+		
+		for ($i = $cur; $i <= (isset($last) ? $last : $this->lastIndex()); $i++) {
+			$i_arr = $this->arrayFor($i);
+			
+			$str .= $this->stringFor($i).$i_arr[1];
+		}
+		
+		$str .= $this->getPost();
+		
+		return $str;
+	}
+	
+	public static function instanceFromVarrArr($cvinst) {
+		$instance = new IEMLVarrArr();
+		
+		for ($i=0; $i<$cvinst->length(); $i++) {
+			$instance->pushCompleteElement($cvinst->getCompleteElement($i));
+		}
+		
+		$instance->pushElement($cvinst->getPost());
+		
+		return $instance;
+	}
 
-	if ($AST['internal']) {
-		if ($AST['value']['type'] == 'MUL') {
-			for ($i=0; $i<count($AST['children']); $i++) {
-				array_append($out, cons_variance_arr($AST['children'][$i], $exp));
-			}
-		} else if ($AST['type'] == 'L0PLUS') {
-			//TODO: a more elegant version of this branch
-			$out[] = '(';
-			for ($i=0; $i<count($AST['children']); $i++) {
-				if ($i > 0) {
-					$out[] = $AST['value']['value'];
+	/**
+	 * Construct an array that is used to greatly simplify the generation of tables.
+	 * 
+	 * @access public
+	 * @param mixed $AST an abstract syntax tree
+	 * @param mixed $exp the original expression that the AST was generated from
+	 * @return an array as described in this function's description
+	 */
+	public function fromAST($AST, $exp) {
+		if ($AST['internal']) {
+			if ($AST['value']['type'] == 'MUL') {
+				for ($i=0; $i<count($AST['children']); $i++) {
+					$this->fromAST($AST['children'][$i], $exp);
 				}
-				array_append($out, cons_variance_arr($AST['children'][$i], $exp));
-			}
-			$out[] = ')';
-		} else if ($AST['value']['type'] == 'LAYER') {
-			$out = cons_variance_arr($AST['children'][0], $exp);
-			$out[] = $AST['value']['value'];
-		} else if ($AST['value']['type'] == 'PLUS') {
-			$out[] = array(IEML_gen_var($AST), \IEML_ExpParse\AST_original_str($AST, $exp));
-		}
-	} else {
-		$out = IEML_gen_var($AST);
-	}
-
-	return $out;
-}
-
-function IEML_cvarr_to_str($cvarr, $cur, $last) {
-	$out = '';
-	
-	for ($i=$cur; $i<=$last; $i++) {
-		if (is_array($cvarr[$i])) {
-			$out .= $cvarr[$i][1];
-		} else {
-			$out .= $cvarr[$i];
-		}
-	}
-	
-	return $out;
-}
-
-function IEML_walk_cvarr_BFS($cvarr, $cur, $last, $pre = '') {
-	$out = array();
-	
-	if ($cur > $last) {
-		$out[] = $pre;
-	} else {
-		if (is_array($cvarr[$cur])) {
-			for ($i=0; $i < count($cvarr[$cur][0]); $i++) {
-				array_append($out, IEML_walk_cvarr_BFS($cvarr, $cur+1, $last, $pre.$cvarr[$cur][0][$i]));
+			} else if ($AST['type'] == 'L0PLUS') {
+				//TODO: a more elegant version of this branch
+				$this->pushElement('(');
+				for ($i=0; $i<count($AST['children']); $i++) {
+					if ($i > 0) {
+						$this->pushElement($AST['value']['value']);
+					}
+					$this->fromAST($AST['children'][$i], $exp);
+				}
+				$this->pushElement(')');
+			} else if ($AST['value']['type'] == 'LAYER') {
+				$this->fromAST($AST['children'][0], $exp);
+				$this->pushElement($AST['value']['value']);
+			} else if ($AST['value']['type'] == 'PLUS') {
+				$this->pushElement(array(IEML_gen_var($AST), \IEML_ExpParse\AST_original_str($AST, $exp)));
 			}
 		} else {
-			$out = IEML_walk_cvarr_BFS($cvarr, $cur+1, $last, $pre.$cvarr[$cur]);
-			//echo 'non-arr: '.pre_dump($cvarr[$cur], $pre, $out);
+			$this->pushElement(IEML_gen_var($AST));
 		}
 	}
 	
-	return $out;
-}
-
-function IEML_gen_var_BFS($AST, $exp) {
-	$cvarr = cons_variance_arr($AST, $exp);
-	//echo 'cvarr gen_var_bfs: '.pre_dump($cvarr);
-	return IEML_walk_cvarr_BFS($cvarr, 0, count($cvarr)-1);
-}
-
-function IEML_gen_possibilities($cur_exp) {
-	$arr_tokens = \IEML_ExpParse\str_to_tokens($cur_exp);
-	$arr_AST = \IEML_ExpParse\tokens_to_AST($arr_tokens);
-	$arr_AST = \IEML_ExpParse\AST_eliminate_empties($arr_AST);
-	
-	$temp_arr = IEML_gen_var_BFS($arr_AST, $cur_exp);
-	
-	//return $temp_arr;
-	
-	$body_candidate = array();
-	
-	for ($j=0; $j<count($temp_arr); $j++) {
-		$temp_tokens = \IEML_ExpParse\str_to_tokens($temp_arr[$j]);
-		$temp_AST = \IEML_ExpParse\tokens_to_AST($temp_tokens);
-		$temp_AST = \IEML_ExpParse\AST_eliminate_empties($temp_AST);
-		$body_candidate[] = \IEML_ExpParse\AST_to_pretty_str($temp_AST);
+	public static function instanceFromAST($AST, $exp) {
+		$instance = new IEMLVarrArr();
+		$instance->fromAST($AST, $exp);
+		
+		return $instance;
 	}
 	
-	return $body_candidate;
-}
-
-function IEML_gen_possible_headers($cvarr, $cur, $last, $pre = array()) {
-	$coll_cvarr = array();
+	public function walkBFS($pre = '') {
+		return $this->__walkBFS(0, $this->lastIndex(), $pre);
+	}
 	
-	if ($cur < $last) {
-		for ($i=0; $i<=$last-$cur; $i++) {
-			$pre_arr = array();
+	private function __walkBFS($cur, $last, $pre) {
+		$out = array();
+		
+		if ($cur > $last) {
+			$out[] = $pre.$this->getPost();
+		} else {
+			$cur_arr = $this->arrayFor($cur);
 			
-			for ($i=$cur; $j<$cur+$i; $j++) {
-				if (is_array($cvarr[$j])) $pre_arr[] = $cvarr[$j][1];
-				else $pre_arr[] = $cvarr[$j];
-			}
-			
-			array_append($pre, $pre_arr);
-			
-			$sub = IEML_gen_possible_headers($cvarr, $cur+$i, $last, $pre_arr);
-			
-			for ($j=0; $j<count($sub); $j++) {
-				$coll_cvarr[] = $sub[$j];
+			for ($i=0; $i<count($cur_arr[0]); $i++) {
+				array_append($out, $this->__walkBFS($cur+1, $last, $pre.$this->stringFor($cur).$cur_arr[0][$i]));
 			}
 		}
-	} else if ($cur == $last) {
-		$coll_cvarr[] = $pre_arr;
-	} else {
-		//welp, nothing to do here
+		
+		return $out;
 	}
 	
-	return $coll_cvarr;
-}
-
-function IEML_vary_header($cvarr, $cur, $last, $pre, $post) {
-	global $IEML_toVary;
-
-	$out = NULL;
-
-	if ($cur <= $last) {
-		if (is_array($cvarr[$cur])) {
+	public function generateHeaderVariations() {
+		return $this->__generateHeaderVariations(0, $this->lastIndex(), new IEMLVarrArr());
+	}
+	
+	private function __generateHeaderVariations($cur, $last, $pre) {
+		$coll_cvarr = array();
+		
+		if ($cur <= $last) {
+			for ($i=0; $i<=$last-$cur+1; $i++) {
+				$pre_arr = IEMLVarrArr::instanceFromVarrArr($pre);
+				
+				for ($j=0; $j<$i; $j++) {
+					$j_arr = $this->arrayFor($cur+$j);
+					
+					$pre_arr->pushElement($this->stringFor($cur+$j));
+					$pre_arr->pushElement($j_arr[1]);
+				}
+				
+				if ($cur+$i <= $last) {
+					$pre_arr->pushElement($this->stringFor($cur+$j));
+					$pre_arr->pushElement($this->arrayFor($cur+$j));
+				}
+				
+				array_append($coll_cvarr, $this->__generateHeaderVariations($cur+$i+1, $last, $pre_arr));
+			}
+		} else {
+			$pre->pushElement($this->getPost());
+			
+			$coll_cvarr[] = $pre;
+		}
+		
+		return $coll_cvarr;
+	}
+	
+	
+	public function IEML_vary_header($cur, $last, $pre, $post) {
+		$out = NULL;
+	
+		if ($cur <= $last) {
 			$out = array('head' => array(), 'rest' => array(), 'body' => array());
-			$sub_post = IEML_cvarr_to_str($cvarr, $cur+1, $last);
+			$sub_post = $this->toPrettyString($cur+1, $last);
+			$cur_arr = $this->arrayFor($cur);
 			
-			if (is_array($cvarr[$cur][0]) && array_key_exists($cvarr[$cur][1], $IEML_toVary)) {
-				$sub_heads = $IEML_toVary[$cvarr[$cur][1]];
+			if (array_key_exists($cur_arr[1], IEMLVarrArr::$IEML_toVary)) {
+				$sub_heads = IEMLVarrArr::$IEML_toVary[$cur_arr[1]];
 				
 				for ($i=0; $i<count($sub_heads); $i++) {
-					$cur_exp = $pre.$sub_heads[$i][1].$sub_post.$post;
+					$temp_sub_cvarr = IEMLVarrArr::instanceFromVarArr($this);
+					$temp_sub_cvarr->setArrayFor($cur, $sub_heads[$i]);
 	
-					$cvarr[$cur] = $sub_heads[$i];
-	
-					$sub = IEML_vary_header($cvarr, $cur, $last, $pre, $post);
+					$sub = $temp_sub_cvarr->IEML_vary_header($temp_sub_cvarr, $cur, $last, $pre, $post);
 	
 					$span = 0;
 					if (array_key_exists('head', $sub)) {
@@ -219,18 +276,17 @@ function IEML_vary_header($cvarr, $cur, $last, $pre, $post) {
 							$span += $sub['head'][$j][1];
 						}
 					}
-					$out['head'][] = array($cur_exp, max(1, $span));
 					
+					$out['head'][] = array($pre.$sub_heads[$i][1].$sub_post.$post, max(1, $span));
 					$out['rest'][] = $sub;
 				}
 			} else {
-				for ($i=0; $i<count($cvarr[$cur][0]); $i++) {
-					$cur_exp = $pre.$cvarr[$cur][0][$i].$sub_post.$post;
+				for ($i=0; $i<count($cur_arr[0]); $i++) {
+					$cur_exp = $pre.$cur_arr[0][$i].$sub_post.$post;
 					
-					$sub = IEML_vary_header($cvarr, $cur+1, $last, $pre.$cvarr[$cur][0][$i], $post);
+					$sub = $this->IEML_vary_header($cur+1, $last, $pre.$cur_arr[0][$i], $post);
 					
 					$span = 0;
-					
 					if (NULL !== $sub) {
 						$out['rest'][] = $sub;
 	
@@ -250,13 +306,40 @@ function IEML_vary_header($cvarr, $cur, $last, $pre, $post) {
 			if (isset($out) && array_key_exists('rest', $out) && count($out['rest']) == 0) unset($out['rest']);
 			if (isset($out) && array_key_exists('body', $out) && count($out['body']) == 0) unset($out['body']);
 		} else {
-			$out = IEML_vary_header($cvarr, $cur+1, $last, $pre.$cvarr[$cur], $post);
+			//we've gone past the end, so just ignore
 		}
-	} else {
-		//we've gone past the end, so just ignore
+	
+		return $out;
 	}
+}
 
-	return $out;
+function IEML_gen_var_BFS($AST, $exp) {
+	$cvinst = IEMLVarrArr::instanceFromAST($AST, $exp);
+	
+	return $cvinst->walkBFS();
+}
+
+function IEML_gen_possibilities($cur_exp) {
+	echo pre_dump($cur_exp);
+	$arr_tokens = \IEML_ExpParse\str_to_tokens($cur_exp);
+	$arr_AST = \IEML_ExpParse\tokens_to_AST($arr_tokens);
+	$arr_AST = \IEML_ExpParse\AST_eliminate_empties($arr_AST);
+	echo pre_dump(\IEML_ExpParse\AST_to_infix_str($arr_AST, $cur_exp));
+	
+	$temp_arr = IEML_gen_var_BFS($arr_AST, $cur_exp);
+	
+	//return $temp_arr;
+	
+	$body_candidate = array();
+	
+	for ($j=0; $j<count($temp_arr); $j++) {
+		$temp_tokens = \IEML_ExpParse\str_to_tokens($temp_arr[$j]);
+		$temp_AST = \IEML_ExpParse\tokens_to_AST($temp_tokens);
+		$temp_AST = \IEML_ExpParse\AST_eliminate_empties($temp_AST);
+		$body_candidate[] = \IEML_ExpParse\AST_to_pretty_str($temp_AST);
+	}
+	
+	return $body_candidate;
 }
 
 function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
@@ -299,14 +382,21 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 	    	$out = array();
 			
 	    	for ($i=0; $i<$tpv_len; $i++) {
-	    		$cvarr = cons_variance_arr($tally_part_varied[$i], $exp);
-	    		echo 'cvarrs'.pre_dump(IEML_gen_possible_headers($cvarr, 0, count($cvarr)-1));
-	    		die('Dead.');
+	    		//$cvarr = cons_variance_arr($tally_part_varied[$i], $exp);
+	    		//echo 'cvarrs'.pre_dump(IEML_gen_possible_headers($cvarr, 0, count($cvarr)-1));
+	    		$cvinst = IEMLVarrArr::instanceFromAST($tally_part_varied[$i], $exp);
+	    		$variations = $cvinst->generateHeaderVariations();
+	    		
+	    		echo 'cvs: '.pre_dump(array_to_string($variations));
+	    		
 				//echo 'cvarr: '.pre_dump($cvarr);
 				//echo pre_dump(IEML_cvarr_to_str($cvarr, 0, count($cvarr) - 1));
 				//echo 'parts: '.pre_dump($pre, $tpv_out_str[$i][0], $tpv_out_str[$i][1], $post);
-	    		$sub = IEML_vary_header($cvarr, 0, count($cvarr)-1, $tpv_out_str[$i][0], $tpv_out_str[$i][1]);
-	    		//echo 'vary_header: '.pre_dump($sub);
+				for ($i=0; $i<1; $i++) {
+	    			$sub = $variations[$i]->IEML_vary_header(0, $variations[$i]->lastIndex(), $tpv_out_str[$i][0], $tpv_out_str[$i][1]);
+	    			
+	    			echo 'vary_header sub: '.pre_dump($sub);
+	    		}
 	    		
 	    		if (NULL !== $sub) {
 		    		$out[] = $sub;

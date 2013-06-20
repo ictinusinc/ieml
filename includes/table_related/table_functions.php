@@ -45,6 +45,20 @@ function str_splice($str, $offset, $len = 0, $rep = NULL) {
     return substr($str, 0, $offset).($rep == NULL ? '' : $rep).($len == 0 ? '' : substr($str, $offset + $len));
 }
 
+function array_to_string($arr) {
+	$str = "\n";
+	
+	foreach ($arr as $el) {
+		$str .= (string)$el."\n";
+	}
+	
+	return $str;
+}
+
+function pre_to_string($mixed) {
+	return '<pre>'.(string)$mixed.'</pre>';
+}
+
 function array_2d_transpose($arr) {
     $out = array();
     foreach ($arr as $key => $subarr) {
