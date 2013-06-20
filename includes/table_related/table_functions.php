@@ -315,49 +315,30 @@ function IEML_postproc_tables(&$table, &$low_map) {
 }
 
 function IEML_table_collect_headers($tree) {
-    if (is_array($tree) && array_key_exists(0, $tree)) {
-        $heads = array();
-        $sub_heads = array();
-        
-        for ($i=0; $i<count($tree); $i++) {
-            if (isset($tree[$i]) && array_key_exists('head', $tree[$i])) {
-                array_append($heads, $tree[$i]['head']);
-                if (array_key_exists('rest', $tree[$i])) {
-                    $sub = IEML_table_collect_headers($tree[$i]['rest']);
-                    if (FALSE !== $sub) {
-                        if (count($sub_heads) == 0) {
-                            $sub_heads = $sub;
-                        } else {
-                            for ($j=0; $j<count($sub); $j++)
-                                array_append($sub_heads[$j], $sub[$j]);
-                        }
-                    }
-                }
-            }
-        }
-        
-        if (count($heads) > 0) array_push($sub_heads, $heads);
-        return count($sub_heads) > 0 ? $sub_heads : FALSE;
-    }
-    
-    return FALSE;
-}
-
-function IEML_table_collect_headers($tree) {
 	$out = array();
 	
-	for ($i=0; $i<count($tree['head']); $i++) {
-		array_append($out, $tree['head'])
+	if (array_key_exists('rest', $tree)) {
+		for ($i=0; $i<count($tree['rest']); $i++) {
+			$sub = IEML_table_collect_headers($tree['rest'][$i]);
+			
+			for ($j=0; $j<count($sub); $j++) {
+				if ($j >= count($out)) {
+					$out[$j] = $sub[$j];
+				} else {
+					array_append($out[$j], $sub[$j]);
+				}
+			}
+		}
 	}
+	
+	$out[] = $tree['head'];
 	
 	return $out;
 }
 
 function IEML_coll_info($tree, $top) {
-    $heads = array(IEML_table_collect_headers(array($tree[0][0])), IEML_table_collect_headers(array($tree[0][1])));
+    $heads = array(IEML_table_collect_headers($tree[0][0]), IEML_table_collect_headers($tree[0][1]));
     $body = $tree[1];
-    
-    echo pre_dump($heads);
     
     if (FALSE !== $heads[0] && FALSE !== $heads[1]) {
         return array(
@@ -469,7 +450,7 @@ function IEML_gen_table_info($top, $IEML_lowToVowelReg) {
 		$raws[] = $raw_tab;
 		
 		for ($i=0; $i<count($raw_tab); $i++) {
-			$post_tab = IEML_postproc_tables($raw_tab, $IEML_lowToVowelReg);
+			$post_tab = IEML_postproc_tables($raw_tab[$i], $IEML_lowToVowelReg);
 			$post_raws[] = $post_tab;
 		
 			$tab_concat[] = IEML_coll_info($post_tab, $sub_top);

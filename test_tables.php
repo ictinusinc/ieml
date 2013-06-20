@@ -42,7 +42,6 @@ unset($key);
 foreach ($keys as &$key) {
     echo '<pre>'.$key['expression'].'</pre>';
 	
-	$info = IEML_gen_table_info($key['expression'], $IEML_lowToVowelReg);
 	
 	$tokens = \IEML_ExpParse\str_to_tokens($key['expression']);
 	$AST = \IEML_ExpParse\tokens_to_AST($tokens);
@@ -52,11 +51,13 @@ foreach ($keys as &$key) {
 	
 	echo 'etymology:'.pre_dump(gen_etymology($key['expression']));
 	
+	$info = IEML_gen_table_info($key['expression'], $IEML_lowToVowelReg);
+	
 	echo IEML_render_tables($info, function($el) {
 		echo $el;
 	});
 	
-	echo 'info: '.pre_dump($info['post_raw_table']);
+	echo 'info: '.pre_dump($info);
 }
 
 ?>
