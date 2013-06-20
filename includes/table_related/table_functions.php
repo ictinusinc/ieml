@@ -343,24 +343,22 @@ function IEML_table_collect_headers($tree) {
     return FALSE;
 }
 
-function IEML_table_collect_body($tree, $ret = array()) {
-    if (is_array($tree)) {
-        if (array_key_exists('body', $tree)) {
-            for($i=0; $i<count($tree['body']); $i++)
-               array_push($ret, $tree['body'][$i]);
-        } else {
-            foreach($tree as $branch) {
-                $ret = IEML_table_collect_body($branch, $ret);
-            }
-        }
-    }
-    return $ret;
+function IEML_table_collect_headers($tree) {
+	$out = array();
+	
+	for ($i=0; $i<count($tree['head']); $i++) {
+		array_append($out, $tree['head'])
+	}
+	
+	return $out;
 }
 
 function IEML_coll_info($tree, $top) {
-    $heads = array(IEML_table_collect_headers(array($tree[0])), IEML_table_collect_headers(array($tree[1])));
-    //$body = array_2d_transpose(IEML_table_collect_body($tree[1]));
-    $body = IEML_table_collect_body($tree[0]);
+    $heads = array(IEML_table_collect_headers(array($tree[0][0])), IEML_table_collect_headers(array($tree[0][1])));
+    $body = $tree[1];
+    
+    echo pre_dump($heads);
+    
     if (FALSE !== $heads[0] && FALSE !== $heads[1]) {
         return array(
             'length' => count($body[0]),
@@ -457,31 +455,33 @@ function IEML_gen_table_info($top, $IEML_lowToVowelReg) {
 		$concats = array($AST);
 	}
 	
-	$tab_concat = array();
-	$flats = array();
-	$raws = array();
-	$post_raws = array();
+	$ret = array();
 	
 	for ($i=0; $i<count($concats); $i++) {
+		$tab_concat = array();
+		$flats = array();
+		$raws = array();
+		$post_raws = array();
+		
 		//echo 'concats('.$i.'): '.pre_dump(\IEML_ExpParse\AST_to_infix_str($concats[$i], $top));
 		$sub_top = \IEML_ExpParse\AST_original_str($concats[$i], $top);
 		$raw_tab = IEML_gen_header($concats[$i], $top);
 		$raws[] = $raw_tab;
 		
-		$post_tab = IEML_postproc_tables($raw_tab, $IEML_lowToVowelReg);
-		$post_raws[] = $post_tab;
-		//echo 'pow_raw('.$i.'): '.pre_dump($post_tab);
+		for ($i=0; $i<count($raw_tab); $i++) {
+			$post_tab = IEML_postproc_tables($raw_tab, $IEML_lowToVowelReg);
+			$post_raws[] = $post_tab;
 		
-		$tab_concat[] = IEML_coll_info($post_tab, $sub_top);
+			$tab_concat[] = IEML_coll_info($post_tab, $sub_top);
+			
+			echo pre_dump($tab_concat[count($tab_concat)-1]);
 		
-		$flat_body = array_flatten($post_tab);
-		$flat_body[] = $sub_top;
+			$flat_body = array_flatten($post_tab);
+			$flat_body[] = $sub_top;
+			
+			$flats[] = $flat_body;
+		}
 		
-		$flats[] = $flat_body;
-	}
-	
-	$ret = NULL;
-	if (count($concats) > 1) {
 		$tables = array(
 			'tables' => $tab_concat,
 			'flat_tables' => $flats,
@@ -489,12 +489,7 @@ function IEML_gen_table_info($top, $IEML_lowToVowelReg) {
 			'post_raw_table' => $post_raws
 		);
 		
-		$ret = IEML_concat_tables($tables, $top);
-	} else {
-		$ret = $tab_concat[0];
-		$ret['table_flat'] = $flats[0];
-		$ret['raw_table'] = $raws[0];
-		$ret['post_raw_table'] = $post_raws[0];
+		$ret[] = IEML_concat_tables($tables, $top);
 	}
 	
 	return $ret;
