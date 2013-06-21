@@ -38,7 +38,8 @@ table tbody tr td {
 $keys = array();
 //$keys[] = array('expression' => "O:O:.M:M:.-");
 //$keys[] = array('expression' => "O:O:.A:U:O:.-M:M:.S:M:.-'");
-$keys[] = array('expression' => "(O:+S:)(O:+B:).");
+//$keys[] = array('expression' => "O:M:.(M:+O:).-");
+$keys[] = array('expression' => "M:M:.-O:M:.- (E:.- + s.y.-)' + M:M:.-M:O:.- (E:.- + s.y.-)'");
 
 unset($key);
 foreach ($keys as &$key) {
@@ -48,14 +49,14 @@ foreach ($keys as &$key) {
 	$tokens = \IEML_ExpParse\str_to_tokens($key['expression']);
 	$AST = \IEML_ExpParse\tokens_to_AST($tokens);
 	
-	//echo 'AST:'.pre_dump(\IEML_ExpParse\AST_to_infix_str($AST, $key['expression']));
-	echo 'AST:'.pre_dump($AST);
+	echo 'AST:'.pre_dump(\IEML_ExpParse\AST_to_infix_str($AST, $key['expression']));
+	//echo 'AST:'.pre_dump($AST);
 	
 	echo 'etymology:'.pre_dump(gen_etymology($key['expression']));
 	
 	$info = IEML_gen_table_info($key['expression'], $IEML_lowToVowelReg);
 	
-	//echo 'info: '.pre_dump($info);
+	echo 'info: '.pre_dump($info);
 	
 	for ($i=0; $i<count($info); $i++) {
 

@@ -141,10 +141,6 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 	    	
 	    	$sub_heads = array();
 	    	$out = array();
-	    	
-	    	for ($i=0; $i<count($tally_part_varied); $i++) {
-	    		echo 'tpv: '.pre_dump(IEML_ExpParse\AST_to_Infix_str($tally_part_varied[$i], $exp));
-	    	}
 			
 	    	for ($i=0; $i<$tpv_len; $i++) {
 	    		$cvinst = IEMLVarrArr::instanceFromAST($tally_part_varied[$i], $exp);
@@ -167,6 +163,7 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 	    	} else if (count($sub_heads) == 1) {
 		    	//only 1 header; this should have been dealt with above
 	    	} else {
+	    		echo pre_dump($sub_heads);
 		    	//something's very wrong
 	    	}
     	}
@@ -179,7 +176,11 @@ function IEML_tally_part_varied($AST, $exp, $pre = '', $post = '') {
 	if ($AST['internal']) {
 		$tally_part_varied = array(); $prime_tpv = array(); $tpv_out_str = array();
 		
-		if ($AST['value']['type'] == 'LAYER') {
+		if ($AST['type'] == 'L0PLUS') {
+			$tally_part_varied[] = $AST;
+			$tpv_out_str[] = array($pre, $post);
+		} else if ($AST['value']['type'] == 'LAYER') {
+			
 			for ($i=0; $i<count($AST['children']); $i++) {
 				$sub = IEML_tally_part_varied($AST['children'][$i], $exp, $pre, $AST['value']['value'].$post);
 				
@@ -187,7 +188,7 @@ function IEML_tally_part_varied($AST, $exp, $pre = '', $post = '') {
 				array_append($prime_tpv, $sub[1]);
 				array_append($tpv_out_str, $sub[2]);
 			}
-		} else if ($AST['value']['type'] == 'MUL' || $AST['type'] == 'L0PLUS') {
+		} else if ($AST['value']['type'] == 'MUL') {
 			for ($i=0; $i<count($AST['children']); $i++) {
 				if ($AST['children'][$i]['internal'] && ($AST['children'][$i]['value']['type'] == 'MUL' || $AST['children'][$i]['type'] == 'L0PLUS')) {
 					$tpre = substr_ab($exp, $AST['_str_ref'][0], $AST['children'][$i]['_str_ref'][0]);
