@@ -143,7 +143,8 @@ class IEMLVarrArr {
 				$this->pushElement(array(IEML_gen_var($AST), \IEML_ExpParse\AST_original_str($AST, $exp)));
 			}
 		} else {
-			$this->pushElement(IEML_gen_var($AST));
+			$gen_call = IEML_gen_var($AST);
+			$this->pushElement($gen_call[0]);
 		}
 	}
 	

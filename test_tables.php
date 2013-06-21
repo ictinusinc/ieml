@@ -36,7 +36,7 @@ table tbody tr td {
 <?php
 
 $keys = array();
-$keys[] = array('expression' => "O:O:.M:M:.-");
+$keys[] = array('expression' => "O:O:.A:O:.-M:M:.S:M:.-'");
 
 unset($key);
 foreach ($keys as &$key) {
@@ -53,11 +53,16 @@ foreach ($keys as &$key) {
 	
 	$info = IEML_gen_table_info($key['expression'], $IEML_lowToVowelReg);
 	
-	echo IEML_render_tables($info, function($el) {
-		echo $el;
-	});
+	for ($i=0; $i<count($info); $i++) {
+
+		for ($j=0; $j<count($info[$i]); $j++) {
+			
+			echo IEML_render_tables($info[$i][$j]['tables'], function($el) {
+				echo $el;
+			});
+		}
+	}
 	
-	echo 'info: '.pre_dump($info);
 }
 
 ?>

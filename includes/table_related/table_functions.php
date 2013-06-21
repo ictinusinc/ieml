@@ -365,6 +365,8 @@ function IEML_coll_info($tree, $top) {
 }
 
 function IEML_concat_tables($tables, $top) {
+	echo 'concat_tables: '.pre_dump($tables);
+	
 	$ret = array(
             'length' => $tables['tables'][0]['length'],
             'height' => 0,
@@ -425,10 +427,7 @@ function IEML_force_concat_check($AST) {
 
 function IEML_gen_table_info($top, $IEML_lowToVowelReg) {
 	$tokens = \IEML_ExpParse\str_to_tokens($top);
-	$AST = \IEML_ExpParse\tokens_to_AST($tokens);	
-	
-	//echo pre_dump(\IEML_ExpParse\AST_to_infix_str($AST, $top));
-	//echo pre_dump($AST, $top);
+	$AST = \IEML_ExpParse\tokens_to_AST($tokens);
 
 	if (IEML_force_concat_check($AST)) {
 		$concats = \IEML_ExpParse\split_by_concats($AST);
@@ -436,41 +435,43 @@ function IEML_gen_table_info($top, $IEML_lowToVowelReg) {
 		$concats = array($AST);
 	}
 	
+	$table_infos = array();
 	$ret = array();
 	
 	for ($i=0; $i<count($concats); $i++) {
-		$tab_concat = array();
-		$flats = array();
-		$raws = array();
-		$post_raws = array();
+		$temp_coll = array();
 		
-		//echo 'concats('.$i.'): '.pre_dump(\IEML_ExpParse\AST_to_infix_str($concats[$i], $top));
 		$sub_top = \IEML_ExpParse\AST_original_str($concats[$i], $top);
 		$raw_tab = IEML_gen_header($concats[$i], $top);
-		$raws[] = $raw_tab;
 		
-		for ($i=0; $i<count($raw_tab); $i++) {
-			$post_tab = IEML_postproc_tables($raw_tab[$i], $IEML_lowToVowelReg);
-			$post_raws[] = $post_tab;
+		for ($j=0; $j<count($raw_tab); $j++) {
+			$post_tab = IEML_postproc_tables($raw_tab[$j], $IEML_lowToVowelReg);
 		
-			$tab_concat[] = IEML_coll_info($post_tab, $sub_top);
-			
-			echo pre_dump($tab_concat[count($tab_concat)-1]);
+			$tab_concat = IEML_coll_info($post_tab, $sub_top);
 		
 			$flat_body = array_flatten($post_tab);
 			$flat_body[] = $sub_top;
 			
-			$flats[] = $flat_body;
+			$temp_coll[] = array(
+				'tables' => $tab_concat,
+				'flat_tables' => $flat_body,
+				'raw_table' => $raw_tab[$j],
+				'post_raw_table' => $post_tab
+			);
 		}
 		
-		$tables = array(
-			'tables' => $tab_concat,
-			'flat_tables' => $flats,
-			'raw_table' => $raws,
-			'post_raw_table' => $post_raws
-		);
+		$table_infos[] = $temp_coll;
+	}
+	
+	
+	if (FALSE && count($concats) > 1) {
+		//error, not working atm
 		
-		$ret[] = IEML_concat_tables($tables, $top);
+		for ($i=0; $i<count($table_infos); $i++) {
+			$ret[] = IEML_concat_tables($table_infos[$i], $top);
+		}
+	} else {
+		$ret = $table_infos;
 	}
 	
 	return $ret;
