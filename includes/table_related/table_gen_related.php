@@ -141,6 +141,10 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 	    	
 	    	$sub_heads = array();
 	    	$out = array();
+	    	
+	    	for ($i=0; $i<count($tally_part_varied); $i++) {
+	    		echo 'tpv: '.pre_dump(IEML_ExpParse\AST_to_Infix_str($tally_part_varied[$i], $exp));
+	    	}
 			
 	    	for ($i=0; $i<$tpv_len; $i++) {
 	    		$cvinst = IEMLVarrArr::instanceFromAST($tally_part_varied[$i], $exp);
