@@ -160,11 +160,19 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 			    		$out[] = IEML_combine_headers($sub_heads[0][$i], $sub_heads[1][$j]);
 			    	}
 		    	}
-	    	} else if (count($sub_heads) == 1) {
-		    	//only 1 header; this should have been dealt with above
 	    	} else {
-	    		echo pre_dump($sub_heads);
-		    	//something's very wrong
+	    		echo 'sub_heads: '.pre_dump($sub_heads);
+	    		
+		    	for ($i=0; $i<count($sub_heads[0]); $i++) {
+		    		break;
+		    		
+			    	for ($j=0; $j<count($sub_heads[1]); $j++) {
+			    		for ($k=0; $k<count($sub_heads[2]); $k++) {
+				    		$sub_heads[1][$j] = IEML_prepend_tree($sub_heads[1][$j], '', $sub_heads[2]);
+				    		$out[] = IEML_combine_headers($sub_heads[0][$i], $sub_heads[1][$j]);
+			    		}
+			    	}
+		    	}
 	    	}
     	}
     }

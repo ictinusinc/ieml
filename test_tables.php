@@ -39,7 +39,7 @@ $keys = array();
 //$keys[] = array('expression' => "O:O:.M:M:.-");
 //$keys[] = array('expression' => "O:O:.A:U:O:.-M:M:.S:M:.-'");
 //$keys[] = array('expression' => "O:M:.(M:+O:).-");
-$keys[] = array('expression' => "M:M:.-O:M:.- (E:.- + s.y.-)' + M:M:.-M:O:.- (E:.- + s.y.-)'");
+$keys[] = array('expression' => "M:M:.-O:M:.- (E:.- + s.y.-)'");
 
 unset($key);
 foreach ($keys as &$key) {
