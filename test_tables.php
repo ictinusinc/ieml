@@ -13,6 +13,8 @@ include_once(APPROOT.'/includes/functions.php');
 include_once(APPROOT.'/includes/table_related/table_functions.php');
 
 ?>
+<html>
+<head>
 <style>
 table {
     border-collapse: collapse;
@@ -33,13 +35,16 @@ table tbody tr td {
     max-width: 125px;
 }
 </style>
+</head>
+<body>
 <?php
 
 $keys = array();
-//$keys[] = array('expression' => "O:O:.M:M:.-");
+$keys[] = array('expression' => "O:O:.M:M:.-");
 //$keys[] = array('expression' => "O:O:.A:U:O:.-M:M:.S:M:.-'");
 //$keys[] = array('expression' => "O:M:.(M:+O:).-");
-$keys[] = array('expression' => "M:M:.-O:M:.- (E:.- + s.y.-)'");
+//$keys[] = array('expression' => "M:M:.-O:M:.- (E:.- + s.y.-)'");
+//$keys[] = array('expression' => "M:M:.-O:M:.-' + M:M:.-M:O:.-'");
 
 unset($key);
 foreach ($keys as &$key) {
@@ -56,18 +61,26 @@ foreach ($keys as &$key) {
 	
 	$info = IEML_gen_table_info($key['expression'], $IEML_lowToVowelReg);
 	
-	echo 'info: '.pre_dump($info);
+	//echo 'info: '.pre_dump($info);
 	
 	for ($i=0; $i<count($info); $i++) {
-
+		$index_tab = array();
+		
 		for ($j=0; $j<count($info[$i]); $j++) {
-			
 			echo IEML_render_tables($info[$i][$j]['tables'], function($el) {
 				echo $el;
-			});
+			});//."len: ".$info[$i][$j]['tables']['length']." height: ".$info[$i][$j]['tables']['height']." hori_depth: ".$info[$i][$j]['tables']['hor_header_depth']." ver_depth: ".$info[$i][$j]['tables']['ver_header_depth'];
 		}
 	}
 	
 }
 
 ?>
+<script src="/includes/js/table_render.js"></script>
+<script>
+	'use strict';
+	
+	
+</script>
+</body>
+</html>

@@ -154,25 +154,14 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 	    		$sub_heads[] = $temp_subs;
 	    	}
 	    	
-	    	if (count($sub_heads) == 2) {
+	    	if (TRUE || count($sub_heads) == 2) {
 		    	for ($i=0; $i<count($sub_heads[0]); $i++) {
 			    	for ($j=0; $j<count($sub_heads[1]); $j++) {
 			    		$out[] = IEML_combine_headers($sub_heads[0][$i], $sub_heads[1][$j]);
 			    	}
 		    	}
 	    	} else {
-	    		echo 'sub_heads: '.pre_dump($sub_heads);
-	    		
-		    	for ($i=0; $i<count($sub_heads[0]); $i++) {
-		    		break;
-		    		
-			    	for ($j=0; $j<count($sub_heads[1]); $j++) {
-			    		for ($k=0; $k<count($sub_heads[2]); $k++) {
-				    		$sub_heads[1][$j] = IEML_prepend_tree($sub_heads[1][$j], '', $sub_heads[2]);
-				    		$out[] = IEML_combine_headers($sub_heads[0][$i], $sub_heads[1][$j]);
-			    		}
-			    	}
-		    	}
+	    		//TODO: this;
 	    	}
     	}
     }

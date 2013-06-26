@@ -446,7 +446,7 @@ function IEML_gen_table_info($top, $IEML_lowToVowelReg) {
 		$sub_top = \IEML_ExpParse\AST_original_str($concats[$i], $top);
 		$raw_tab = IEML_gen_header($concats[$i], $top);
 		
-		echo 'raw_tab for concats['.$i.']: '.pre_dump($raw_tab);
+		//echo 'raw_tab for concats['.$i.']: '.pre_dump($raw_tab);
 		
 		for ($j=0; $j<count($raw_tab); $j++) {
 			$post_tab = IEML_postproc_tables($raw_tab[$j], $IEML_lowToVowelReg);
