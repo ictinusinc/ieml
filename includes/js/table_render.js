@@ -39,20 +39,22 @@ function IEML_render_table_body(info) {
 	for (var r=0; r<body.length; r++) {
         out += '<tr>';
         
-        for (var h = heads[0].length - 1; h >= 0; h--) {
-            if (hor_tally[h][0] == 0) {
-                out += '<td rowspan="' + Math.max(1, heads[0][h][hor_tally[h][1]][1]) + '">';
-                
-                out += heads[0][h][hor_tally[h][1]][0];
-                
-                out += '</td>';
-            }
-            
-            ++hor_tally[h][0];
-            if (hor_tally[h][0] >= heads[0][h][hor_tally[h][1]][1]) {
-                hor_tally[h][0] = 0;
-                ++hor_tally[h][1];
-            }
+        if (heads) {
+	        for (var h = heads[0].length - 1; h >= 0; h--) {
+	            if (hor_tally[h][0] == 0) {
+	                out += '<td rowspan="' + Math.max(1, heads[0][h][hor_tally[h][1]][1]) + '">';
+	                
+	                out += heads[0][h][hor_tally[h][1]][0];
+	                
+	                out += '</td>';
+	            }
+	            
+	            ++hor_tally[h][0];
+	            if (hor_tally[h][0] >= heads[0][h][hor_tally[h][1]][1]) {
+	                hor_tally[h][0] = 0;
+	                ++hor_tally[h][1];
+	            }
+	        }
         }
         
         for (var c=0; c<body[r].length; c++) {
@@ -82,7 +84,9 @@ function IEML_render_table(info) {
     out += '<td' + (info['length'] > 1 ? ' colspan="' + info['length'] + '"' : '') + '>' + info['top'] + '<strong class="table_title"><' + info['top'] + '</strong>' + '</td>'
     	+ '</tr>';
     
-    out += IEML_render_table_header(info['headers']);
+    if (info['headers']) {
+    	out += IEML_render_table_header(info['headers']);
+    }
     
     out += IEML_render_table_body(info);
 

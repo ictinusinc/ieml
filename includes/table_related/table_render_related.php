@@ -108,6 +108,4 @@ function IEML_postprocess_table($tab_info, $callback) {
     return $tab_info;
 }
 
-
-
 ?>

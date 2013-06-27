@@ -247,13 +247,15 @@ function IEML_save_cell($tab_id, $cell_info, $exp_assoc, $db_info) {
 			".goodInput($db_info['enumHeaderType']).", ".$db_info['intHeaderLevel'].", ".goodInput($cell_info).", ".goodInt($db_info['intSpan']).")");
 }
 
-function IEML_save_table($key_id, $tab_info) {
+
+function IEML_save_table($key_id, $table, $leftover_index, $con_index) {
+	$tab_info = $table['tables'];
     $exp_query = Conn::queryArrays("
         SELECT
             pkExpressionPrimary as id, strExpression as expression
         FROM expression_primary prim
         WHERE enumDeleted = 'N'
-        AND   prim.strExpression IN (".implode(',', array_map(function($a) { return goodInput($a); }, $tab_info['table_flat'])).")");
+        AND   prim.strExpression IN (".implode(',', array_map(function($a) { return goodInput($a); }, $table['flat_tables'])).")");
 
 	$exp_assoc = array();
 	for ($i=0; $i<count($exp_query); $i++) {
@@ -262,9 +264,16 @@ function IEML_save_table($key_id, $tab_info) {
 	
     Conn::query("
         INSERT INTO table_2d_id 
-            (fkExpression, intWidth, intHeight, intHorHeaderDepth, intVerHeaderDepth, jsonTableLogic)
+            (fkExpression, intWidth, intHeight, intHorHeaderDepth, intVerHeaderDepth, jsonTableLogic, intLeftoverIndex, intConcatIndex)
         VALUES
-            (".$key_id.", ".$tab_info['length'].", ".$tab_info['height'].", ".$tab_info['hor_header_depth'].", ".$tab_info['ver_header_depth'].", '".goodString(json_encode($tab_info['post_raw_table']))."')");
+            (".$key_id.", "
+            	.$tab_info['length'].", "
+            	.$tab_info['height'].", "
+            	.$tab_info['hor_header_depth'].", "
+            	.$tab_info['ver_header_depth'].", '"
+            	.goodString(json_encode($tab_info['post_raw_table']))."', "
+            	.goodInt($leftover_index).","
+            	.goodInt($con_index).")");
             
     $key['new_id'] = Conn::getId();
 	
@@ -337,10 +346,20 @@ function IEML_table_collect_headers($tree) {
 }
 
 function IEML_coll_info($tree, $top) {
-    $heads = array(IEML_table_collect_headers($tree[0][0]), IEML_table_collect_headers($tree[0][1]));
-    $body = $tree[1];
+	if (array_key_exists('body', $tree)) {
+        return array(
+            'length' => 1,
+            'height' => count($tree['body']),
+            'hor_header_depth' => 0,
+            'ver_header_depth' => 0,
+            'headers' => FALSE,
+            'body' => $tree['body'],
+            'top' => $top
+        );
+	} else {
+	    $heads = array(IEML_table_collect_headers($tree[0][0]), IEML_table_collect_headers($tree[0][1]));
+	    $body = $tree[1];
     
-    if (FALSE !== $heads[0] && FALSE !== $heads[1]) {
         return array(
             'length' => count($body[0]),
             'height' => count($body),
@@ -350,18 +369,7 @@ function IEML_coll_info($tree, $top) {
             'body' => $body,
             'top' => $top
         );
-    } else {
-        return array(
-            'length' => 1,
-            'height' => count($body),
-            'hor_header_depth' => 0,
-            'ver_header_depth' => 0,
-            'headers' => FALSE,
-            'body' => $body,
-            'top' => $top
-        );
-    }
-    return FALSE;
+	}
 }
 
 function IEML_concat_tables($tables, $top) {
@@ -467,18 +475,7 @@ function IEML_gen_table_info($top, $IEML_lowToVowelReg) {
 		$table_infos[] = $temp_coll;
 	}
 	
-	
-	if (FALSE && count($concats) > 1) {
-		//error, not working atm
-		
-		for ($i=0; $i<count($table_infos); $i++) {
-			$ret[] = IEML_concat_tables($table_infos[$i], $top);
-		}
-	} else {
-		$ret = $table_infos;
-	}
-	
-	return $ret;
+	return $table_infos;
 }
 
 function reconstruct_table_info($top, $head, $body_query) {

@@ -86,6 +86,7 @@ function IEML_concat_complex_tables($info) {
 
 $keys = array();
 //$keys[] = array('expression' => "O:O:.M:M:.-");
+//$keys[] = array('expression' => "I:");
 //$keys[] = array('expression' => "O:O:.A:U:O:.-M:M:.S:M:.-'");
 //$keys[] = array('expression' => "O:M:.(M:+O:).-");
 //$keys[] = array('expression' => "M:M:.-O:M:.- (E:.- + s.y.-)'");
@@ -108,6 +109,7 @@ foreach ($keys as &$key) {
 	
 	for ($i=0; $i<count($key['concats']); $i++) {
 		for ($j=0; $j<count($key['concats'][$i]); $j++) {
+			echo pre_dump($key['concats'][$i][$j]);
 			//$key['concats'][$i][$j]['tables'] = IEML_postprocess_table($key['concats'][$i][$j]['tables'], function($el) { return $el; });
 			
 			//echo IEML_render_tables($key['concats'][$i][$j]['tables'], function($el) { echo $el; });
@@ -134,6 +136,8 @@ foreach ($keys as &$key) {
 				for (var j=1; j<tables[i].length; j++) {
 					str += IEML_render_only_body(tables[i][j]['tables']);
 				}
+				
+				str += '<hr/>';
 			}
 			
 			str += '<br/>';

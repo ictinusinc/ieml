@@ -10,7 +10,8 @@
         <!-- bootstrap-2.3.1.min.js -->
         <script type="text/javascript"><?php echo file_get_contents(APPROOT.'/includes/js/libs/bootstrap-2.3.2.min.js'); ?></script>
         <!-- functions.js -->
-        <script type="text/javascript"><?php echo file_get_contents(APPROOT.'/includes/js/functions.js'); ?></script>
+        <script type="text/javascript"><?php //echo file_get_contents(APPROOT.'/includes/js/functions.js'); ?></script>
+        <script type="text/javascript" src="<?php echo WEBAPPROOT.'/includes/js/functions.js'; ?>"></script>
         <!-- UI_lang and _SESSION var dump -->
         <script type="text/javascript">
 <?php
@@ -18,6 +19,7 @@
         	echo 'var _SESSION = '.json_encode($_SESSION).';'; ?>
         </script>
         <!-- main.js -->
-        <script type="text/javascript"><?php echo file_get_contents(APPROOT.'/includes/js/main.js'); ?></script>
+        <script type="text/javascript"><?php //echo file_get_contents(APPROOT.'/includes/js/main.js'); ?></script>
+        <script type="text/javascript" src="<?php echo WEBAPPROOT.'/includes/js/main.js'; ?>"></script>
 	</body>
 </html>

@@ -10,9 +10,12 @@ function ensure_table_for_key($key, $IEML_lowToVowelReg) {
     
     $key['table_info'] = IEML_gen_table_info($key['expression'], $IEML_lowToVowelReg);
     
-    $key['table_info']['table_flat'] = array_values(array_filter($key['table_info']['table_flat'], function($el) { return !is_numeric($el); }));
-    
-    IEML_save_table($key['id'], $key['table_info']);
+	$key['concats'] = IEML_concat_complex_tables($info);
+	for ($i=0; $i<count($key['concats']); $i++) {
+		for ($j=0; $j<count($key['concats'][$i]); $i++) {
+    		IEML_save_table($key['id'], $key['concats'][$i][$j], $i, $j);
+    	}
+    }
     
     return $key;
 }
@@ -362,7 +365,7 @@ header('Content-type: application/json');
 //smart_session($_REQUEST);
 session_start();
 
-api_log(api_message('{Action: '.$ajax.'}'));
+api_log(api_message('{Action: '.$_REQUEST['a'].'}'));
 
 echo (isset($_REQUEST['callback']) ? $_REQUEST['callback'].'(' : '').json_encode(handle_request($_REQUEST['a'], $_REQUEST)).(isset($_REQUEST['callback']) ? ')' : '');
 

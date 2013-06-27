@@ -298,7 +298,7 @@ class Conn{
         Conn::$staticResult = @mysql_query($sql, Conn::$staticHandle) or Conn::dbError();
         
         $aTemp = array();
-        while($temp = mysql_fetch_array(Conn::$staticResult, $type)){
+        while($temp = mysql_fetch_array(Conn::$staticResult, $type)) {
             $aTemp[] = $temp;
         }
         return $aTemp;
