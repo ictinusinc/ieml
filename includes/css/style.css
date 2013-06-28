@@ -40,7 +40,7 @@ body {
 }
 
 
-#table table td a {
+#table table td a, #table table th a {
 	color: #333333;
 }
 
@@ -80,15 +80,17 @@ body {
 table.relation {
     border-collapse: collapse;
 }
-table.relation tbody tr td {
+table.relation tbody tr td, table.relation tbody tr th {
     border: 1px solid;
     text-align: center;
     border-color: #cccccc;
 	font-family: "proxima-nova-alt-condensed",sans-serif;
-	font-weight: 300;
 	font-size: 16px;
 	min-height: 80px !important;
 
+}
+table.relation tbody tr td {
+	font-weight: 300;
 }
 table.relation .empty_cell {
     border: none;
@@ -121,11 +123,11 @@ table.relation .cell_wrap {
     	color: #333333;
 }
 
-table.relation .cell_wrap span {
-		display: block;
-		color: #999999;
-		font-weight: 200;
-		}
+table.relation .cell_wrap span.cell_expression {
+	display: block;
+	color: #999999;
+	font-weight: 200;
+}
 
 
 #ieml-table-span {

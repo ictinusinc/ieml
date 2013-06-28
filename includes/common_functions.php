@@ -11,7 +11,7 @@ function getTableForElement($ret, $goodID, $options) {
             SELECT
             	pkTable2D, enumShowEmpties, intWidth, intHeight, intHorHeaderDepth, intVerHeaderDepth,
             	prim.strExpression as expression, sublang.strDescriptor as descriptor, jsonTableLogic,
-            	t2d.fkExpression as id, enumCompConc, strEtymSwitch
+            	t2d.fkExpression as id, enumCompConc, strEtymSwitch, intLeftoverIndex, intConcatIndex
             FROM table_2d_id t2d
             JOIN expression_primary prim ON t2d.fkExpression = prim.pkExpressionPrimary
             LEFT JOIN
@@ -28,7 +28,8 @@ function getTableForElement($ret, $goodID, $options) {
             SELECT
                 pkTable2D, enumShowEmpties, intWidth, intHeight, intHorHeaderDepth, intVerHeaderDepth,
                 prim.strExpression AS expression, sublang.strDescriptor AS descriptor, jsonTableLogic,
-                prim.pkExpressionPrimary as id, enumCompConc, strEtymSwitch, t2dref.enumEnabled
+                prim.pkExpressionPrimary as id, enumCompConc, strEtymSwitch, t2dref.enumEnabled,
+                intLeftoverIndex, intConcatIndex
             FROM table_2d_id t2d
             JOIN expression_primary prim ON prim.pkExpressionPrimary = t2d.fkExpression
             JOIN table_2d_ref t2dref ON fkTable2D = pkTable2D
@@ -48,14 +49,25 @@ function getTableForElement($ret, $goodID, $options) {
             'enumEnabled' => $table_head_query[0]['enumEnabled']
         );
     }
+    
     $ret['tables'] = array();
     
     for ($i=0; $i<count($table_head_query); $i++) {
-	    $ret['tables'][] = format_table_for($table_head_query[$i], $ret, $top, $options);
+    	$formatted_sub = format_table_for($table_head_query[$i], $ret, $top, $options);
+    
+	    $formatted_sub['height'] = $table_head_query[$i]['intHeight'];
+	    $formatted_sub['length'] = $table_head_query[$i]['intWidth'];
+    	
+    	if (array_key_exists($table_head_query[$i]['intConcatIndex'], $ret['tables'])) {
+	    	$ret['tables'][$table_head_query[$i]['intConcatIndex']][$table_head_query[$i]['intLeftoverIndex']] = $formatted_sub;
+    	} else {
+	    	$ret['tables'][$table_head_query[$i]['intConcatIndex']] = array($table_head_query[$i]['intLeftoverIndex'] => $formatted_sub);
+    	}
     }
     
     return $ret;
 }
+
 
 function format_table_for($table_head_query, $query_exp, $top, $options) {
 	$ret = array();
@@ -105,8 +117,8 @@ function format_table_for($table_head_query, $query_exp, $top, $options) {
     
     $table_info['empty_head_count'] = $empty_head_count;
     
-    $ret['edit_vertical_head_length'] = $table_info['ver_header_depth'];
-    $ret['render_vertical_head_length'] = $table_info['ver_header_depth'] - $empty_head_count[1][1];
+    $ret['edit_vertical_head_length'] = $table_info['ver_header_depth'] + 1;
+    $ret['render_vertical_head_length'] = $table_info['ver_header_depth'] - $empty_head_count[1][1] + 1;
     $ret['edit_horizontal_head_length'] = $table_info['hor_header_depth'];
     $ret['render_horizontal_head_length'] = $table_info['hor_header_depth'] - $empty_head_count[1][0];
     
@@ -172,35 +184,29 @@ function format_table_for($table_head_query, $query_exp, $top, $options) {
         }
     }
     
-    $ret['table'] = IEML_render_tables($table_info, function ($el) use ($ret, $top, $flat_assoc) {
-        //if ($el['expression'] != $top['expression'])
-            //echo '<input class="hide enable_check" data-ref-id="'.$el['refID'].'" type="checkbox" value="Y" '.($el['enumEnabled'] == 'Y' ? 'checked="checked"':'').'/>';
-        if (array_key_exists('descriptor', $flat_assoc[$el['expression']])) {
-            echo '<div class="'.($el['enumEnabled'] == 'N' ? 'hide ' : '').'cell_wrap';
-            if ($el['expression'] == $ret['expression'])
-                echo ' relation-sel-cell';
-            else if ($el['expression'] == $top['expression'])
-                echo ' relation-top-cell';
-            echo '">';
-            
-            echo '<a href="/ajax.php?id='.$flat_assoc[$el['expression']]['id'].'&a=searchDictionary" data-exp="'.$el['expression'].'" data-id="'.$flat_assoc[$el['expression']]['id'].'" class="editExp"><span>'.$el['expression'].'</span>'.$flat_assoc[$el['expression']]['descriptor'].'</a>';
-            
-            echo '</div>';
-        } else {
-            echo '<div>';
-            
-            echo '<a href="javascript:void(0);" class="createEmptyExp">'.$el['expression'].'</a>';
-            
-            echo '</div>';
-        }
-    }, function($el) use ($flat_assoc) {
-        return array_key_exists('descriptor', $flat_assoc[$el['expression']]);
-    });
+    //add top as a vertical header
+    $span = 0;
+    foreach ($table_info['headers'][1][count($table_info['headers'][1]) - 1] as $last_vertical_el) {
+	    $span += $last_vertical_el[1];
+    }
+    $table_info['headers'][1][] = array(array(array(
+    	'descriptor' => $top['descriptor'],
+		'enumElementType' => "header",
+		'enumEnabled' => "Y",
+		'enumHeaderType' => "ver",
+		'expression' => $top['expression'],
+		'id' => $top['id'],
+		'intSpan' => $span
+    ), $span));
     
-    $ret['bin_table'] = array(
+    $ret['table'] = IEML_postprocess_table(array(
     	'headers' => $table_info['headers'],
     	'body' => $table_info['body']
-    );
+    ), function($el) use ($flat_assoc) {
+    	$el['descriptor'] = $flat_assoc[$el['expression']]['descriptor'];
+    	
+    	return $el;
+    });
     
     return $ret;
 }

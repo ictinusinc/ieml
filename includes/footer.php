@@ -18,6 +18,7 @@
         	echo 'var UI_lang = '.json_encode($UI_lang).';';
         	echo 'var _SESSION = '.json_encode($_SESSION).';'; ?>
         </script>
+        <script type="text/javascript" src="<?php echo WEBAPPROOT.'/includes/js/table_render.js'; ?>"></script>
         <!-- main.js -->
         <script type="text/javascript"><?php //echo file_get_contents(APPROOT.'/includes/js/main.js'); ?></script>
         <script type="text/javascript" src="<?php echo WEBAPPROOT.'/includes/js/main.js'; ?>"></script>

@@ -1,5 +1,7 @@
 <?php
 
+error_reporting(E_ERROR);
+
 require_once('includes/config.php');
 require_once(APPROOT.'/includes/functions.php');
 require_once(APPROOT.'/includes/table_related/table_functions.php');
@@ -116,7 +118,7 @@ function handle_request($action, $req) {
 	        break;
 	        
 	    case 'editDictionary':
-	    	$asserts_ret = assert_arr(array('enumCategory', 'exp', 'descriptor', 'lang', 'id', 'enumShowEmpties', 'iemlEnumComplConcOff', 'iemlEnumSubstanceOff', 'iemlEnumAttributeOff', 'iemlEnumModeOff', 'pkTable2D'), $req);
+	    	$asserts_ret = assert_arr(array('enumCategory', 'exp', 'descriptor', 'lang', 'id', 'enumShowEmpties', 'iemlEnumComplConcOff', 'iemlEnumSubstanceOff', 'iemlEnumAttributeOff', 'iemlEnumModeOff', 'tables'), $req);
 	    	
 		    if (TRUE === $asserts_ret) {
 		    	$lang = strtolower($req['lang']);
@@ -137,6 +139,8 @@ function handle_request($action, $req) {
 		                enumCategory = ".goodInput($req['enumCategory']).",
 		                strExpression = ".goodInput($req['exp'])."
 		            WHERE pkExpressionPrimary = ".goodInt($req['id']));
+		        
+		        
 		        
 		        Conn::query("
 		        	UPDATE table_2d_id

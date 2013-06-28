@@ -110,7 +110,7 @@ foreach ($keys as &$key) {
 	for ($i=0; $i<count($key['concats']); $i++) {
 		for ($j=0; $j<count($key['concats'][$i]); $j++) {
 			echo pre_dump($key['concats'][$i][$j]);
-			//$key['concats'][$i][$j]['tables'] = IEML_postprocess_table($key['concats'][$i][$j]['tables'], function($el) { return $el; });
+			$key['concats'][$i][$j]['tables'] = IEML_postprocess_table($key['concats'][$i][$j]['tables'], function($el) { return $el; });
 			
 			//echo IEML_render_tables($key['concats'][$i][$j]['tables'], function($el) { echo $el; });
 		}
