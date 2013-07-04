@@ -191,7 +191,7 @@
 			} else if (rvars['a'] == 'editDictionary' || rvars['a'] == 'newDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
 		            if ($('#desc-result-id').val() == '') {
-						state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], rvars['exp']]));
+						state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], responseData['expression']]));
 						
 		                $('#desc-result-id').val(responseData['id']);
 		            }
@@ -485,7 +485,7 @@
 			var str = '', render_callback = function(el) {
 				var out = '';
 				
-				if (typeof el['descriptor'] !== 'undefined' && el['descriptor'].length > 0) {
+				if (el['descriptor']) {
 	                out += '<div class="' + (el['enumEnabled'] == 'N' ? 'hide ' : '') + 'cell_wrap' + '">'
 	                	+ '<a href="/ajax.php?id=' + el['id'] + '&a=searchDictionary" data-exp="' + el['expression'] + '" data-id="' + el['id'] + '" class="editExp">'
 	                	+ '<span class="cell_expression">' + el['expression'] + '</span><span class="cell_descriptor">' + el['descriptor'] + '</span></a>'
@@ -508,11 +508,23 @@
 					info['tables'][i][j]['table']['top'] = {'expression': 'top', 'descriptor': 'decriptor', 'id': undefined};
 				}
 				
-				str += IEML_render_table(info['tables'][i][0]['table'], render_callback);
-				
-				for (var j=1; j<info['tables'][i].length; j++) {
-					str += IEML_render_only_body(info['tables'][i][j]['table'], render_callback);
+				if (info['tables'][i].length > 1) {
+				    str +='<table class="relation"><tbody>';
+				    
+					for (var j=0; j<info['tables'][i].length; j++) {
+							if (j > 0) {
+								str +='<tr><td class="table-concat-seperator" colspan="' + (parseInt(info['tables'][i][j]['table']['length'], 10) + parseInt(info['tables'][i][j]['table']['hor_header_depth'], 10)) + '"></td></tr>';
+							}
+							
+					    	str += IEML_render_table_body(info['tables'][i][j]['table'], render_callback);
+					}
+					
+					str += '</tbody></table>';
+				} else {
+					str += IEML_render_table(info['tables'][i][0]['table'], render_callback);
 				}
+				
+				str += '<hr />';
 			}
 			
 			$('#ieml-table-span').html(str);

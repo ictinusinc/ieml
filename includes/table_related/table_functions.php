@@ -271,7 +271,7 @@ function IEML_save_table($key_id, $table, $leftover_index, $con_index) {
             	.$tab_info['height'].", "
             	.$tab_info['hor_header_depth'].", "
             	.$tab_info['ver_header_depth'].", '"
-            	.goodString(json_encode($tab_info['post_raw_table']))."', "
+            	.goodString(json_encode($table['post_raw_table']))."', "
             	.goodInt($leftover_index).","
             	.goodInt($con_index).")");
             
@@ -309,17 +309,23 @@ function IEML_save_table($key_id, $table, $leftover_index, $con_index) {
 require_once(APPROOT.'/includes/table_related/table_render_related.php');
 require_once(APPROOT.'/includes/table_related/table_gen_related.php');
 
-function IEML_postproc_tables(&$table, &$low_map) {
-    $ret = array();
-    foreach ($table as $key => $branch) {
-        if (is_array($branch)) {
-            $ret[$key] = IEML_postproc_tables($branch, $low_map);
-        } else if (is_string($branch)) {
-            $ret[$key] = str_trans_preg($branch, $low_map);
-        } else {
-            $ret[$key] = $branch;
-        }
+function IEML_postproc_tables(&$table) {
+	global $IEML_lowToVowelReg;
+	
+    $ret = NULL;
+    
+    if (is_array($table)) {
+    	$ret = array();
+    	
+	    foreach ($table as $key => $branch) {
+	    	$ret[$key] = IEML_postproc_tables($branch);
+	    }
+    } else if (is_string($table)) {
+        $ret = str_trans_preg($table, $IEML_lowToVowelReg);
+    } else {
+        $ret = $table;
     }
+    
     return $ret;
 }
 
@@ -372,47 +378,46 @@ function IEML_coll_info($tree, $top) {
 	}
 }
 
-function IEML_concat_tables($tables, $top) {
-	echo 'concat_tables: '.pre_dump($tables);
+function IEML_combine_concats($info, $key, $cur) {
+	$ret = array();
 	
-	$ret = array(
-            'length' => $tables['tables'][0]['length'],
-            'height' => 0,
-            'hor_header_depth' => $tables['tables'][0]['hor_header_depth']+1,
-            'ver_header_depth' => 0,
-            'headers' => array($tables['tables'][0]['headers'][0], array()),
-            'body' => array(),
-            'top' => $top,
-			'table_flat' => array(),
-			'table_count' => count($tables['tables'])
-        );
-	
-	$top_head = array();
-	
-	for ($i=0; $i<count($tables['tables']); $i++) {
-		$ret['height'] += $tables['tables'][$i]['height'];
-		array_append($ret['body'], $tables['tables'][$i]['body']);
-		array_append($ret['table_flat'], $tables['flat_tables'][$i]);
-		
-		if ($i > 0) {
-			for ($j=0; $j<$ret['hor_header_depth'] - 1; $j++) {
-				array_append($ret['headers'][0][$j], $tables['tables'][$i]['headers'][0][$j]);
+	if ($cur + 1 < count($info)) {
+		for ($i=0; $i<count($info[$cur][$key]); $i++) {
+			$acc = IEML_combine_concats($info, $key, $cur+1);
+			
+			for ($j=0; $j<count($acc); $j++) {
+				$ret[] = array_merge($acc[$j], array($info[$cur][$key][$i]));
 			}
 		}
-		
-		$top_span = 0;
-		for ($j=0; $j<count($tables['tables'][$i]['headers'][0][$tables['tables'][$i]['hor_header_depth']-1]); $j++) {
-			$top_span += $tables['tables'][$i]['headers'][0][$tables['tables'][$i]['hor_header_depth']-1][$j][1];
+	} else {
+		for ($i=0; $i<count($info[$cur][$key]); $i++) {
+			$ret[] = array($info[$cur][$key][$i]);
 		}
-		$top_head[] = array($tables['tables'][$i]['top'], $top_span);
 	}
 	
-	$ret['headers'][0][] = $top_head;
+	return $ret;
+}
+
+function IEML_concat_complex_tables($info) {
+	$top_index = array();
 	
-	$ret['table_flat'][] = $top;
+	for ($i=0; $i<count($info); $i++) {
+		$index_tab = array();
+		
+		for ($j=0; $j<count($info[$i]); $j++) {
+			$key = "l".$info[$i][$j]['tables']['length']."h".$info[$i][$j]['tables']['height']."hhd".$info[$i][$j]['tables']['hor_header_depth']."vhd".$info[$i][$j]['tables']['ver_header_depth'];
+			
+			$index_tab[$key][] = $info[$i][$j];
+		}
+		
+		$top_index[] = $index_tab;
+	}
 	
-	$ret['raw_table'] = $tables['raw_table'];
-	$ret['post_raw_table'] = $tables['post_raw_table'];
+	$ret = array();
+	
+	foreach ($top_index[0] as $key => $value) {
+		array_append($ret, IEML_combine_concats($top_index, $key, 0));
+	}
 	
 	return $ret;
 }
@@ -433,7 +438,7 @@ function IEML_force_concat_check($AST) {
 	return false;
 }
 
-function IEML_gen_table_info($top, $IEML_lowToVowelReg) {
+function IEML_gen_table_info($top) {
 	$tokens = \IEML_ExpParse\str_to_tokens($top);
 	$AST = \IEML_ExpParse\tokens_to_AST($tokens);
 
@@ -457,7 +462,9 @@ function IEML_gen_table_info($top, $IEML_lowToVowelReg) {
 		//echo 'raw_tab for concats['.$i.']: '.pre_dump($raw_tab);
 		
 		for ($j=0; $j<count($raw_tab); $j++) {
-			$post_tab = IEML_postproc_tables($raw_tab[$j], $IEML_lowToVowelReg);
+			$post_tab = IEML_postproc_tables($raw_tab[$j]);
+			
+			//echo '$post_tab: '.pre_dump($post_tab);
 		
 			$tab_concat = IEML_coll_info($post_tab, $sub_top);
 		
@@ -675,6 +682,7 @@ function gen_exp_relations($exp, $top, &$info, $callback) {
 		);
 	} else {
 		$ret = gen_contained_containing_concurent($exp, $info['post_raw_table'], $callback);
+		
 		if ($ret['comp_concept'] != NULL) {
 			$ret['comp_concept'] = array($info['body'][$ret['comp_concept'][1]][$ret['comp_concept'][0]], 0);
 		}

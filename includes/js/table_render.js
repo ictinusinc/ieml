@@ -89,11 +89,3 @@ function IEML_render_table(info, render_callback) {
     
     return out;
 }
-
-function IEML_render_only_body(info, render_callback) {
-    return '<table class="relation"><tbody>'
-    
-    	+ IEML_render_table_body(info, render_callback)
-
-    	+ '</tbody></table>';
-}

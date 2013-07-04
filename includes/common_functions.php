@@ -58,10 +58,10 @@ function getTableForElement($ret, $goodID, $options) {
 	    $formatted_sub['height'] = $table_head_query[$i]['intHeight'];
 	    $formatted_sub['length'] = $table_head_query[$i]['intWidth'];
     	
-    	if (array_key_exists($table_head_query[$i]['intConcatIndex'], $ret['tables'])) {
-	    	$ret['tables'][$table_head_query[$i]['intConcatIndex']][$table_head_query[$i]['intLeftoverIndex']] = $formatted_sub;
+    	if (array_key_exists($table_head_query[$i]['intLeftoverIndex'], $ret['tables'])) {
+	    	$ret['tables'][$table_head_query[$i]['intLeftoverIndex']][$table_head_query[$i]['intConcatIndex']] = $formatted_sub;
     	} else {
-	    	$ret['tables'][$table_head_query[$i]['intConcatIndex']] = array($table_head_query[$i]['intLeftoverIndex'] => $formatted_sub);
+	    	$ret['tables'][$table_head_query[$i]['intLeftoverIndex']] = array($table_head_query[$i]['intConcatIndex'] => $formatted_sub);
     	}
     }
     

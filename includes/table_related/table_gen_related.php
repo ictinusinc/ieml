@@ -154,14 +154,26 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 	    		$sub_heads[] = $temp_subs;
 	    	}
 	    	
-	    	if (TRUE || count($sub_heads) == 2) {
+	    	if (count($sub_heads) == 2) {
 		    	for ($i=0; $i<count($sub_heads[0]); $i++) {
 			    	for ($j=0; $j<count($sub_heads[1]); $j++) {
 			    		$out[] = IEML_combine_headers($sub_heads[0][$i], $sub_heads[1][$j]);
 			    	}
 		    	}
 	    	} else {
-	    		//TODO: this;
+	    		$third_seme = array();
+	    		
+		    	for ($k=0; $k<count($sub_heads[2]); $k++) {
+	    			array_append($third_seme, IEML_collect_lowest_headers($sub_heads[2][$k][0]));
+		    	}
+		    	
+		    	for ($k=0; $k<count($third_seme); $k++) {
+		    		for ($i=0; $i<count($sub_heads[0]); $i++) {
+				    	for ($j=0; $j<count($sub_heads[1]); $j++) {
+							$out[] = IEML_combine_headers($sub_heads[0][$i], $sub_heads[1][$j]);
+				    	}
+			    	}
+			    }
 	    	}
     	}
     }
@@ -177,7 +189,6 @@ function IEML_tally_part_varied($AST, $exp, $pre = '', $post = '') {
 			$tally_part_varied[] = $AST;
 			$tpv_out_str[] = array($pre, $post);
 		} else if ($AST['value']['type'] == 'LAYER') {
-			
 			for ($i=0; $i<count($AST['children']); $i++) {
 				$sub = IEML_tally_part_varied($AST['children'][$i], $exp, $pre, $AST['value']['value'].$post);
 				

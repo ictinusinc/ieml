@@ -40,57 +40,13 @@ table tbody tr td {
 <div class="container" id="main_body"></div>
 <?php
 
-function IEML_combine_concats($info, $key, $cur) {
-	$ret = array();
-	
-	if ($cur + 1 < count($info)) {
-		for ($i=0; $i<count($info[$cur][$key]); $i++) {
-			$acc = IEML_combine_concats($info, $key, $cur+1);
-			
-			for ($j=0; $j<count($acc); $j++) {
-				$ret[] = array_merge($acc[$j], array($info[$cur][$key][$i]));
-			}
-		}
-	} else {
-		for ($i=0; $i<count($info[$cur][$key]); $i++) {
-			$ret[] = array($info[$cur][$key][$i]);
-		}
-	}
-	
-	return $ret;
-}
-
-function IEML_concat_complex_tables($info) {
-	$top_index = array();
-	
-	for ($i=0; $i<count($info); $i++) {
-		$index_tab = array();
-		
-		for ($j=0; $j<count($info[$i]); $j++) {
-			$key = "l".$info[$i][$j]['tables']['length']."h".$info[$i][$j]['tables']['height']."hhd".$info[$i][$j]['tables']['hor_header_depth']."vhd".$info[$i][$j]['tables']['ver_header_depth'];
-			
-			$index_tab[$key][] = $info[$i][$j];
-		}
-		
-		$top_index[] = $index_tab;
-	}
-	
-	$ret = array();
-	
-	foreach ($top_index[0] as $key => $value) {
-		array_append($ret, IEML_combine_concats($top_index, $key, 0));
-	}
-	
-	return $ret;
-}
-
 $keys = array();
 //$keys[] = array('expression' => "O:O:.M:M:.-");
 //$keys[] = array('expression' => "I:");
 //$keys[] = array('expression' => "O:O:.A:U:O:.-M:M:.S:M:.-'");
 //$keys[] = array('expression' => "O:M:.(M:+O:).-");
-//$keys[] = array('expression' => "M:M:.-O:M:.- (E:.- + s.y.-)'");
-$keys[] = array('expression' => "M:M:.-O:M:.-' + M:M:.-M:O:.-'");
+$keys[] = array('expression' => "M:M:.-O:M:.- (E:.- + s.y.-)'");
+//$keys[] = array('expression' => "M:M:.O:M:.- + M:M:.M:O:.-");
 
 foreach ($keys as &$key) {
     echo '<pre>'.$key['expression'].'</pre>';
@@ -103,13 +59,13 @@ foreach ($keys as &$key) {
 	
 	echo 'etymology:'.pre_dump(gen_etymology($key['expression']));
 	
-	$info = IEML_gen_table_info($key['expression'], $IEML_lowToVowelReg);
+	$info = IEML_gen_table_info($key['expression']);
 	
 	$key['concats'] = IEML_concat_complex_tables($info);
 	
 	for ($i=0; $i<count($key['concats']); $i++) {
 		for ($j=0; $j<count($key['concats'][$i]); $j++) {
-			echo pre_dump($key['concats'][$i][$j]);
+			//echo 'post_raw_table: '.pre_dump($key['concats'][$i][$j]);
 			$key['concats'][$i][$j]['tables'] = IEML_postprocess_table($key['concats'][$i][$j]['tables'], function($el) { return $el; });
 			
 			//echo IEML_render_tables($key['concats'][$i][$j]['tables'], function($el) { echo $el; });
@@ -124,17 +80,21 @@ foreach ($keys as &$key) {
 <script>
 	var expressions = <?php echo json_encode($keys); ?>;
 	
+	console.log(expressions);
+	
 	$(function() {
-		var str = '';
+		var str = '', render_callback = function(el) {
+	            return el;
+			};
 		
 		expressions.forEach(function(exp) {
 			var tables = exp['concats'];
 			
 			for (var i=0; i<tables.length; i++) {
-				str += IEML_render_table(tables[i][0]['tables']);
+				str += IEML_render_table(tables[i][0]['tables'], render_callback);
 				
 				for (var j=1; j<tables[i].length; j++) {
-					str += IEML_render_only_body(tables[i][j]['tables']);
+					str += IEML_render_only_body(tables[i][j]['tables'], render_callback);
 				}
 				
 				str += '<hr/>';
