@@ -13,7 +13,7 @@
 	IEMLApp.init_from_url = function (url_obj) {
 		var qry = url_obj.search, qry_obj = get_URL_params(qry),
 			path_arr = array_map(path_split(url_obj.pathname), function (i, el) {
-				return window.decodeURI(el);
+				return window.decodeURIComponent(el);
 			}), lang = path_arr[0];
 		
 		if (path_arr[1] == 'users') {
@@ -512,11 +512,11 @@
 				    str +='<table class="relation"><tbody>';
 				    
 					for (var j=0; j<info['tables'][i].length; j++) {
-							if (j > 0) {
-								str +='<tr><td class="table-concat-seperator" colspan="' + (parseInt(info['tables'][i][j]['table']['length'], 10) + parseInt(info['tables'][i][j]['table']['hor_header_depth'], 10)) + '"></td></tr>';
-							}
-							
-					    	str += IEML_render_table_body(info['tables'][i][j]['table'], render_callback);
+						if (j > 0) {
+							str +='<tr><td class="table-concat-seperator" colspan="' + (parseInt(info['tables'][i][j]['table']['length'], 10) + parseInt(info['tables'][i][j]['table']['hor_header_depth'], 10)) + '"></td></tr>';
+						}
+						
+				    	str += IEML_render_table_body(info['tables'][i][j]['table'], render_callback);
 					}
 					
 					str += '</tbody></table>';

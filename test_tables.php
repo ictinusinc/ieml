@@ -19,7 +19,7 @@ include_once(APPROOT.'/includes/table_related/table_functions.php');
 table {
     border-collapse: collapse;
 }
-table tbody tr td {
+table tbody tr td, table tbody tr th {
     border: 1px solid;
     text-align: center;
     padding: 3px 2px;
@@ -47,6 +47,7 @@ $keys = array();
 //$keys[] = array('expression' => "O:M:.(M:+O:).-");
 $keys[] = array('expression' => "M:M:.-O:M:.- (E:.- + s.y.-)'");
 //$keys[] = array('expression' => "M:M:.O:M:.- + M:M:.M:O:.-");
+//$keys[] = array('expression' => "S:M:.e.-M:M:.u.-(E:.- + wa.e.-)' + B:M:.e.-M:M:.a.-(E:.- + wa.e.-)' + T:M:.e.-M:M:.i.-(E:.- + wa.e.-)'");
 
 foreach ($keys as &$key) {
     echo '<pre>'.$key['expression'].'</pre>';
@@ -66,7 +67,7 @@ foreach ($keys as &$key) {
 	for ($i=0; $i<count($key['concats']); $i++) {
 		for ($j=0; $j<count($key['concats'][$i]); $j++) {
 			//echo 'post_raw_table: '.pre_dump($key['concats'][$i][$j]);
-			$key['concats'][$i][$j]['tables'] = IEML_postprocess_table($key['concats'][$i][$j]['tables'], function($el) { return $el; });
+			$key['concats'][$i][$j]['table'] = IEML_postprocess_table($key['concats'][$i][$j]['tables'], function($el) { return $el; });
 			
 			//echo IEML_render_tables($key['concats'][$i][$j]['tables'], function($el) { echo $el; });
 		}
@@ -83,7 +84,8 @@ foreach ($keys as &$key) {
 	console.log(expressions);
 	
 	$(function() {
-		var str = '', render_callback = function(el) {
+		var str = '',
+			render_callback = function(el) {
 	            return el;
 			};
 		
@@ -91,10 +93,16 @@ foreach ($keys as &$key) {
 			var tables = exp['concats'];
 			
 			for (var i=0; i<tables.length; i++) {
-				str += IEML_render_table(tables[i][0]['tables'], render_callback);
-				
-				for (var j=1; j<tables[i].length; j++) {
-					str += IEML_render_only_body(tables[i][j]['tables'], render_callback);
+				if (tables[i].length > 1) {
+				    str +='<table class="relation"><tbody>';
+				    
+					for (var j=0; j<tables[i].length; j++) {
+					    str += IEML_render_table_body(tables[i][j]['table'], render_callback);
+					}
+					
+					str += '</tbody></table>';
+				} else {
+					str += IEML_render_table(tables[i][0]['table'], render_callback);
 				}
 				
 				str += '<hr/>';
@@ -102,6 +110,8 @@ foreach ($keys as &$key) {
 			
 			str += '<br/>';
 		});
+		
+		
 		
 		$('#main_body').html(str);
 	});

@@ -329,6 +329,20 @@ function IEML_postproc_tables(&$table) {
     return $ret;
 }
 
+function IEML_postproc_body($body) {
+	for ($i=0; $i<count($body); $i++) {
+		for ($j=0; $j<count($body[$i]); $j++) {
+		    $arr_tokens = \IEML_ExpParse\str_to_tokens($body[$i][$j]);
+			$arr_AST = \IEML_ExpParse\tokens_to_AST($arr_tokens);
+			$arr_AST = \IEML_ExpParse\AST_eliminate_empties($arr_AST);
+			
+			$body[$i][$j] = \IEML_ExpParse\AST_to_pretty_str($arr_AST, $body[$i][$j]);
+		}
+	}
+	
+	return $body;
+}
+
 function IEML_table_collect_headers($tree) {
 	$out = array();
 	
@@ -454,7 +468,7 @@ function IEML_gen_table_info($top) {
 	for ($i=0; $i<count($concats); $i++) {
 		$temp_coll = array();
 		
-		//echo 'concat['.$i.']: '.pre_dump(IEML_ExpParse\AST_to_Infix_str($concats[$i], $top));
+		//echo 'concat['.$i.']: '.pre_dump(IEML_ExpParse\AST_to_infix_str($concats[$i], $top));
 		
 		$sub_top = \IEML_ExpParse\AST_original_str($concats[$i], $top);
 		$raw_tab = IEML_gen_header($concats[$i], $top);
@@ -462,6 +476,7 @@ function IEML_gen_table_info($top) {
 		//echo 'raw_tab for concats['.$i.']: '.pre_dump($raw_tab);
 		
 		for ($j=0; $j<count($raw_tab); $j++) {
+			$raw_tab[$j][1] = IEML_postproc_body($raw_tab[$j][1]);
 			$post_tab = IEML_postproc_tables($raw_tab[$j]);
 			
 			//echo '$post_tab: '.pre_dump($post_tab);
