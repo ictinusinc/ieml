@@ -5,7 +5,6 @@ function IEML_render_tables($info, $exp_des_call = NULL, $filter_call = NULL) {
     $heads = $info['headers'];
     $body = $info['body'];
     $hor_tally = array_fill(0, max(1, $info['hor_header_depth']), array(0, 0));
-    $empty_head_tally = array(0, count($info['empty_head_count'][0][1]) - 1);
     
     echo '<table class="relation"><tbody>';
     echo '<tr>';
@@ -22,12 +21,7 @@ function IEML_render_tables($info, $exp_des_call = NULL, $filter_call = NULL) {
     echo '</tr>';
     
     for ($i=count($heads[1])-1; $i>=0; $i--) {
-        if ($empty_head_tally[1] >= 0 && $i == $info['empty_head_count'][0][1][$empty_head_tally[1]]) {
-        	$empty_head_tally[1]--;
-        	echo '<tr class="empty_head_tr hide">';
-        } else {
-        	echo '<tr>';
-        }
+        echo '<tr>';
         
         for ($j=0; $j<count($heads[1][$i]); $j++) {
             $el_ref = $heads[1][$i][$j][0];
@@ -56,7 +50,6 @@ function IEML_render_tables($info, $exp_des_call = NULL, $filter_call = NULL) {
             if ($hor_tally[$h][0] == 0) {
                 $h_count = $heads[0][$h][$hor_tally[$h][1]][1];
                 $el_ref = $heads[0][$h][$hor_tally[$h][1]][0];
-                
                 
                 if (isset($el_ref)) {
 	            	$cur_class = '';
@@ -97,8 +90,22 @@ function IEML_render_tables($info, $exp_des_call = NULL, $filter_call = NULL) {
     return ob_get_clean();
 }
 
-function IEML_render_logical_tables($info, $exp_des_call = NULL, $filter_call = NULL) {
-	
+function IEML_postprocess_table($tab_info, $callback) {
+    for ($i=0; $i<count($tab_info['headers']); $i++) {
+        for ($j=0; $j<count($tab_info['headers'][$i]); $j++) {
+            for ($k=0; $k<count($tab_info['headers'][$i][$j]); $k++) {
+                $tab_info['headers'][$i][$j][$k][0] = call_user_func($callback, $tab_info['headers'][$i][$j][$k][0]);
+            }
+        }
+    }
+    
+    for ($i=0; $i<count($tab_info['body']); $i++) {
+        for ($j=0; $j<count($tab_info['body'][$i]); $j++) {
+            $tab_info['body'][$i][$j] = call_user_func($callback, $tab_info['body'][$i][$j]);
+        }
+    }
+    
+    return $tab_info;
 }
 
 ?>

@@ -11,9 +11,9 @@ define("DATABASE","ieml");
 //use include(APPROOT.'...'); and src="<?php echo WEBAPPROOT; ? >..." for absolute URLs
 //this helps to simplify the process of moving the app around the place
 //also clears up confusion about nested relative includes
-define('TOPDOMAIN', 'punchclock.ictinusdesign.com');
+define('TOPDOMAIN', $_SERVER['HTTP_HOST']);
 define('DOCROOT', $_SERVER['DOCUMENT_ROOT']);
-define('WEBROOT', 'http://'.$_SERVER['HTTP_HOST']);
+define('WEBROOT', 'http://'.TOPDOMAIN);
 define('OFFROOT', ''); //in case the app needs to be in a subdirectory
 define('APPROOT', DOCROOT . OFFROOT);
 define('WEBAPPROOT', WEBROOT . OFFROOT);

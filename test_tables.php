@@ -13,11 +13,13 @@ include_once(APPROOT.'/includes/functions.php');
 include_once(APPROOT.'/includes/table_related/table_functions.php');
 
 ?>
+<html>
+<head>
 <style>
 table {
     border-collapse: collapse;
 }
-table tbody tr td {
+table tbody tr td, table tbody tr th {
     border: 1px solid;
     text-align: center;
     padding: 3px 2px;
@@ -33,16 +35,22 @@ table tbody tr td {
     max-width: 125px;
 }
 </style>
+</head>
+<body>
+<div class="container" id="main_body"></div>
 <?php
 
 $keys = array();
-$keys[] = array('expression' => "O:O:.M:M:.-");
+//$keys[] = array('expression' => "O:O:.M:M:.-");
+//$keys[] = array('expression' => "I:");
+//$keys[] = array('expression' => "O:O:.A:U:O:.-M:M:.S:M:.-'");
+//$keys[] = array('expression' => "O:M:.(M:+O:).-");
+$keys[] = array('expression' => "M:M:.-O:M:.- (E:.- + s.y.-)'");
+//$keys[] = array('expression' => "M:M:.O:M:.- + M:M:.M:O:.-");
+//$keys[] = array('expression' => "S:M:.e.-M:M:.u.-(E:.- + wa.e.-)' + B:M:.e.-M:M:.a.-(E:.- + wa.e.-)' + T:M:.e.-M:M:.i.-(E:.- + wa.e.-)'");
 
-unset($key);
 foreach ($keys as &$key) {
     echo '<pre>'.$key['expression'].'</pre>';
-	
-	$info = IEML_gen_table_info($key['expression'], $IEML_lowToVowelReg);
 	
 	$tokens = \IEML_ExpParse\str_to_tokens($key['expression']);
 	$AST = \IEML_ExpParse\tokens_to_AST($tokens);
@@ -52,11 +60,61 @@ foreach ($keys as &$key) {
 	
 	echo 'etymology:'.pre_dump(gen_etymology($key['expression']));
 	
-	echo IEML_render_tables($info, function($el) {
-		echo $el;
-	});
+	$info = IEML_gen_table_info($key['expression']);
 	
-	echo 'info: '.pre_dump($info['post_raw_table']);
+	$key['concats'] = IEML_concat_complex_tables($info);
+	
+	for ($i=0; $i<count($key['concats']); $i++) {
+		for ($j=0; $j<count($key['concats'][$i]); $j++) {
+			//echo 'post_raw_table: '.pre_dump($key['concats'][$i][$j]);
+			$key['concats'][$i][$j]['table'] = IEML_postprocess_table($key['concats'][$i][$j]['tables'], function($el) { return $el; });
+			
+			//echo IEML_render_tables($key['concats'][$i][$j]['tables'], function($el) { echo $el; });
+		}
+	}
 }
 
 ?>
+
+<script src="/includes/js/libs/jquery-2.0.0.js"></script>
+<script src="/includes/js/table_render.js"></script>
+<script>
+	var expressions = <?php echo json_encode($keys); ?>;
+	
+	console.log(expressions);
+	
+	$(function() {
+		var str = '',
+			render_callback = function(el) {
+	            return el;
+			};
+		
+		expressions.forEach(function(exp) {
+			var tables = exp['concats'];
+			
+			for (var i=0; i<tables.length; i++) {
+				if (tables[i].length > 1) {
+				    str +='<table class="relation"><tbody>';
+				    
+					for (var j=0; j<tables[i].length; j++) {
+					    str += IEML_render_table_body(tables[i][j]['table'], render_callback);
+					}
+					
+					str += '</tbody></table>';
+				} else {
+					str += IEML_render_table(tables[i][0]['table'], render_callback);
+				}
+				
+				str += '<hr/>';
+			}
+			
+			str += '<br/>';
+		});
+		
+		
+		
+		$('#main_body').html(str);
+	});
+</script>
+</body>
+</html>

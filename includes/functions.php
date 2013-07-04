@@ -5,7 +5,7 @@ function int_clamp($val, $min, $max) {
 	return $val >= $min ? ($val <= $max ? $val : $max) : $min;
 }
 
-function goodInt($item){
+function goodInt($item) {
 	return (isset($item) && !empty($item)) ? (int)$item : 0;
 }
 
@@ -17,7 +17,7 @@ function mysql_escape_mimic($inp) {
     return $inp; 
 } 
 
-function goodInput($var){
+function goodInput($var) {
 	if (get_magic_quotes_gpc()) $var = stripslashes($var);
 	$var = "'".mysql_escape_mimic(trim($var))."'";
 	
@@ -298,7 +298,7 @@ class Conn{
         Conn::$staticResult = @mysql_query($sql, Conn::$staticHandle) or Conn::dbError();
         
         $aTemp = array();
-        while($temp = mysql_fetch_array(Conn::$staticResult, $type)){
+        while($temp = mysql_fetch_array(Conn::$staticResult, $type)) {
             $aTemp[] = $temp;
         }
         return $aTemp;

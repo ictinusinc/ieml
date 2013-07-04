@@ -13,7 +13,7 @@
 	IEMLApp.init_from_url = function (url_obj) {
 		var qry = url_obj.search, qry_obj = get_URL_params(qry),
 			path_arr = array_map(path_split(url_obj.pathname), function (i, el) {
-				return window.decodeURI(el);
+				return decodeURIComponent(el);
 			}), lang = path_arr[0];
 		
 		if (path_arr[1] == 'users') {
@@ -191,7 +191,7 @@
 			} else if (rvars['a'] == 'editDictionary' || rvars['a'] == 'newDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
 		            if ($('#desc-result-id').val() == '') {
-						state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], rvars['exp']]));
+						state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], responseData['expression']]));
 						
 		                $('#desc-result-id').val(responseData['id']);
 		            }
@@ -479,13 +479,58 @@
 	    
 	    $('#iemlEnumCategoryModal').prop('checked', info['enumCategory'] == 'Y');
 		
-		if (info['table']) {
-			$('#ieml-table-span').html(info['table']);
-			$('#iemlTableID').html(info['pkTable2D']);
+		window.__req_info = info;
+		
+		if (info['tables']) {
+			var str = '', render_callback = function(el) {
+				var out = '';
+				
+				if (el['descriptor']) {
+	                out += '<div class="' + (el['enumEnabled'] == 'N' ? 'hide ' : '') + 'cell_wrap' + '">'
+	                	+ '<a href="/ajax.php?id=' + el['id'] + '&a=searchDictionary" data-exp="' + el['expression'] + '" data-id="' + el['id'] + '" class="editExp">'
+	                	+ '<span class="cell_expression">' + el['expression'] + '</span><span class="cell_descriptor">' + el['descriptor'] + '</span></a>'
+	                	+ '</div>';
+	            } else {
+	                out += '<div>'
+	                	+ '<a href="javascript:void(0);" class="createEmptyExp">' + el['expression'] + '</a>'
+	                	+ '</div>';
+	            }
+	            
+	            return out;
+			};
+			
+			for (var i=0; i<info['tables'].length; i++) {
+				for (var j=0; j<info['tables'][i].length; j++) {
+					info['tables'][i][j]['table']['ver_header_depth'] = info['tables'][i][j]['edit_vertical_head_length'];
+					info['tables'][i][j]['table']['hor_header_depth'] = info['tables'][i][j]['edit_horizontal_head_length'];
+					info['tables'][i][j]['table']['length'] = info['tables'][i][j]['length'];
+					info['tables'][i][j]['table']['height'] = info['tables'][i][j]['height'];
+					info['tables'][i][j]['table']['top'] = {'expression': 'top', 'descriptor': 'decriptor', 'id': undefined};
+				}
+				
+				if (info['tables'][i].length > 1) {
+				    str +='<table class="relation"><tbody>';
+				    
+					for (var j=0; j<info['tables'][i].length; j++) {
+						if (j > 0) {
+							str +='<tr><td class="table-concat-seperator" colspan="' + (parseInt(info['tables'][i][j]['table']['length'], 10) + parseInt(info['tables'][i][j]['table']['hor_header_depth'], 10)) + '"></td></tr>';
+						}
+						
+				    	str += IEML_render_table_body(info['tables'][i][j]['table'], render_callback);
+					}
+					
+					str += '</tbody></table>';
+				} else {
+					str += IEML_render_table(info['tables'][i][0]['table'], render_callback);
+				}
+				
+				str += '<hr />';
+			}
+			
+			$('#ieml-table-span').html(str);
 		} else {
-		   $('#ieml-table-span').empty();
-		   $('#iemlTableID').empty();
-	    }
+			$('#ieml-table-span').empty();
+		}
 	    
 	    $('#iemlEnumShowTable').prop('checked', info['enumShowEmpties'] == 'Y').trigger('change');
 	    
@@ -499,13 +544,24 @@
 	    $('#iemlEnumAttributeOff').prop('checked', info['iemlEnumAttributeOff'] == 'Y').trigger('change');
 	    $('#iemlEnumModeOff').prop('checked', info['iemlEnumModeOff'] == 'Y').trigger('change');
 	    
-	    if (info['relations']) {
-	    	var rel_info = format_relations(info);
-		    
-		    $('#ieml-contained-wrap').show().html(rel_info['contained']);
-		    $('#ieml-containing-wrap').show().html(rel_info['containing']);
-		    $('#ieml-concurrent-wrap').show().html(rel_info['concurrent']);
-		    $('#ieml-complementary-wrap').show().html(rel_info['comp_concept']);
+	    if (info['tables']) {
+	    	var str = {'contained': '', 'containing': '', 'concurrent': '', 'comp_concept': ''};
+	    	
+			for (var i=0; i<info['tables'].length; i++) {
+				for (var j=0; j<info['tables'][i].length; j++) {
+			    	var rel_info = format_relations(info['tables'][i][j]);
+			    	
+				    str['contained'] += rel_info['contained'];
+				    str['containing'] += rel_info['containing'];
+				    str['concurrent'] += rel_info['concurrent'];
+				    str['comp_concept'] += rel_info['comp_concept'];
+				}
+			}
+				    
+		    $('#ieml-contained-wrap').show().html(str['contained']);
+		    $('#ieml-containing-wrap').show().html(str['containing']);
+		    $('#ieml-concurrent-wrap').show().html(str['concurrent']);
+		    $('#ieml-complementary-wrap').show().html(str['comp_concept']);
 	    } else {
 		    $('#ieml-contained-wrap, #ieml-containing-wrap, #ieml-concurrent-wrap, #ieml-complementary-wrap').hide();
 	    }

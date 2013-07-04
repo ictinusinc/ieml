@@ -1,18 +1,26 @@
 <?php
 
+error_reporting(E_ERROR);
+
 require_once('includes/config.php');
 require_once(APPROOT.'/includes/functions.php');
 require_once(APPROOT.'/includes/table_related/table_functions.php');
 require_once(APPROOT.'/includes/common_functions.php');
 
-function ensure_table_for_key($key, $IEML_lowToVowelReg) {
+function ensure_table_for_key($key) {
     Conn::query("DELETE FROM table_2d_id WHERE fkExpression = ".goodInt($key['id'])); //relations will auto delete dependent rows
     
-    $key['table_info'] = IEML_gen_table_info($key['expression'], $IEML_lowToVowelReg);
+    $key['table_info'] = IEML_gen_table_info($key['expression']);
     
-    $key['table_info']['table_flat'] = array_values(array_filter($key['table_info']['table_flat'], function($el) { return !is_numeric($el); }));
+    //	echo '$key[\'table_info\']: '.pre_dump($key['table_info']);
     
-    IEML_save_table($key['id'], $key['table_info']);
+	$key['concats'] = IEML_concat_complex_tables($key['table_info']);
+    
+	for ($i=0; $i<count($key['concats']); $i++) {
+		for ($j=0; $j<count($key['concats'][$i]); $j++) {
+    		IEML_save_table($key['id'], $key['concats'][$i][$j], $i, $j);
+    	}
+    }
     
     return $key;
 }
@@ -113,7 +121,7 @@ function handle_request($action, $req) {
 	        break;
 	        
 	    case 'editDictionary':
-	    	$asserts_ret = assert_arr(array('enumCategory', 'exp', 'descriptor', 'lang', 'id', 'enumShowEmpties', 'iemlEnumComplConcOff', 'iemlEnumSubstanceOff', 'iemlEnumAttributeOff', 'iemlEnumModeOff', 'pkTable2D'), $req);
+	    	$asserts_ret = assert_arr(array('enumCategory', 'exp', 'descriptor', 'lang', 'id'), $req);
 	    	
 		    if (TRUE === $asserts_ret) {
 		    	$lang = strtolower($req['lang']);
@@ -128,29 +136,31 @@ function handle_request($action, $req) {
 		            WHERE strLanguageISO6391 = '".goodString($lang)."'
 		            AND fkExpressionPrimary = ".goodInt($req['id']));
 		        
-		        Conn::query("
-		            UPDATE expression_primary
-		            SET
-		                enumCategory = ".goodInput($req['enumCategory']).",
-		                strExpression = ".goodInput($req['exp'])."
-		            WHERE pkExpressionPrimary = ".goodInt($req['id']));
-		        
-		        Conn::query("
-		        	UPDATE table_2d_id
-		        	SET
-		        		enumShowEmpties = ".goodInput($req['enumShowEmpties']).",
-		        		enumCompConc = '".invert_bool($req['iemlEnumComplConcOff'], 'Y', 'N')."',
-		        		strEtymSwitch = '".invert_bool($req['iemlEnumSubstanceOff'], 'Y', 'N')
-		        						.invert_bool($req['iemlEnumAttributeOff'], 'Y', 'N')
-		        						.invert_bool($req['iemlEnumModeOff'], 'Y', 'N')."'
-		        	WHERE pkTable2D = ".goodInt($req['pkTable2D']));
-		            
 		        $ret = array(
 		        	'id' => $req['id'],
 		        	'expression' => $req['exp'],
 		        	'enumCategory' => $req['enumCategory'],
-		        	'descriptor' => $req['descriptor']
+		        	'descriptor' => $req['descriptor'],
+		        	'tables' => array()
 		        );
+		        
+		        if (FALSE && $req['tables']) {
+			        $tables = json_decode($req['tables']);
+			        
+			        for ($i=0; $i<count($tables); $i++) {
+			        	for ($j=0; $j<count($tables[$i]); $j++) {
+					        Conn::query("
+					        	UPDATE table_2d_id
+					        	SET
+					        		enumShowEmpties = ".goodInput($tables[$i][$j]['enumShowEmpties']).",
+					        		enumCompConc = '".invert_bool($tables[$i][$j]['iemlEnumComplConcOff'], 'Y', 'N')."',
+					        		strEtymSwitch = '".invert_bool($tables[$i][$j]['iemlEnumSubstanceOff'], 'Y', 'N')
+					        						.invert_bool($tables[$i][$j]['iemlEnumAttributeOff'], 'Y', 'N')
+					        						.invert_bool($tables[$i][$j]['iemlEnumModeOff'], 'Y', 'N')."'
+					        	WHERE pkTable2D = ".goodInt($req['pkTable2D']));
+				        }
+			        }
+		        }
 		        
 		        if (count($oldDescriptor) > 0) {
 			        Conn::query("
@@ -166,9 +176,16 @@ function handle_request($action, $req) {
 			            VALUES
 			            	(".goodInt($req['id']).", ".goodInput($req['descriptor']).", ".goodInput($lang).")");
 		        }
+		        
+		        Conn::query("
+		            UPDATE expression_primary
+		            SET
+		                enumCategory = ".goodInput($req['enumCategory']).",
+		                strExpression = ".goodInput($req['exp'])."
+		            WHERE pkExpressionPrimary = ".goodInt($req['id']));
 	        
 		        if ($ret['enumCategory'] == 'Y' && $oldState['enumCategory'] == 'N') {
-		        	ensure_table_for_key($ret, $IEML_lowToVowelReg);
+		        	ensure_table_for_key($ret);
 		        }
 		        
 		        $ret = getTableForElement($ret, goodInt($ret['id']), $req);
@@ -181,7 +198,7 @@ function handle_request($action, $req) {
 	        break;
 	        
 	    case 'newDictionary':
-	    	$asserts_ret = assert_arr(array('exp', 'lang', 'enumCategory', 'descriptor', 'enumShowEmpties', 'id'), $req);
+	    	$asserts_ret = assert_arr(array('exp', 'lang', 'enumCategory', 'descriptor', 'enumShowEmpties'), $req);
 	    	
 		    if (TRUE === $asserts_ret) {
 		    	$lang = strtolower($req['lang']);
@@ -207,7 +224,7 @@ function handle_request($action, $req) {
 		                (".$ret['id'].", ".goodInput($req['descriptor']).", ".goodInput($lang).")");
 		        
 		        if ($req['enumCategory'] == 'Y') {
-		        	ensure_table_for_key($ret, $IEML_lowToVowelReg);
+		        	ensure_table_for_key($ret);
 		        }
 		        
 		        $ret = getTableForElement($ret, goodInt($ret['id']), $req);
@@ -362,7 +379,7 @@ header('Content-type: application/json');
 //smart_session($_REQUEST);
 session_start();
 
-api_log(api_message('{Action: '.$ajax.'}'));
+api_log(api_message('{Action: '.$_REQUEST['a'].'}'));
 
 echo (isset($_REQUEST['callback']) ? $_REQUEST['callback'].'(' : '').json_encode(handle_request($_REQUEST['a'], $_REQUEST)).(isset($_REQUEST['callback']) ? ')' : '');
 

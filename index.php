@@ -12,6 +12,8 @@ api_log(api_message());
 require_once(APPROOT.'/includes/header.php');
 
 ?>
+<div class="container user-padding">
+
     <div id="user-view-container" class="hide">
         <div class="row">
             <div class="span9"><h3 data-lang-switch="users"><?php echo trans_phrase('users', $lang); ?></h3></div>
@@ -52,7 +54,7 @@ require_once(APPROOT.'/includes/header.php');
             <div class="row">
             	<div class="span12">
 					<span data-lang-switch="paradigmatic_curcuits"><?php echo trans_phrase('paradigmatic_curcuits', $lang); ?></span>
-	                <div class="hide edit-only">
+	                <!--div class="hide edit-only">
             			<label class="checkbox" id="iemlEnumComplConcOffWrap" for="iemlEnumComplConcOff"><input type="checkbox" class="checkbox" name="iemlEnumComplConcOff" id="iemlEnumComplConcOff" value="Y" /><span data-lang-switch="turn_off_comp_conc"><?php echo trans_phrase('turn_off_comp_conc', $lang); ?></span></label>
             			<div class="row">
 	            			<div class="span12">
@@ -68,14 +70,19 @@ require_once(APPROOT.'/includes/header.php');
 		            			</div>
 	            			</div>
             			</div>
-	                </div>
+	                </div-->
                 	<ul class="nav nav-tabs">
 						<li class="active"><a href="#table" data-toggle="tab" data-lang-switch="appears_in_table"><?php echo trans_phrase('appears_in_table', $lang); ?></a></li>
 						<li><a href="#relations" data-toggle="tab" data-lang-switch="table_relations"><?php echo trans_phrase('table_relations', $lang); ?></a></li>
 						<li><a href="#graph" data-toggle="tab" data-lang-switch="table_graph"><?php echo trans_phrase('table_graph', $lang); ?></a></li>
 					</ul>
             	</div>
-            	<div class="tab-content span12">
+            </div>
+           </div>
+          </div>
+           <div class="container-liquid">
+           <div class="row-liquid tablerow">
+            	<div class="tab-content">
 	                <div class="tab-pane active" id="table">
 	                	<div id="ieml-table-info-wrap">
 		                	<input type="hidden" id="iemlTableID" name="iemlTableID" />

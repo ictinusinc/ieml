@@ -1,54 +1,38 @@
-body {
-	background: #ffffff;
-	font-family: "proxima-nova-alt-condensed",sans-serif;
-}
 
-.contentzone {
-	background: #ffffff;
-	padding: 40px 30px 30px;
-	border-bottom: 1px solid #eeeeee;
-  -webkit-box-shadow: 0 1px 1px rgba(166, 156, 141, 0.3) inset;
-  -moz-box-shadow: 0 1px 1px rgba(166, 156, 141, 0.3) inset;
-  -o-box-shadow: 0 1px 1px rgba(166, 156, 141, 0.3) inset;
-  -webkit-border-radius: 10px;
-  -moz-border-radius: 10px;
-  -o-border-radius: 10px;
-}
-
-.logo {
-	position: relative;
-	height: 12px;
-	width: 166px;
-	/* background: transparent url(/includes/img/IEML_dict.png) no-repeat; */
-	margin: 5px 0 10px 0;
-}
-
-.completely-hide {
-   display: none;
-   visibility: hidden;
-}
-
-.navbar-search {
-   margin-top: 10px;
-}
 
 
 /*---tables---*/
 
-#table table td {
+#iemlRecord .tab-content {
+	overflow: visible;
 	
 }
 
+#table {
+	text-align: center;
+}
 
-#table table td a {
+.tablerow {
+	text-align: center;
+}
+
+#ieml-table-span {
+    padding-top: 25px;
+    text-align: center;
+    overflow: visible;
+}
+
+
+.tab-content {
+	overflow: visible;
+}
+#table table td a, #table table th a {
 	color: #333333;
+	font-size: 12px !important;
 }
 
-
-.table- {
-	display: block;
-	margin-bottom: 4px;
-	
+#table table td {
+	min-width: 200px;
 }
 
 #ieml-desc-result {
@@ -79,16 +63,20 @@ body {
 
 table.relation {
     border-collapse: collapse;
+    margin: 0 auto;
+    
 }
-table.relation tbody tr td {
+table.relation tbody tr td, table.relation tbody tr th {
     border: 1px solid;
     text-align: center;
     border-color: #cccccc;
 	font-family: "proxima-nova-alt-condensed",sans-serif;
-	font-weight: 300;
 	font-size: 16px;
 	min-height: 80px !important;
 
+}
+table.relation tbody tr td {
+	font-weight: 300;
 }
 table.relation .empty_cell {
     border: none;
@@ -121,15 +109,10 @@ table.relation .cell_wrap {
     	color: #333333;
 }
 
-table.relation .cell_wrap span {
-		display: block;
-		color: #999999;
-		font-weight: 200;
-		}
-
-
-#ieml-table-span {
-    padding-top: 25px;
+table.relation .cell_wrap span.cell_expression {
+	display: block;
+	color: #999999;
+	font-weight: 200;
 }
 
 .no-bot-margin {
