@@ -69,6 +69,8 @@ function getTableForElement($ret, $goodID, $options) {
         
         array_append($table_head_query, $related_tables);
         
+        //echo pre_dump($table_head_query);
+        
         $top = array(
             'expression' => $table_head_query[0]['expression'],
             'descriptor' => $table_head_query[0]['descriptor'],
