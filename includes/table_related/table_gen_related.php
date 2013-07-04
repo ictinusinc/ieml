@@ -170,7 +170,7 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 		    	for ($k=0; $k<count($third_seme); $k++) {
 		    		for ($i=0; $i<count($sub_heads[0]); $i++) {
 				    	for ($j=0; $j<count($sub_heads[1]); $j++) {
-							$out[] = IEML_combine_headers($sub_heads[0][$i], $sub_heads[1][$j]);
+							$out[] = IEML_combine_headers($sub_heads[0][$i], array($sub_heads[1][$j][0], $sub_heads[1][$j][1], $third_seme[$k]));
 				    	}
 			    	}
 			    }

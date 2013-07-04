@@ -15,9 +15,11 @@
         
         <!-- Stylesheets -->
         <!-- bootstrap-2.0.1.css -->
-        <style><?php echo file_get_contents(APPROOT.'/includes/css/bootstrap-2.0.1.min.css'); ?></style>
+        <!--style><?php //echo file_get_contents(APPROOT.'/includes/css/bootstrap-2.0.1.min.css'); ?></style-->
+        <link rel="stylesheet" type="text/css" href="<?php echo WEBAPPROOT.'/includes/css/bootstrap-2.0.1.min.css'; ?>">
         <!-- style.css -->
-        <style><?php echo file_get_contents(APPROOT.'/includes/css/style.css'); ?></style>
+        <!--style><?php //echo file_get_contents(APPROOT.'/includes/css/style.css'); ?></style-->
+        <link rel="stylesheet" type="text/css" href="<?php echo WEBAPPROOT.'/includes/css/style.css'; ?>">
     </head>
     <body>
     	<div id="ajax"></div>
