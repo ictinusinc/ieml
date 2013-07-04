@@ -12,6 +12,8 @@ api_log(api_message());
 require_once(APPROOT.'/includes/header.php');
 
 ?>
+<div class="container user-padding">
+
     <div id="user-view-container" class="hide">
         <div class="row">
             <div class="span9"><h3 data-lang-switch="users"><?php echo trans_phrase('users', $lang); ?></h3></div>
@@ -75,7 +77,12 @@ require_once(APPROOT.'/includes/header.php');
 						<li><a href="#graph" data-toggle="tab" data-lang-switch="table_graph"><?php echo trans_phrase('table_graph', $lang); ?></a></li>
 					</ul>
             	</div>
-            	<div class="tab-content span12">
+            </div>
+           </div>
+          </div>
+           <div class="container-liquid">
+           <div class="row-liquid tablerow">
+            	<div class="tab-content">
 	                <div class="tab-pane active" id="table">
 	                	<div id="ieml-table-info-wrap">
 		                	<input type="hidden" id="iemlTableID" name="iemlTableID" />

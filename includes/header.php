@@ -78,4 +78,4 @@
             </div>
         </div>
     
-    <div class="container contentzone user-padding">
+    <div class="contentzone">

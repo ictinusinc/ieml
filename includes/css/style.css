@@ -1,47 +1,25 @@
-body {
-	background: #ffffff;
-	font-family: "proxima-nova-alt-condensed",sans-serif;
-}
 
-.contentzone {
-	background: #ffffff;
-	padding: 40px 30px 30px;
-	border-bottom: 1px solid #eeeeee;
-  -webkit-box-shadow: 0 1px 1px rgba(166, 156, 141, 0.3) inset;
-  -moz-box-shadow: 0 1px 1px rgba(166, 156, 141, 0.3) inset;
-  -o-box-shadow: 0 1px 1px rgba(166, 156, 141, 0.3) inset;
-  -webkit-border-radius: 10px;
-  -moz-border-radius: 10px;
-  -o-border-radius: 10px;
-}
-
-.logo {
-	position: relative;
-	height: 12px;
-	width: 166px;
-	/* background: transparent url(/includes/img/IEML_dict.png) no-repeat; */
-	margin: 5px 0 10px 0;
-}
-
-.completely-hide {
-   display: none;
-   visibility: hidden;
-}
-
-.navbar-search {
-   margin-top: 10px;
-}
 
 
 /*---tables---*/
 
-#table table td {
+#iemlRecord .tab-content {
+	overflow: visible;
 	
+}
+
+#table {
+	text-align: center;
+}
+
+.tablerow {
+	text-align: center;
 }
 
 
 #table table td a, #table table th a {
 	color: #333333;
+	font-size: 12px !important;
 }
 
 
@@ -132,6 +110,7 @@ table.relation .cell_wrap span.cell_expression {
 
 #ieml-table-span {
     padding-top: 25px;
+    text-align: center;
 }
 
 .no-bot-margin {
