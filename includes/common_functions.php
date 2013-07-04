@@ -185,10 +185,6 @@ function format_table_for($table_head_query, $query_exp, $top, $options) {
     }
     
     //add top as a vertical header
-    $span = 0;
-    foreach ($table_info['headers'][1][count($table_info['headers'][1]) - 1] as $last_vertical_el) {
-	    $span += $last_vertical_el[1];
-    }
     $table_info['headers'][1][] = array(array(array(
     	'descriptor' => $top['descriptor'],
 		'enumElementType' => "header",
@@ -196,8 +192,8 @@ function format_table_for($table_head_query, $query_exp, $top, $options) {
 		'enumHeaderType' => "ver",
 		'expression' => $top['expression'],
 		'id' => $top['id'],
-		'intSpan' => $span
-    ), $span));
+		'intSpan' => (int)$table_info['length']
+    ), (int)$table_info['length']));
     
     $ret['table'] = IEML_postprocess_table(array(
     	'headers' => $table_info['headers'],

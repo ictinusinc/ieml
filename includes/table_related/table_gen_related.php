@@ -102,6 +102,34 @@ function IEML_combine_headers($header_info_0, $header_info_1) {
 	return array($headers, $body);
 }
 
+function IEML_fuse_single_header($a, $b) {
+	$out = $a;
+	
+	array_append($out['head'], $b['head']);
+	
+	if (array_key_exists('rest', $out)) {
+		for ($i=0; $i<count($out['rest']); $i++) {
+			$out['rest'][$i] = IEML_fuse_single_header($out['rest'][$i], $b['rest'][$i]);
+		}
+	}
+	
+	return $out;
+}
+
+function IEML_right_append_tables($tables) {
+	$out = $tables[0];
+	
+	for ($i=1; $i<count($tables); $i++) {
+		$out[0][1] = IEML_fuse_single_header($out[0][1], $tables[$i][0][1]);
+		
+		for ($j=0; $j<count($tables[$i][1]); $j++) {
+			array_append($out[1][$j], $tables[$i][1][$j]);
+		}
+	}
+	
+	return $out;
+}
+
 function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 	$out = NULL;
 	
@@ -144,7 +172,9 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 			
 	    	for ($i=0; $i<$tpv_len; $i++) {
 	    		$cvinst = IEMLVarrArr::instanceFromAST($tally_part_varied[$i], $exp);
+	    		//echo '$cvinst: '.pre_dump($cvinst);
 	    		$variations = $cvinst->generateHeaderVariations();
+	    		//echo '$variations: '.pre_dump($variations);
 	    		$temp_subs = array();
 	    		
 				for ($j=0; $j<count($variations)-1; $j++) {
@@ -160,20 +190,30 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 			    		$out[] = IEML_combine_headers($sub_heads[0][$i], $sub_heads[1][$j]);
 			    	}
 		    	}
+		    	
+		    	//echo '$out: '.pre_dump($out);
 	    	} else {
 	    		$third_seme = array();
 	    		
 		    	for ($k=0; $k<count($sub_heads[2]); $k++) {
-	    			array_append($third_seme, IEML_collect_lowest_headers($sub_heads[2][$k][0]));
+		    		$lowest = IEML_collect_lowest_headers($sub_heads[2][$k][0]);
+		    		
+		    		for ($i=0; $i<count($lowest); $i++) {
+			    		$third_seme[] = array($lowest[$i], $sub_heads[2][$k][1], $sub_heads[2][$k][2]);
+		    		}
 		    	}
-		    	
-		    	for ($k=0; $k<count($third_seme); $k++) {
-		    		for ($i=0; $i<count($sub_heads[0]); $i++) {
-				    	for ($j=0; $j<count($sub_heads[1]); $j++) {
-							$out[] = IEML_combine_headers($sub_heads[0][$i], array($sub_heads[1][$j][0], $sub_heads[1][$j][1], $third_seme[$k]));
-				    	}
+		    		
+	    		for ($i=0; $i<count($sub_heads[0]); $i++) {
+			    	for ($j=0; $j<count($sub_heads[1]); $j++) {
+				    	$table_buffer = array();
+				    	
+				    	for ($k=0; $k<count($third_seme); $k++) {
+							$table_buffer[] = IEML_combine_headers($sub_heads[0][$i], array($sub_heads[1][$j][0], $sub_heads[1][$j][1], $third_seme[$k][0].$third_seme[$k][2]));
+						}
+						
+						$out[] = IEML_right_append_tables($table_buffer);
 			    	}
-			    }
+		    	}
 	    	}
     	}
     }
@@ -234,11 +274,11 @@ function IEML_count_num_var($AST) {
 	$out = 0;
 	
 	if ($AST['internal']) {
-		if ($AST['value']['type'] == 'MUL' || $AST['value']['type'] == 'LAYER' || $AST['type'] == 'L0PLUS') {
+		if ($AST['value']['type'] == 'MUL' || $AST['value']['type'] == 'LAYER') {
 			for ($i=0; $i<count($AST['children']); $i++) {
 				$out += IEML_count_num_var($AST['children'][$i]);
 			}
-		} else if ($AST['value']['type'] == 'PLUS') {
+		} else if ($AST['type'] == 'L0PLUS' || $AST['value']['type'] == 'PLUS') {
 			$out = 1;
 		}
 	}

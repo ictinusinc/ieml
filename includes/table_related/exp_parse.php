@@ -414,14 +414,12 @@ function identify_L0_astructs(&$AST) {
 	global $short_to_al;
 
 	if ($AST['internal']) {
-		if ($AST['value']['type'] == 'PLUS' && !array_key_exists($AST['value']['_original'], $short_to_al)) {
-			if (highest_LAYER_AST($AST) == 0) {
-				$AST['type'] = 'L0PLUS';
-			}
+		if ($AST['value']['type'] == 'PLUS' && highest_LAYER_AST($AST) == 0) {
+			$AST['type'] = 'L0PLUS';
 		}
 			
 		for ($i=0; $i<count($AST['children']); $i++) {
-			$sub = identify_L0_astructs($AST['children'][$i]);
+			$AST['children'][$i] = identify_L0_astructs($AST['children'][$i]);
 		}
 	}
 	
@@ -494,7 +492,7 @@ function AST_to_infix_str($AST, $exp = NULL, $lev = 0) {
 			$out .= ' ['.$AST['value'][0]['_str_ref'][0].'-'.$AST['value'][0]['_str_ref'][1].': "'.AST_original_str($AST['value'][0], $exp).'"]';
 		}
 	} else {
-		$out .= '('.$AST['value']['value'];
+		$out .= '('.$AST['value']['value'].': '.$AST['type'];
 		if (isset($exp)) {
 			$out .= ' ['.$AST['_str_ref'][0].'-'.$AST['_str_ref'][1].': "'.AST_original_str($AST, $exp).'"]';
 		}
@@ -513,21 +511,23 @@ function AST_original_str($AST, $exp) {
 	return substr_ab($exp, $AST['_str_ref'][0], $AST['_str_ref'][1]);
 }
 
-function AST_to_pretty_str($AST) {
+function AST_to_pretty_str($AST, $exp) {
 	$out = '';
 	
 	if ($AST['internal']) {
 		if ($AST['value']['type'] == 'LAYER') {
-			$out = AST_to_pretty_str($AST['children'][0]).$AST['value']['value'];
+			$out = AST_to_pretty_str($AST['children'][0], $exp).$AST['value']['value'];
+		} else if ($AST['type'] == 'L0PLUS') {
+			$out = AST_original_str($AST, $exp);
 		} else if ($AST['value']['type'] == 'PLUS') {
 			$out .= '(';
 			for ($i=0; $i<count($AST['children']); $i++) {
-				$out .= ($i>0?$AST['value']['value']:'').AST_to_pretty_str($AST['children'][$i]);
+				$out .= ($i>0?$AST['value']['value']:'').AST_to_pretty_str($AST['children'][$i], $exp);
 			}
 			$out .= ')';
 		} else {
 			for ($i=0; $i<count($AST['children']); $i++) {
-				$out .= AST_to_pretty_str($AST['children'][$i]);
+				$out .= AST_to_pretty_str($AST['children'][$i], $exp);
 			}
 		}
 	} else {
@@ -561,7 +561,7 @@ function fetch_etymology_from_AST($AST, $level = 0) {
 			if we've detected a layer node and we're at lesat one level down the tree (aka a layer subnode)
 			OR if we've detected something which is a character that has been expanded
 		*/
-		if ((($AST['value']['type'] == 'LAYER' || $AST['value']['type'] == 'L0PLUS') && $level > 0)
+		if ((($AST['value']['type'] == 'LAYER' || $AST['type'] == 'L0PLUS') && $level > 0)
 			|| ($AST['value']['type'] == 'PLUS' && strlen($AST['value']['_original']) == 1)) {
 			return array($AST);
 			

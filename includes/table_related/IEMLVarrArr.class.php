@@ -126,16 +126,6 @@ class IEMLVarrArr {
 				for ($i=0; $i<count($AST['children']); $i++) {
 					$this->fromAST($AST['children'][$i], $exp);
 				}
-			} else if ($AST['type'] == 'L0PLUS') {
-				//TODO: a more elegant version of this branch
-				$this->pushElement('(');
-				for ($i=0; $i<count($AST['children']); $i++) {
-					if ($i > 0) {
-						$this->pushElement($AST['value']['value']);
-					}
-					$this->fromAST($AST['children'][$i], $exp);
-				}
-				$this->pushElement(')');
 			} else if ($AST['value']['type'] == 'LAYER') {
 				$this->fromAST($AST['children'][0], $exp);
 				$this->pushElement($AST['value']['value']);
