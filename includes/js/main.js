@@ -13,7 +13,7 @@
 	IEMLApp.init_from_url = function (url_obj) {
 		var qry = url_obj.search, qry_obj = get_URL_params(qry),
 			path_arr = array_map(path_split(url_obj.pathname), function (i, el) {
-				return window.decodeURIComponent(el);
+				return decodeURIComponent(el);
 			}), lang = path_arr[0];
 		
 		if (path_arr[1] == 'users') {

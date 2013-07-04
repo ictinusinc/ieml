@@ -40,7 +40,34 @@ function getTableForElement($ret, $goodID, $options) {
                     WHERE strLanguageISO6391 = '".goodString($lang)."'
                 ) sublang
                 ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
-            WHERE t2d.enumDeleted = 'N' AND t2dref.strCellExpression = '".goodString($ret['expression'])."'");
+            WHERE t2d.enumDeleted = 'N' AND prim.enumDeleted = 'N'
+            AND t2dref.strCellExpression = '".goodString($ret['expression'])."'");
+        
+        $related_tables = array();
+        for ($i=0; $i<count($table_head_query); $i++) {
+        	array_append($related_tables, Conn::queryArrays("
+	            SELECT
+	                pkTable2D, enumShowEmpties, intWidth, intHeight, intHorHeaderDepth, intVerHeaderDepth,
+	                prim.strExpression AS expression, sublang.strDescriptor AS descriptor, jsonTableLogic,
+	                prim.pkExpressionPrimary as id, enumCompConc, strEtymSwitch,
+	                intLeftoverIndex, intConcatIndex
+	            FROM table_2d_id t2d
+	            JOIN expression_primary prim ON prim.pkExpressionPrimary = t2d.fkExpression
+	            LEFT JOIN
+	                (
+	                    SELECT fkExpressionPrimary, strDescriptor
+	                    FROM expression_descriptors
+	                    WHERE strLanguageISO6391 = '".goodString($lang)."'
+	                ) sublang
+	                ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
+	            WHERE t2d.enumDeleted = 'N' AND prim.enumDeleted = 'N'
+	            AND t2d.fkExpression = ".$table_head_query[$i]['id']."
+	            AND t2d.intLeftoverIndex = ".$table_head_query[$i]['intLeftoverIndex']."
+	            AND t2d.intConcatIndex != ".$table_head_query[$i]['intConcatIndex']."
+	        "));
+        }
+        
+        array_append($table_head_query, $related_tables);
         
         $top = array(
             'expression' => $table_head_query[0]['expression'],
