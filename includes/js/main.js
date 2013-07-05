@@ -288,7 +288,7 @@
 		
 		$('#filter-results-wrap').hide();
 		
-		$('#record-view-container').hide();
+		$('#record-view-container, .circuit-container').hide();
 		$('#user-view-container').hide();
 		$('#list-view-container').hide();
 		$('#login-view-container').hide();
@@ -307,8 +307,7 @@
 		}
 		
 		$('#back-to-list-view').show();
-		
-		$('#record-view-container').show();
+		$('#record-view-container, .circuit-container').show();
 	}
 	
 	function switch_to_list() {

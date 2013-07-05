@@ -26,10 +26,10 @@ function getTableForElement($ret, $goodID, $options) {
     } else {
         $table_head_query = Conn::queryArrays("
             SELECT
-                pkTable2D, enumShowEmpties, intWidth, intHeight, intHorHeaderDepth, intVerHeaderDepth,
-                prim.strExpression AS expression, sublang.strDescriptor AS descriptor, jsonTableLogic,
-                prim.pkExpressionPrimary as id, enumCompConc, strEtymSwitch, t2dref.enumEnabled,
-                intLeftoverIndex, intConcatIndex
+				t2d.pkTable2D, t2d.enumShowEmpties, t2d.intWidth, t2d.intHeight, t2d.intHorHeaderDepth, t2d.intVerHeaderDepth,
+				prim.strExpression AS expression, sublang.strDescriptor AS descriptor, t2d.jsonTableLogic,
+				prim.pkExpressionPrimary as id, t2d.enumCompConc, t2d.strEtymSwitch,
+				t2d.intLeftoverIndex, t2d.intConcatIndex
             FROM table_2d_id t2d
             JOIN expression_primary prim ON prim.pkExpressionPrimary = t2d.fkExpression
             JOIN table_2d_ref t2dref ON fkTable2D = pkTable2D
@@ -47,10 +47,10 @@ function getTableForElement($ret, $goodID, $options) {
         for ($i=0; $i<count($table_head_query); $i++) {
         	array_append($related_tables, Conn::queryArrays("
 	            SELECT
-	                pkTable2D, enumShowEmpties, intWidth, intHeight, intHorHeaderDepth, intVerHeaderDepth,
-	                prim.strExpression AS expression, sublang.strDescriptor AS descriptor, jsonTableLogic,
-	                prim.pkExpressionPrimary as id, enumCompConc, strEtymSwitch,
-	                intLeftoverIndex, intConcatIndex
+					t2d.pkTable2D, t2d.enumShowEmpties, t2d.intWidth, t2d.intHeight, t2d.intHorHeaderDepth, t2d.intVerHeaderDepth,
+					prim.strExpression AS expression, sublang.strDescriptor AS descriptor, t2d.jsonTableLogic,
+					prim.pkExpressionPrimary as id, t2d.enumCompConc, t2d.strEtymSwitch,
+					t2d.intLeftoverIndex, t2d.intConcatIndex
 	            FROM table_2d_id t2d
 	            JOIN expression_primary prim ON prim.pkExpressionPrimary = t2d.fkExpression
 	            LEFT JOIN
@@ -92,6 +92,11 @@ function getTableForElement($ret, $goodID, $options) {
     	} else {
 	    	$ret['tables'][$table_head_query[$i]['intLeftoverIndex']] = array($table_head_query[$i]['intConcatIndex'] => $formatted_sub);
     	}
+    }
+    
+	$ret['tables'] = array_values($ret['tables']);
+    for ($i=0; $i<count($ret['tables']); $i++) {
+	    $ret['tables'][$i] = array_values($ret['tables'][$i]);
     }
     
     return $ret;
