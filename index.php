@@ -88,7 +88,7 @@ require_once(APPROOT.'/includes/header.php');
 
                 <div class="row">
                     <div class="span12">
-                        <span data-lang-switch="paradigmatic_curcuits"><?php echo trans_phrase('paradigmatic_curcuits', $lang); ?></span> <!--div class="hide edit-only">
+                        <span data-lang-switch="paradigmatic_curcuits"><?php echo trans_phrase('paradigmatic_curcuits', $lang); ?></span> <div class="hide edit-only">
                         <label class="checkbox" id="iemlEnumComplConcOffWrap" for="iemlEnumComplConcOff"><input type="checkbox" class="checkbox" name="iemlEnumComplConcOff" id="iemlEnumComplConcOff" value="Y" /><span data-lang-switch="turn_off_comp_conc"><?php echo trans_phrase('turn_off_comp_conc', $lang); ?></span></label>
                         <div class="row">
                             <div class="span12">
@@ -104,7 +104,7 @@ require_once(APPROOT.'/includes/header.php');
                                 </div>
                             </div>
                         </div>
-                    </div-->
+                    </div>
 
                         <ul class="nav nav-tabs">
                             <li class="active"><a href="#table" data-toggle="tab" data-lang-switch="appears_in_table"><?php echo trans_phrase('appears_in_table', $lang); ?></a></li>
