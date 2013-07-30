@@ -9,9 +9,9 @@ function getTableForElement($ret, $goodID, $options) {
     if ($ret['enumCategory'] == 'Y') {
         $table_head_query = Conn::queryArrays("
             SELECT
-            	pkTable2D, enumShowEmpties, intWidth, intHeight, intHorHeaderDepth, intVerHeaderDepth,
+            	pkTable2D, intWidth, intHeight, intHorHeaderDepth, intVerHeaderDepth,
             	prim.strExpression as expression, sublang.strDescriptor as descriptor, jsonTableLogic,
-            	t2d.fkExpression as id, enumCompConc, strEtymSwitch, intLeftoverIndex, intConcatIndex
+            	t2d.fkExpression as id, intLeftoverIndex, intConcatIndex
             FROM table_2d_id t2d
             JOIN expression_primary prim ON t2d.fkExpression = prim.pkExpressionPrimary
             LEFT JOIN
@@ -26,9 +26,9 @@ function getTableForElement($ret, $goodID, $options) {
     } else {
         $table_head_query = Conn::queryArrays("
             SELECT
-				t2d.pkTable2D, t2d.enumShowEmpties, t2d.intWidth, t2d.intHeight, t2d.intHorHeaderDepth, t2d.intVerHeaderDepth,
+				t2d.pkTable2D, t2d.intWidth, t2d.intHeight, t2d.intHorHeaderDepth, t2d.intVerHeaderDepth,
 				prim.strExpression AS expression, sublang.strDescriptor AS descriptor, t2d.jsonTableLogic,
-				prim.pkExpressionPrimary as id, t2d.enumCompConc, t2d.strEtymSwitch,
+				prim.pkExpressionPrimary as id,
 				t2d.intLeftoverIndex, t2d.intConcatIndex
             FROM table_2d_id t2d
             JOIN expression_primary prim ON prim.pkExpressionPrimary = t2d.fkExpression
@@ -47,9 +47,9 @@ function getTableForElement($ret, $goodID, $options) {
         for ($i=0; $i<count($table_head_query); $i++) {
         	array_append($related_tables, Conn::queryArrays("
 	            SELECT
-					t2d.pkTable2D, t2d.enumShowEmpties, t2d.intWidth, t2d.intHeight, t2d.intHorHeaderDepth, t2d.intVerHeaderDepth,
+					t2d.pkTable2D, t2d.intWidth, t2d.intHeight, t2d.intHorHeaderDepth, t2d.intVerHeaderDepth,
 					prim.strExpression AS expression, sublang.strDescriptor AS descriptor, t2d.jsonTableLogic,
-					prim.pkExpressionPrimary as id, t2d.enumCompConc, t2d.strEtymSwitch,
+					prim.pkExpressionPrimary as id,
 					t2d.intLeftoverIndex, t2d.intConcatIndex
 	            FROM table_2d_id t2d
 	            JOIN expression_primary prim ON prim.pkExpressionPrimary = t2d.fkExpression
@@ -68,8 +68,6 @@ function getTableForElement($ret, $goodID, $options) {
         }
         
         array_append($table_head_query, $related_tables);
-        
-        //echo pre_dump($table_head_query);
         
         $top = array(
             'expression' => $table_head_query[0]['expression'],
@@ -156,13 +154,13 @@ function format_table_for($table_head_query, $query_exp, $top, $options) {
     $ret['edit_horizontal_head_length'] = $table_info['hor_header_depth'];
     $ret['render_horizontal_head_length'] = $table_info['hor_header_depth'] - $empty_head_count[1][0];
     
-    $ret['iemlEnumComplConcOff'] = invert_bool($table_head_query['enumCompConc'], 'Y', 'N');
-    $ret['iemlEnumSubstanceOff'] = invert_bool($table_head_query['strEtymSwitch'][0], 'Y', 'N');
-    $ret['iemlEnumAttributeOff'] = invert_bool($table_head_query['strEtymSwitch'][1], 'Y', 'N');
-    $ret['iemlEnumModeOff'] = invert_bool($table_head_query['strEtymSwitch'][2], 'Y', 'N');
+    $ret['iemlEnumComplConcOff'] = invert_bool($query_exp['enumCompConc'], 'Y', 'N');
+    $ret['iemlEnumSubstanceOff'] = invert_bool($query_exp['strEtymSwitch'][0], 'Y', 'N');
+    $ret['iemlEnumAttributeOff'] = invert_bool($query_exp['strEtymSwitch'][1], 'Y', 'N');
+    $ret['iemlEnumModeOff'] = invert_bool($query_exp['strEtymSwitch'][2], 'Y', 'N');
     
     $ret['pkTable2D'] = $table_head_query['pkTable2D'];
-    $ret['enumShowEmpties'] = $table_head_query['enumShowEmpties'];
+    $ret['enumShowEmpties'] = $query_exp['enumShowEmpties'];
     
     $ret['relations'] = gen_exp_relations($query_exp['expression'], $top['expression'], $table_info, function($el) use ($flat_assoc) {
         return array_key_exists($el[0], $flat_assoc);
@@ -212,7 +210,7 @@ function format_table_for($table_head_query, $query_exp, $top, $options) {
         
         $ret['etymology'] = array();
         for ($i=0; $i<count($temp_etym); $i++) {
-	        if ($table_head_query['strEtymSwitch'][$i] == 'Y') {
+	        if ($query_exp['strEtymSwitch'][$i] == 'Y') {
 		        $ret['etymology'][] = $temp_etym[$i];
 	        }
         }

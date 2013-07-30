@@ -41,7 +41,8 @@ function handle_request($action, $req) {
 					    $ret = Conn::queryArray("
 					        SELECT
 					            pkExpressionPrimary as id, strExpression as expression,
-					            enumCategory, sublang.strDescriptor AS descriptor
+					            enumCategory, sublang.strDescriptor AS descriptor,
+					            prim.enumShowEmpties, prim.enumCompConc, prim.strEtymSwitch
 					        FROM expression_primary prim
 					        LEFT JOIN expression_descriptors sublang
 					        	ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
@@ -51,7 +52,8 @@ function handle_request($action, $req) {
 					    $ret = Conn::queryArray("
 					        SELECT
 					            pkExpressionPrimary as id, strExpression as expression,
-					            enumCategory, sublang.strDescriptor AS descriptor
+					            enumCategory, sublang.strDescriptor AS descriptor,
+					            prim.enumShowEmpties, prim.enumCompConc, prim.strEtymSwitch
 					        FROM expression_primary prim
 					        LEFT JOIN expression_descriptors sublang
 					        	ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
@@ -64,7 +66,8 @@ function handle_request($action, $req) {
 				    if (!$ret) {
 					    $ret = Conn::queryArray("
 					        SELECT
-					            pkExpressionPrimary as id, strExpression as expression, enumCategory
+					            prim.pkExpressionPrimary as id, prim.strExpression as expression,
+					            prim.enumCategory, prim.enumShowEmpties, prim.enumCompConc, prim.strEtymSwitch
 					        FROM expression_primary prim
 					        WHERE pkExpressionPrimary = ".$goodID);
 				    }
@@ -144,24 +147,6 @@ function handle_request($action, $req) {
 		        	'tables' => array()
 		        );
 		        
-		        if (FALSE && $req['tables']) {
-			        $tables = json_decode($req['tables']);
-			        
-			        for ($i=0; $i<count($tables); $i++) {
-			        	for ($j=0; $j<count($tables[$i]); $j++) {
-					        Conn::query("
-					        	UPDATE table_2d_id
-					        	SET
-					        		enumShowEmpties = ".goodInput($tables[$i][$j]['enumShowEmpties']).",
-					        		enumCompConc = '".invert_bool($tables[$i][$j]['iemlEnumComplConcOff'], 'Y', 'N')."',
-					        		strEtymSwitch = '".invert_bool($tables[$i][$j]['iemlEnumSubstanceOff'], 'Y', 'N')
-					        						.invert_bool($tables[$i][$j]['iemlEnumAttributeOff'], 'Y', 'N')
-					        						.invert_bool($tables[$i][$j]['iemlEnumModeOff'], 'Y', 'N')."'
-					        	WHERE pkTable2D = ".goodInt($req['pkTable2D']));
-				        }
-			        }
-		        }
-		        
 		        if (count($oldDescriptor) > 0) {
 			        Conn::query("
 			            UPDATE expression_descriptors
@@ -181,7 +166,12 @@ function handle_request($action, $req) {
 		            UPDATE expression_primary
 		            SET
 		                enumCategory = ".goodInput($req['enumCategory']).",
-		                strExpression = ".goodInput($req['exp'])."
+		                strExpression = ".goodInput($req['exp']).",
+		        		enumShowEmpties = ".goodInput($req['enumShowEmpties']).",
+		        		enumCompConc = '".invert_bool($req['iemlEnumComplConcOff'], 'Y', 'N')."',
+		        		strEtymSwitch = '".invert_bool($req['iemlEnumSubstanceOff'], 'Y', 'N')
+		        						.invert_bool($req['iemlEnumAttributeOff'], 'Y', 'N')
+		        						.invert_bool($req['iemlEnumModeOff'], 'Y', 'N')."'
 		            WHERE pkExpressionPrimary = ".goodInt($req['id']));
 	        
 		        if ($ret['enumCategory'] == 'Y' && $oldState['enumCategory'] == 'N') {

@@ -370,6 +370,8 @@
 	function format_relations(info) {
 		var contained_html = '', containing_html = '', concurrent_html = '', comp_concept_html = '', etymology_html = '';
 		
+	    return {'contained': contained_html, 'containing': containing_html, 'concurrent': concurrent_html, 'comp_concept': comp_concept_html};
+		
 	    if (info['relations']['contained'].length > 0) {
 	    	contained_html += '<ul class="relation-list">';
 		    for (var i=0; i<info['relations']['contained'].length; i++) {

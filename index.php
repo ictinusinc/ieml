@@ -90,9 +90,15 @@ require_once(APPROOT.'/includes/header.php');
                     <div class="span12">
                         <span data-lang-switch="paradigmatic_curcuits"><?php echo trans_phrase('paradigmatic_curcuits', $lang); ?></span> <div class="hide edit-only">
                         <label class="checkbox" id="iemlEnumComplConcOffWrap" for="iemlEnumComplConcOff"><input type="checkbox" class="checkbox" name="iemlEnumComplConcOff" id="iemlEnumComplConcOff" value="Y" /><span data-lang-switch="turn_off_comp_conc"><?php echo trans_phrase('turn_off_comp_conc', $lang); ?></span></label>
+                        
+                        <div class="row">
+                        	<div class="span4">
+                                <p data-lang-switch="disable"><?php echo trans_phrase('disable', $lang); ?></p>
+                        	</div>
+                        </div>
+                        
                         <div class="row">
                             <div class="span12">
-                                <p data-lang-switch="disable"><?php echo trans_phrase('disable', $lang); ?></p>
                                 <div class="span2">
                                     <label class="checkbox" id="iemlEnumSubstanceOffWrap" for="iemlEnumSubstanceOff"><input type="checkbox" class="checkbox" name="iemlEnumSubstanceOff" id="iemlEnumSubstanceOff" value="Y" /><span data-lang-switch="substance"><?php echo trans_phrase('substance', $lang); ?></span></label>
                                 </div>
@@ -103,6 +109,14 @@ require_once(APPROOT.'/includes/header.php');
                                     <label class="checkbox" id="iemlEnumModeOffWrap" for="iemlEnumModeOff"><input type="checkbox" class="checkbox" name="iemlEnumModeOff" id="iemlEnumModeOff" value="Y" /><span data-lang-switch="mode"><?php echo trans_phrase('mode', $lang); ?></span></label>
                                 </div>
                             </div>
+                        </div>
+                        
+                        <div class="row">
+                        	<div class="span4">
+		                        <div class="hide edit-only">
+		                            <label class="checkbox" id="iemlEnumShowTableWrap" for="iemlEnumShowTable"><input type="checkbox" class="checkbox" name="iemlEnumShowTable" id="iemlEnumShowTable" value="Y"><span data-lang-switch="users"><?php echo trans_phrase('show_empty_cells', $lang); ?></span></label>
+		                        </div>
+                        	</div>
                         </div>
                     </div>
 
@@ -137,16 +151,12 @@ require_once(APPROOT.'/includes/header.php');
                     <div id="ieml-table-info-wrap">
                         <input type="hidden" id="iemlTableID" name="iemlTableID">
 
-                        <div class="hide edit-only">
-                            <label class="checkbox" id="iemlEnumShowTableWrap" for="iemlEnumShowTable"><input type="checkbox" class="checkbox" name="iemlEnumShowTable" id="iemlEnumShowTable" value="Y"><span data-lang-switch="users"><?php echo trans_phrase('show_empty_cells', $lang); ?></span></label>
-                        </div>
-
                         <div id="ieml-table-span"></div>
                     </div>
                 </div>
 
                 <div class="tab-pane" id="relations">
-                    <div id="ieml-relations-wrap">
+                    <div class="hide" id="ieml-relations-wrap">
                         <h3 class="heading_underline"><span data-lang-switch="taxonomic"><?php echo trans_phrase('taxonomic', $lang); ?></span></h3>
 
                         <div class="row">
