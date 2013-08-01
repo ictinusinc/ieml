@@ -38,25 +38,31 @@ function handle_request($action, $req) {
 		    	if (isset($req['id']) || isset($req['exp'])) {
 					if (isset($req['id'])) {
 					    $goodID = goodInt($req['id']);
-					    $ret = Conn::queryArray("
-					        SELECT
-					            pkExpressionPrimary as id, strExpression as expression,
-					            enumCategory, sublang.strDescriptor AS descriptor,
-					            prim.enumShowEmpties, prim.enumCompConc, prim.strEtymSwitch
-					        FROM expression_primary prim
-					        LEFT JOIN expression_descriptors sublang
-					        	ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
-					        WHERE strLanguageISO6391 = ".goodInput($lang)."
-					        AND   pkExpressionPrimary = ".$goodID);
+							$ret = Conn::queryArray("
+								SELECT
+									prim.pkExpressionPrimary as id, prim.strExpression as expression,
+									prim.enumCategory, sublang.strDescriptor AS descriptor,
+									t_key.enumShowEmpties, t_key.enumCompConc, t_key.strEtymSwitch
+								FROM expression_primary prim
+								LEFT JOIN expression_descriptors sublang
+								ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
+								LEFT JOIN table_2d_ref t2dref ON prim.pkExpressionPrimary = t2dref.fkExpressionPrimary
+								LEFT JOIN table_2d_id t2did ON t2dref.fkTable2D = t2did.pkTable2D
+								LEFT JOIN expression_primary t_key ON t2did.fkExpression = t_key.pkExpressionPrimary
+								WHERE strLanguageISO6391 = ".goodInput($lang)."
+								AND   prim.pkExpressionPrimary = ".$goodID);
 				    } else if (isset($req['exp'])) {
 					    $ret = Conn::queryArray("
 					        SELECT
-					            pkExpressionPrimary as id, strExpression as expression,
-					            enumCategory, sublang.strDescriptor AS descriptor,
-					            prim.enumShowEmpties, prim.enumCompConc, prim.strEtymSwitch
+								prim.pkExpressionPrimary as id, prim.strExpression as expression,
+								prim.enumCategory, sublang.strDescriptor AS descriptor,
+					            t_key.enumShowEmpties, t_key.enumCompConc, t_key.strEtymSwitch
 					        FROM expression_primary prim
 					        LEFT JOIN expression_descriptors sublang
 					        	ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
+					        LEFT JOIN table_2d_ref t2dref ON prim.pkExpressionPrimary = t2dref.fkExpressionPrimary
+					        LEFT JOIN table_2d_id t2did ON t2dref.fkTable2D = t2did.pkTable2D
+					        LEFT JOIN expression_primary t_key ON t2did.fkExpression = t_key.pkExpressionPrimary
 					        WHERE strLanguageISO6391 = ".goodInput($lang)."
 					        AND   prim.strExpression = '".goodString($req['exp'])."'
 					        AND   prim.enumDeleted = 'N'");

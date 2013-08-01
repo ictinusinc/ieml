@@ -42,8 +42,8 @@
 	                    	<div class="pull-left">
 	                    		<select id="search-spec-select" name="lexicon" class="span2"><option value="BasicLexicon">Basic Lexicon</option></select>
 	                    		<select id="search-lang-select" name="lang" class="span2">
-	                    			<option <?php if ($_REQUEST['lang'] == 'en') echo 'selected="selected"'; ?>value="en">English</option>
-	                    			<option <?php if ($_REQUEST['lang'] == 'fr') echo 'selected="selected"'; ?>value="fr">Français</option>
+	                    			<option <?php if (array_key_exists('lang', $_REQUEST) && $_REQUEST['lang'] == 'en') echo 'selected="selected"'; ?>value="en">English</option>
+	                    			<option <?php if (array_key_exists('lang', $_REQUEST) && $_REQUEST['lang'] == 'fr') echo 'selected="selected"'; ?>value="fr">Français</option>
 	                    		</select>
 	                    	</div>
 	                    	<div class="pull-right"><input type="text" class="search-query span2" id="search" name="search" data-lang-switch="search" data-lang-switch-attr="placeholder" placeholder="<?php echo trans_phrase('search', $lang); ?>" /></div>
