@@ -3,12 +3,13 @@
 include_once(dirname(__FILE__).'/IEMLNodeType.class.php');
 
 class IEMLASTNode {
-	private $str, $type, $children;
+	private $str, $type, $children, $source;
 	
-	public function __construct($str, $type, array $children = array()) {
+	public function __construct($str, $type, array $children = array(), $source = NULL) {
 		$this->str = $str;
 		$this->type = $type;
 		$this->children = $children;
+		$this->source = $source;
 	}
 	
 	public function children($new_children = NULL) {
@@ -31,6 +32,16 @@ class IEMLASTNode {
 		}
 	}
 	
+	public function source($source) {
+		if (isset($source)) {
+			$this->source = $source;
+			
+			return $this;
+		} else {
+			return $this->source;
+		}
+	}
+	
 	public function push(IEMLASTNode $child) {
 		if (isset($child)) {
 			$this->children[] = $child;
@@ -41,12 +52,12 @@ class IEMLASTNode {
 		return $this;
 	}
 	
-	public function child_count() {
+	public function childCount() {
 		return count($this->children);
 	}
 	
 	public function child($index, IEMLASTNode $new_val = NULL) {
-		if ($index >= 0 && $index < $this->child_count()) {
+		if ($index >= 0 && $index < $this->childCount()) {
 			if (isset($new_val)) {
 				$this->children[$index] = $new_val;
 				
@@ -55,7 +66,7 @@ class IEMLASTNode {
 				return $this->children[$index];
 			}
 		} else {
-			throw new Exception('Child at index "'.$index.'" is out of bounds, so: '.$index.' < 0 OR '.$index.' >= '.$this->child_count().'.');
+			throw new Exception('Child at index "'.$index.'" is out of bounds, so: '.$index.' < 0 OR '.$index.' >= '.$this->childCount().'.');
 		}
 	}
 	
@@ -64,17 +75,18 @@ class IEMLASTNode {
 		
 		$out .= str_repeat('    ', $level+1).'str: "'.$this->str.'"'."\n";
 		$out .= str_repeat('    ', $level+1).'type: '.IEMLNodeType::toString($this->type)."\n";
+		$out .= str_repeat('    ', $level+1).'at: '.(isset($this->source) ? $this->source : 'NONE')."\n";
 		$out .= str_repeat('    ', $level+1).'children:';
-		if ($this->child_count() > 0) {
-			$out .= ' '.$this->child_count().' ';
+		if ($this->childCount() > 0) {
+			$out .= ' '.$this->childCount().' ';
 			
-			if ($this->child_count() == 1) {
+			if ($this->childCount() == 1) {
 				$out .= "child\n";
 			} else {
 				$out .= "children\n";
 			}
 			
-			for ($i=0; $i<$this->child_count(); $i++) {
+			for ($i=0; $i<$this->childCount(); $i++) {
 				$out .= str_repeat('    ', $level+1).$i.":\n".$this->child($i)->toString($level+1);
 			}
 		} else {
@@ -85,8 +97,12 @@ class IEMLASTNode {
 		return $out;
 	}
 	
+	public function reconstructString() {
+		return $this->str;
+	}
+	
 	public function __toString() {
-		return $this->toString();
+		return $this->reconstructString();
 	}
 }
 
