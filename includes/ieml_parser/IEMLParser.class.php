@@ -18,7 +18,7 @@ class IEMLParser {
 		);
 	
 	public static function handleErrors($severity, $message, $filename, $lineno) {
-		throw new Exception('[Internal Parser Error '.$severity.'] In "'.$filename.'":'.$lineno.' "'.$message.'"');
+		throw new ParseException('Fatal Error '.$severity.' in "'.$filename.'":'.$lineno.' "'.$message.'"', 7);
 	}
 	
 	public function parseAllStrings($string) {
@@ -28,8 +28,8 @@ class IEMLParser {
 		
 		try {
 			$ret = $this->parseString($string);
-		} catch (Exception $e) {
-			$ret = ParserResult::fromError($e);
+		} catch (ParseException $e) {
+			$ret = ParserResult::fromException($e);
 		}
 		
 		restore_error_handler();

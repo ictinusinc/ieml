@@ -134,7 +134,7 @@
 		
 		try {
 			window.History.pushState.apply(null, arguments);
-		} catch (e) { //the error is probably "...states with fragment-identifiers..."
+		} catch (e) { //the error is probably "...states with fragment-identifiers..." so ignore it
 			console.log('[History.js]:', e);
 		}
 	};
@@ -170,9 +170,9 @@
 				});
 			} else if (rvars['a'] == 'login') {
 				$.getJSON(url, rvars, function(responseData) {
-					IEMLApp.init_from_state(History.getState());
-					
 					init_user_login(responseData);
+
+					IEMLApp.init_from_state(History.getState());
 				});
 			} else if (rvars['a'] == 'logout') {
 				$.getJSON(url, rvars, init_anon_user);
@@ -338,12 +338,13 @@
 		$('.login-btn-wrap').hide();
 		$('.logout-btn-wrap').show();
 		$('#add-ieml-record-wrap').show();
+
 		$('.edit-buttons-wrap').hide();
 		
 		if (IEMLApp.user.enumType == 'admin') {
-			$('#ieml-view-users-wrap').show();
+			$('.edit-buttons-wrap').show();
 		} else {
-			$('#ieml-view-users-wrap').hide();
+			$('.edit-buttons-wrap').hide();
 		}
 		
 		$('.user-display-name').html(userObj['strDisplayName']);
@@ -479,6 +480,12 @@
 		
 		if (info['expression'] && info['expression'].length > 0) {
 			var details = getVerbLayer(info['expression']);
+
+			if (IEMLApp.user) {
+				$('.edit-buttons-wrap').show();
+			} else {
+				$('.edit-buttons-wrap').hide();
+			}
 			
 			$('#ieml-result').html(info['expression']);
 		
@@ -586,7 +593,7 @@
 		}
 		
 		if (info['debug']) {
-			console.log(info['debug']);
+			console.log('Debug from server: ', info['debug']);
 		}
 		
 		switch_to_record();
@@ -877,6 +884,6 @@
 	});
 	
 	$(window).on('hashchange', function(ev) {
-		//console.log(ev.fragment);
+		//@TODO: keep track of/restore tab state on navigation, through hash info in url
 	});
 })(window, jQuery);

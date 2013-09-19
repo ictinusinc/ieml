@@ -6,6 +6,9 @@ require_once(APPROOT.'/includes/functions.php');
 require_once(APPROOT.'/includes/table_related/table_functions.php');
 require_once(APPROOT.'/includes/common_functions.php');
 
+//point debug output to nowhere
+Debug::output_stream(NULL);
+
 function ensure_table_for_key($key) {
 	Conn::query("DELETE FROM table_2d_id WHERE fkExpression = ".goodInt($key['id'])); //relations will auto delete dependent rows
 	
