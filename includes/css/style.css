@@ -184,6 +184,11 @@ table.relation .cell_wrap span.cell_expression {
 	padding-bottom: 5px;
 }
 
+.ieml-validation-result .result-success, .ieml-validation-result .result-error {
+	display: block;
+	font-family: monospace;
+	white-space: pre;
+}
 
 
 /* bootstrap tabs edit */
@@ -192,5 +197,3 @@ table.relation .cell_wrap span.cell_expression {
 	border-right: 1px solid #ddd;
 	border-top: 1px solid #ddd;
 }
-
-

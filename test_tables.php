@@ -55,7 +55,7 @@ foreach ($keys as &$key) {
 	$tokens = \IEML_ExpParse\str_to_tokens($key['expression']);
 	$AST = \IEML_ExpParse\tokens_to_AST($tokens);
 	
-	echo 'AST:'.pre_dump(\IEML_ExpParse\AST_to_infix_str($AST, $key['expression']));
+	echo 'AST:<pre>'.(\IEML_ExpParse\AST_to_infix_str($AST, $key['expression'])).'</pre>';
 	//echo 'AST:'.pre_dump($AST);
 	
 	echo 'etymology:'.pre_dump(gen_etymology($key['expression']));
@@ -110,8 +110,6 @@ foreach ($keys as &$key) {
 			
 			str += '<br/>';
 		});
-		
-		
 		
 		$('#main_body').html(str);
 	});

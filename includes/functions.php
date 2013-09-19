@@ -46,6 +46,15 @@ function pre_dump() {
     return ob_get_clean();
 }
 
+function pre_print() {
+	if (func_num_args() > 1) {
+		return implode('', array_map(__FUNCTION__, func_get_args()));
+	} else {
+		ob_start();
+		echo '<pre>'.print_r(func_get_arg(0), TRUE).'</pre>';
+		return ob_get_clean();
+	}
+}
 
 function bcrypt_hash($password, $work_factor = 8) {
    $salt = randomString();

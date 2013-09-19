@@ -5,20 +5,23 @@ require_once(APPROOT.'/includes/ieml_parser/DebugLog.class.php');
 require_once(APPROOT.'/includes/functions.php');
 
 if (array_key_exists('eval', $_REQUEST) && $_REQUEST['eval']) {
-
-header('Content-type: application/json');
+	header('Content-type: application/json');
 	require_once(APPROOT.'/includes/ieml_parser/IEMLParser.class.php');
 	require_once(APPROOT.'/includes/ieml_parser/IEMLScriptGen.class.php');
 	
 	function handle_string($string) {
 		$parser = new IEMLParser();
-		$parserResult = $parser->parseString($string);
+		$parserResult = $parser->parseAllStrings($string);
 		$ret = array();
 		
-		if ($parserResult->hasError()) {
+		if ($parserResult->hasException()) {
 			$ret['result'] = 'error';
 			$ret['resultCode'] = 1;
-			$ret['error'] = ParseException::formatError($string, $parserResult->except(), TRUE);
+			$ret['error'] = ParseException::formatError($string, $parserResult->except(), FALSE);
+		} else if ($parserResult->hasError()) {
+			$ret['result'] = 'error';
+			$ret['resultCode'] = 2;
+			$ret['error'] = $parserResult->error()->getMessage();
 		} else {
 			$ret['result'] = 'success';
 			$ret['resultCode'] = 0;
@@ -33,25 +36,25 @@ header('Content-type: application/json');
 ?><!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>IEML Dictionary</title>
-    <!-- bootstrap-2.0.1.css -->
-    <link rel="stylesheet" type="text/css" href="<?php echo WEBAPPROOT.'/includes/css/bootstrap-2.0.1.min.css'; ?>">
-    <style>
-    	.container {
-	    	margin-top: 30px;
-    	}
-    </style>
+	<meta charset="utf-8">
+	<title>IEML Dictionary</title>
+	<!-- bootstrap-2.0.1.css -->
+	<link rel="stylesheet" type="text/css" href="<?php echo WEBAPPROOT.'/includes/css/bootstrap-2.0.1.min.css'; ?>">
+	<style>
+		.container {
+			margin-top: 30px;
+		}
+	</style>
 </head>
 <body>
-    <div class="container">
+	<div class="container">
 		<div class="row">
 			<div class="span3 offset4">
 				<input type="text" class="input-large string-in" />
 			</div>
 		</div>
 		<div class="row">
-			<div class="span3 offset4">
+			<div class="span12">
 				<pre class="string-out"></pre>
 			</div>
 		</div>

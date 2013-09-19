@@ -17,7 +17,7 @@
 			}), lang = path_arr[0];
 		
 		if (path_arr[1] == 'users') {
-	        IEMLApp.submit({'a': 'viewUsers'});
+			IEMLApp.submit({'a': 'viewUsers'});
 		} else if (path_arr[1] == 'login') {
 			switch_to_view('login');
 		} else if (path_arr.length > 2) {
@@ -32,7 +32,7 @@
 				
 				IEMLApp.submit({ 'a': 'searchDictionary', 'lexicon': lexicon, 'lang': lang, 'search': (typeof path_arr[3] == 'undefined' ? '' : path_arr[3]) });
 			} else {
-				if (isNaN(parseInt(path_arr[2]))) {
+				if (isNaN(parseInt(path_arr[2], 10))) {
 					IEMLApp.submit({ 'a': 'expression', 'lexicon': lexicon, 'lang': lang, 'exp': path_arr[2] });
 				} else {
 					IEMLApp.submit({ 'a': 'expression', 'lexicon': lexicon, 'lang': lang, 'id': path_arr[2] });
@@ -60,9 +60,9 @@
 			init_anon_user();
 		}
 		
-	    if (url_obj.hash !== '') {
-	    	$('a[href="' + url_obj.hash + '"]').tab('show');
-	    }
+		if (url_obj.hash !== '') {
+			$('a[href="' + url_obj.hash + '"]').tab('show');
+		}
 	};
 	
 	IEMLApp.init_from_state = function(full_state) {
@@ -105,7 +105,7 @@
 			
 			IEMLApp.lang = new_lang;
 			
-			$('[data-lang-switch]').each(function(i, el) {
+			$('[data-lang-switch]').each(function(ind, el) {
 				var jel = $(el), lang_els = jel.data('lang-switch').split(','), lang_attrs_str = jel.data('lang-switch-attr');
 				
 				if (lang_attrs_str && lang_attrs_str.length > 0) {
@@ -153,7 +153,7 @@
 			prev_state = History.getState();
 		}
 		
-		var state_call = obj_size(prev_state.data) == 0 ? IEMLApp.replaceState : IEMLApp.pushState;
+		var state_call = obj_size(prev_state.data) === 0 ? IEMLApp.replaceState : IEMLApp.pushState;
 		
 		if (rvars) {
 			if (rvars['a'] == 'searchDictionary') {
@@ -166,8 +166,8 @@
 				$.getJSON(url, rvars, function(responseData) {
 					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], (rvars['exp'] ? rvars['exp'] : rvars['id'])]));
 					
-			    	IEMLApp.receiveExpression(responseData);
-			    });
+					IEMLApp.receiveExpression(responseData);
+				});
 			} else if (rvars['a'] == 'login') {
 				$.getJSON(url, rvars, function(responseData) {
 					IEMLApp.init_from_state(History.getState());
@@ -190,21 +190,39 @@
 				});
 			} else if (rvars['a'] == 'editDictionary' || rvars['a'] == 'newDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
-		            if ($('#desc-result-id').val() == '') {
+					if ($('#desc-result-id').val() == '') {
 						state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], responseData['expression']]));
 						
-		                $('#desc-result-id').val(responseData['id']);
-		            }
-		            
-		    		IEMLApp.receiveExpression(responseData);
+						$('#desc-result-id').val(responseData['id']);
+					}
+					
+					IEMLApp.receiveExpression(responseData);
 				});
 			} else if (rvars['a'] == 'deleteDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
-		            History.back(); //TODO: find a more elegant solution
-		            
+					History.back(); //TODO: find a more elegant solution
+					
 					$('[data-result-id="'+$('#desc-result-id').val()+'"]').remove();
 					
 					$('#iemlConfirmModal').modal('hide');
+				});
+			} else if (rvars['a'] == 'validateExpression') {
+				$.getJSON(url, rvars, function(responseData) {
+					if (responseData['result'] == 'success') {
+						var parser_out = responseData['parser_output'];
+
+						if (parser_out['resultCode'] === 0) {
+							$('.ieml-validation-result .result-success-icon, .ieml-validation-result .result-success').show();
+							$('.ieml-validation-result .result-error-icon, .ieml-validation-result .result-error').hide();
+						} else {
+							$('.ieml-validation-result .result-error-icon, .ieml-validation-result .result-error').show();
+							$('.ieml-validation-result .result-success-icon, .ieml-validation-result .result-success').hide();
+
+							$('.ieml-validation-result .result-error').html(parser_out['error']);
+						}
+					} else {
+						$('.ieml-validation-result').hide();
+					}
 				});
 			} else {
 				return false;
@@ -232,8 +250,8 @@
 				}
 			});
 			
-			for (var i in respObj) {
-				tstr += formatResultRow(respObj[i]);
+			for (var j in respObj) {
+				tstr += formatResultRow(respObj[j]);
 			}
 			
 			$('#listview tbody').html(tstr);
@@ -277,9 +295,7 @@
 	};
 	
 	function cons_url(path, search, hash) {
-		return '/' + array_map(path, function(i,el) { return window.encodeURIComponent(el); }).join('/')
-			+ (typeof search != 'undefined' && search.length > 0 ? '?' + map_to_url(search) : '')
-			+ (typeof hash != 'undefined' && hash.length > 0 ? '#' + window.encodeURIComponent(hash) : '');
+		return '/' + array_map(path, function(i,el) { return window.encodeURIComponent(el); }).join('/') + (typeof search != 'undefined' && search.length > 0 ? '?' + map_to_url(search) : '') + (typeof hash != 'undefined' && hash.length > 0 ? '#' + window.encodeURIComponent(hash) : '');
 	}
 	
 	function reset_views() {
@@ -322,7 +338,7 @@
 		$('.login-btn-wrap').hide();
 		$('.logout-btn-wrap').show();
 		$('#add-ieml-record-wrap').show();
-		$('.edit-buttons-wrap').show();
+		$('.edit-buttons-wrap').hide();
 		
 		if (IEMLApp.user.enumType == 'admin') {
 			$('#ieml-view-users-wrap').show();
@@ -366,83 +382,84 @@
 	
 		return {'layer':layer, 'gram':gram};
 	}
+
+	function format_single_relation(info) {
+		var ret = '';
+
+		if (info['id']) {
+			ret += '<a href="/ajax.php?id='+info['id'] + '&a=searchDictionary" data-exp="'+info['exp']+'" data-id="'+info['id']+'" class="editExp">';
+
+			if (info['desc']) {
+				ret += info['desc'] + ' ('+info['exp'][0]+')';
+			} else {
+				ret += info['exp'][0];
+			}
+		} else {
+			ret += '<a href="javascript:void(0);" class="createEmptyExp">' + info['exp'][0];
+		}
+
+		ret += '</a>';
+		return ret;
+	}
 	
 	function format_relations(info) {
-		var contained_html = '', containing_html = '', concurrent_html = '', comp_concept_html = '', etymology_html = '';
+		var rel = info['relations'], contained_html = '', containing_html = '', concurrent_html = '', complementary_html = '', etymology_html = '';
 		
-	    return {'contained': contained_html, 'containing': containing_html, 'concurrent': concurrent_html, 'comp_concept': comp_concept_html};
+		if (rel['contained'].length > 0) {
+			for (var i=0; i<rel['contained'].length; i++) {
+				contained_html += '<li>'+format_single_relation(rel['contained'][i])+'</li>';
+				
+				var concurrent_rel = rel['concurrent'][rel['contained'][i]['exp'][0]];
+				if (concurrent_rel.length > 0) {
+					concurrent_html += '<div class="concurring-relation span6"><span class="concurring-relation-text"><strong>In relation to "' + format_single_relation(rel['contained'][i]) + '"</strong></span><ul class="unstyled relation-list">';
+
+					for (var j=0; j<concurrent_rel.length; j++) {
+						concurrent_html += '<li>'+format_single_relation(concurrent_rel[j])+'</li>';
+					}
+					concurrent_html += '</ul></div>';
+				}
+			}
+		}
+
+		if (contained_html.length > 0) {
+			contained_html = '<ul class="unstyled relation-list">' + contained_html + '</ul>';
+		} else {
+			contained_html = 'Nothing.';
+		}
 		
-	    if (info['relations']['contained'].length > 0) {
-	    	contained_html += '<ul class="relation-list">';
-		    for (var i=0; i<info['relations']['contained'].length; i++) {
-		    	if (info['relations']['contained'][i]['desc'] != null) {
-			    	contained_html += '<li><a href="/ajax.php?id='+info['relations']['contained'][i]['id']
-				    	+ '&a=searchDictionary" data-exp="'+info['relations']['contained'][i]['exp'][0]+'" data-id="'
-				    	+ info['relations']['contained'][i]['id']+'" class="editExp">' + info['relations']['contained'][i]['desc'] 
-				    	+ ' (' + ordinal_str(info['relations']['contained'][i]['exp'][1]) + ' degree)</a></li>';
-			    	
-			    	var concurrent_rel = info['relations']['concurrent'][info['relations']['contained'][i]['exp'][0]];
-			    	if (concurrent_rel.length > 0) {
-				    	concurrent_html += '<div class="concurring-relation span6"><span class="concurring-relation-text"><strong>In relation to "'
-				    		+ info['relations']['contained'][i]['desc'] + '"</strong></span><ul class="relation-list">';
-				    	for (var j=0; j<concurrent_rel.length; j++) {
-				    		if (concurrent_rel[j]['desc'] != null) {
-				    			concurrent_html += '<li><a href="/ajax.php?id='+concurrent_rel[j]['id']+'&a=searchDictionary" data-exp="'
-				    				+ concurrent_rel[j]['exp'][0]+'" data-id="'+concurrent_rel[j]['id']+'" class="editExp">' + concurrent_rel[j]['desc'] + '</a></li>';
-				    		}
-				    	}
-				    	concurrent_html += '</ul></div>';
-			    	}
-		    	}
-		    }
-	    	contained_html += '</ul>';
-	    	
-	    } else {
-		    contained_html = 'Nothing.';
-	    }
-	    
-	    if (info['relations']['containing'].length > 0) {
-		    containing_html += '<ul class="relation-list">';
-		    for (var i=0; i<info['relations']['containing'].length; i++) {
-		    	if (info['relations']['containing'][i]['desc']) {
-		    		containing_html += '<li><a href="/ajax.php?id='+info['relations']['containing'][i]['id']
-			    		+ '&a=searchDictionary" data-exp="'+info['relations']['containing'][i]['exp'][0]+'" data-id="'
-			    		+ info['relations']['containing'][i]['id'] + '" class="editExp">'+info['relations']['containing'][i]['desc']+'</a></li>';
-		    	}
-		    }
-		    containing_html += '</ul>';
-	    } else {
-		    containing_html = 'Nothing.';
-	    }
-	    
-	    if (concurrent_html == '') {
-	    	concurrent_html = 'None.';
-	    } else {
-	    	concurrent_html = '<div class="row">' + concurrent_html + '</div>';
-	    }
-	    
-	    comp_concept_html = '<p>';
-	    if (info['relations']['comp_concept'] && info['relations']['comp_concept']['exp']) {
-		    comp_concept_html += '<a href="/ajax.php?id='+info['relations']['comp_concept']['id']+'&a=searchDictionary" data-exp="'
-		    	+ info['relations']['comp_concept']['exp'][0]+'" data-id="'+info['relations']['comp_concept']['id']+'" class="editExp">'
-		    	+ info['relations']['comp_concept']['desc'] + ' (' + info['relations']['comp_concept']['exp'][0] + ')</a>';
-	    } else {
-		    comp_concept_html += 'None.';
-	    }
-	    comp_concept_html += '</p>';
-	    
-	    return {'contained': contained_html, 'containing': containing_html, 'concurrent': concurrent_html, 'comp_concept': comp_concept_html};
+		if (rel['containing'].length > 0) {
+			containing_html += '<ul class="unstyled relation-list">';
+			for (var k=0; k<rel['containing'].length; k++) {
+				containing_html += '<li>'+format_single_relation(rel['containing'][k])+'</li>';
+			}
+			containing_html += '</ul>';
+		} else {
+			containing_html = 'Nothing.';
+		}
+		
+		if (concurrent_html.length > 0) {
+			concurrent_html = '<div class="row">' + concurrent_html + '</div>';
+		} else {
+			concurrent_html = 'Nothing.';
+		}
+		
+		complementary_html = '<p>';
+		if (rel['complementary'] && rel['complementary']['exp']) {
+			complementary_html += format_single_relation(rel['complementary']);
+		} else {
+			complementary_html += 'None.';
+		}
+		complementary_html += '</p>';
+		
+		return {'contained': contained_html, 'containing': containing_html, 'concurrent': concurrent_html, 'complementary': complementary_html};
 	}
 	
 	function format_etymology(info) {
-		var etym = info['etymology'], ret = '<ul>';
+		var etym = info['etymology'], ret = '<ul class="unstyled etymology">';
 		
 		for (var i=0; i<etym.length; i++) {
-			if (etym[i]['id'] && etym[i]['id'].length > 0
-				&& etym[i]['exp'] && etym[i]['exp'].length > 0
-				&& etym[i]['desc'] && etym[i]['desc'].length > 0) {
-				ret += '<li><a href="/ajax.php?id='+etym[i]['id']+'&a=searchDictionary" data-exp="'+etym[i]['exp']
-					+ '" data-id="'+etym[i]['id']+'" class="editExp">'+etym[i]['desc'] + ' (' + etym[i]['exp'] + ')</a></li>';
+			if (etym[i]['id'] && etym[i]['id'].length > 0 && etym[i]['exp'] && etym[i]['exp'].length > 0 && etym[i]['desc'] && etym[i]['desc'].length > 0) {
+				ret += '<li><a href="/ajax.php?id='+etym[i]['id']+'&a=searchDictionary" data-exp="'+etym[i]['exp'] + '" data-id="'+etym[i]['id']+'" class="editExp">'+etym[i]['desc'] + ' (' + etym[i]['exp'] + ')</a></li>';
 			} else {
 				ret += '<li><a href="javascript:void(0);" class="createEmptyExp">' + etym[i]['exp'] + '</a></li>';
 			}
@@ -454,18 +471,18 @@
 	}
 	
 	function fillForm(info) {
-	    if ($('#ieml-desc-result-edit').hasClass('disabled')) {
-	        writeToRead();
-	    }
-	    
-	    $('#desc-result-id').val(info['id'] ? info['id'] : '');
-	    
+		if ($('#ieml-desc-result-edit').hasClass('disabled')) {
+			writeToRead();
+		}
+		
+		$('#desc-result-id').val(info['id'] ? info['id'] : '');
+		
 		if (info['expression'] && info['expression'].length > 0) {
 			var details = getVerbLayer(info['expression']);
 			
 			$('#ieml-result').html(info['expression']);
-	    
-	    	$('#ieml-result-details').html(details['gram']+' Layer '+details['layer']);
+		
+			$('#ieml-result-details').html(details['gram']+' Layer '+details['layer']);
 		} else {
 			$('#ieml-result').empty();
 			
@@ -477,8 +494,8 @@
 		} else {
 			$('#ieml-ex-result').empty();
 		}
-	    
-	    $('#iemlEnumCategoryModal').prop('checked', info['enumCategory'] == 'Y');
+		
+		$('#iemlEnumCategoryModal').prop('checked', info['enumCategory'] == 'Y');
 		
 		window.__req_info = info;
 		
@@ -487,17 +504,12 @@
 				var out = '';
 				
 				if (el['descriptor']) {
-	                out += '<div class="' + (el['enumEnabled'] == 'N' ? 'hide ' : '') + 'cell_wrap' + '">'
-	                	+ '<a href="/ajax.php?id=' + el['id'] + '&a=searchDictionary" data-exp="' + el['expression'] + '" data-id="' + el['id'] + '" class="editExp">'
-	                	+ '<span class="cell_expression">' + el['expression'] + '</span><span class="cell_descriptor">' + el['descriptor'] + '</span></a>'
-	                	+ '</div>';
-	            } else {
-	                out += '<div>'
-	                	+ '<a href="javascript:void(0);" class="createEmptyExp">' + el['expression'] + '</a>'
-	                	+ '</div>';
-	            }
-	            
-	            return out;
+					out += '<div class="' + (el['enumEnabled'] == 'N' ? 'hide ' : '') + 'cell_wrap' + '">' + '<a href="/ajax.php?id=' + el['id'] + '&a=searchDictionary" data-exp="' + el['expression'] + '" data-id="' + el['id'] + '" class="editExp">' + '<span class="cell_expression">' + el['expression'] + '</span><span class="cell_descriptor">' + el['descriptor'] + '</span></a>' + '</div>';
+				} else {
+					out += '<div><a href="javascript:void(0);" class="createEmptyExp">' + el['expression'] + '</a></div>';
+				}
+				
+				return out;
 			};
 			
 			for (var i=0; i<info['tables'].length; i++) {
@@ -510,14 +522,14 @@
 				}
 				
 				if (info['tables'][i].length > 1) {
-				    str +='<table class="relation"><tbody>';
-				    
+					str +='<table class="relation"><tbody>';
+					
 					for (var j=0; j<info['tables'][i].length; j++) {
 						if (j > 0) {
 							str +='<tr><td class="table-concat-seperator" colspan="' + (parseInt(info['tables'][i][j]['table']['length'], 10) + parseInt(info['tables'][i][j]['table']['hor_header_depth'], 10)) + '"></td></tr>';
 						}
 						
-				    	str += IEML_render_table_body(info['tables'][i][j]['table'], render_callback);
+						str += IEML_render_table_body(info['tables'][i][j]['table'], render_callback);
 					}
 					
 					str += '</tbody></table>';
@@ -532,66 +544,60 @@
 		} else {
 			$('#ieml-table-span').empty();
 		}
-	    
-	    $('#iemlEnumShowTable').prop('checked', info['enumShowEmpties'] == 'Y').trigger('change');
-	    
-	    $('#iemlEnumComplConcOff').prop('checked', info['iemlEnumComplConcOff'] == 'Y').trigger('change');
-	    if (info['iemlEnumComplConcOff'] == 'Y') {
-	    	$('#ieml-complementary-section').hide();
-	    } else {
-	    	$('#ieml-complementary-section').show();
-	    }
-	    $('#iemlEnumSubstanceOff').prop('checked', info['iemlEnumSubstanceOff'] == 'Y').trigger('change');
-	    $('#iemlEnumAttributeOff').prop('checked', info['iemlEnumAttributeOff'] == 'Y').trigger('change');
-	    $('#iemlEnumModeOff').prop('checked', info['iemlEnumModeOff'] == 'Y').trigger('change');
-	    
-	    if (info['tables']) {
-	    	var str = {'contained': '', 'containing': '', 'concurrent': '', 'comp_concept': ''};
-	    	
+		
+		$('#iemlEnumShowTable').prop('checked', info['enumShowEmpties'] == 'Y').trigger('change');
+		
+		$('#iemlEnumComplConcOff').prop('checked', info['iemlEnumComplConcOff'] == 'Y').trigger('change');
+		if (info['iemlEnumComplConcOff'] == 'Y') {
+			$('#ieml-complementary-section').hide();
+		} else {
+			$('#ieml-complementary-section').show();
+		}
+		$('#iemlEnumSubstanceOff').prop('checked', info['iemlEnumSubstanceOff'] == 'Y').trigger('change');
+		$('#iemlEnumAttributeOff').prop('checked', info['iemlEnumAttributeOff'] == 'Y').trigger('change');
+		$('#iemlEnumModeOff').prop('checked', info['iemlEnumModeOff'] == 'Y').trigger('change');
+		
+		if (info['tables']) {
+			var str = {'contained': '', 'containing': '', 'concurrent': '', 'complementary': ''};
+			
 			for (var i=0; i<info['tables'].length; i++) {
 				for (var j=0; j<info['tables'][i].length; j++) {
-			    	var rel_info = format_relations(info['tables'][i][j]);
-			    	
-				    str['contained'] += rel_info['contained'];
-				    str['containing'] += rel_info['containing'];
-				    str['concurrent'] += rel_info['concurrent'];
-				    str['comp_concept'] += rel_info['comp_concept'];
+					var rel_info = format_relations(info['tables'][i][j]);
+					
+					str['contained'] += rel_info['contained'];
+					str['containing'] += rel_info['containing'];
+					str['concurrent'] += rel_info['concurrent'];
+					str['complementary'] += rel_info['complementary'];
 				}
 			}
-				    
-		    $('#ieml-contained-wrap').show().html(str['contained']);
-		    $('#ieml-containing-wrap').show().html(str['containing']);
-		    $('#ieml-concurrent-wrap').show().html(str['concurrent']);
-		    $('#ieml-complementary-wrap').show().html(str['comp_concept']);
-	    } else {
-		    $('#ieml-contained-wrap, #ieml-containing-wrap, #ieml-concurrent-wrap, #ieml-complementary-wrap').hide();
-	    }
-	    
-	    if (info['etymology']) {
-		    $('#ieml-etymology-wrap').show().html(format_etymology(info));
-	    } else {
-		    $('#ieml-etymology-wrap').hide();
-	    }
+			
+			$('#ieml-contained-wrap').show().html(str['contained']);
+			$('#ieml-containing-wrap').show().html(str['containing']);
+			$('#ieml-concurrent-wrap').show().html(str['concurrent']);
+			$('#ieml-complementary-wrap').show().html(str['complementary']);
+		} else {
+			$('#ieml-contained-wrap, #ieml-containing-wrap, #ieml-concurrent-wrap, #ieml-complementary-wrap').hide();
+		}
+		
+		if (info['etymology']) {
+			$('#ieml-etymology-wrap').show().html(format_etymology(info));
+		} else {
+			$('#ieml-etymology-wrap').hide();
+		}
 		
 		if (info['debug']) {
-		   console.log(info['debug']);
+			console.log(info['debug']);
 		}
 		
 		switch_to_record();
 	}
 	
 	function formatResultRow(obj) {
-		return '<tr data-key="' + (obj['enumCategory'] == 'Y' ? 'true' : 'false') + '" data-result-id="' + obj['id'] + '"><td>' 
-			+ obj['expression'] + '</td><td>' + obj['descriptor'] + '</td><td><a href="/ajax.php?id=' + obj['id']
-			+ '&a=searchDictionary" data-exp="'+obj['expression']+'" data-id="' + obj['id']
-			+ '" class="btn editExp"><span class="icon-pencil"></span></a></td></tr>';
+		return '<tr data-key="' + (obj['enumCategory'] == 'Y' ? 'true' : 'false') + '" data-result-id="' + obj['id'] + '"><td>'  + obj['expression'] + '</td><td>' + obj['descriptor'] + '</td><td><a href="/ajax.php?id=' + obj['id'] + '&a=searchDictionary" data-exp="'+obj['expression']+'" data-id="' + obj['id'] + '" class="btn editExp"><span class="icon-pencil"></span></a></td></tr>';
 	}
 	
 	function formatUserRow(user) {
-	    return '<tr><td>'+user['strEmail']+'</td><td>'+user['enumType']+'</td><td>'
-	    	+ LightDate.date('Y-m-d H:i:s', LightDate.date_timezone_adjust(user['tsDateCreated']*1000))
-	    	+ '</td><td><!--a href="/ajax.php?a=editUser&pkUser='+user['pkUser']+'" class="editUser btn">Edit</a--><a href="/ajax.php?a=delUser&pkUser='
-	    	+user['pkUser']+'" class="delUser btn">Delete</a></td></tr>';
+		return '<tr><td>'+user['strEmail']+'</td><td>'+user['enumType']+'</td><td>' + LightDate.date('Y-m-d H:i:s', LightDate.date_timezone_adjust(user['tsDateCreated']*1000)) + '</td><td><!--a href="/ajax.php?a=editUser&pkUser='+user['pkUser']+'" class="editUser btn">Edit</a--><a href="/ajax.php?a=delUser&pkUser=' + user['pkUser']+'" class="delUser btn">Delete</a></td></tr>';
 	}
 	
 	function showConfirmDialog(text, callback, etc) {
@@ -606,29 +612,48 @@
 	}
 	
 	function textToInput(sel, classes) {
-	    var text = sel.text();
-	    sel.html('<input type="text" class="'+classes+'" />');
-	    sel.children('input').val(text);
+		var text = sel.text();
+		sel.html('<input type="text" class="'+classes+'" />');
+		sel.children('input').val(text);
 	}
 	
 	function inputToText(sel) {
-	    sel.html(sel.children('input').val());
+		sel.html(sel.children('input').val());
 	}
 	
 	function readToWrite() {
-	    $('.non-edit-buttons').show();
-	    $('#ieml-desc-result-edit').addClass('disabled');
+		$('.non-edit-buttons').show();
+		$('#ieml-desc-result-edit').addClass('disabled');
 		textToInput($('#ieml-result'), 'input-large');
 		textToInput($('#ieml-ex-result'), 'input-xlarge');
+		
+		$('#ieml-result > .input-large').on('input', function() {
+			var exp = $(this).val();
+
+			if (exp.length > 0) {
+				$('.ieml-validation-result').show();
+
+				IEMLApp.submit({
+					'a': 'validateExpression',
+					'expression': exp
+				});
+			} else {
+				$('.ieml-validation-result').hide();
+			}
+		});
+
 		$('#iemlEnumCategoryModal').removeAttr('disabled');
 		$('.edit-only').show();
 	}
 	
 	function writeToRead() {
-	    $('.non-edit-buttons').hide();
-	    $('#ieml-desc-result-edit').removeClass('disabled');
+		$('.non-edit-buttons').hide();
+		$('#ieml-desc-result-edit').removeClass('disabled');
 		inputToText($('#ieml-result'));
 		inputToText($('#ieml-ex-result'));
+
+		$('.ieml-validation-result').hide();
+
 		$('#iemlEnumCategoryModal').attr('disabled', 'disabled');
 		$('.edit-only').hide();
 	}
@@ -644,7 +669,7 @@
 		}).on('change', '#iemlEnumShowTable', function() {
 			var info = IEMLApp.lastRetrievedData;
 			
-	        if($('#iemlEnumShowTable').is(':checked')) {
+			if($('#iemlEnumShowTable').is(':checked')) {
 				$('.nonExistentCell').show();
 				$('table.relation tr.empty_head_tr, table.relation td.empty_head_tr_td').show();
 				if (info['edit_vertical_head_length'] <= 0 && info['edit_horizontal_head_length'] <= 0) {
@@ -653,7 +678,7 @@
 					$('table.relation td.empty_cell').show()
 						.attr('rowspan', parseInt(info['edit_vertical_head_length'], 10) + 1).attr('colspan', info['edit_horizontal_head_length']);
 				}
-	        } else {
+			} else {
 				$('.nonExistentCell').hide();
 				$('table.relation tr.empty_head_tr, table.relation td.empty_head_tr_td').hide();
 				if (info['render_vertical_head_length'] <= 0 && info['render_horizontal_head_length'] <= 0) {
@@ -662,7 +687,7 @@
 					$('table.relation td.empty_cell').show()
 						.attr('rowspan', parseInt(info['render_vertical_head_length'], 10) + 1).attr('colspan', info['render_horizontal_head_length']);
 				}
-	        }
+			}
 		}).on('click', '.editExp', function() {
 			var jthis = $(this);
 			
@@ -686,7 +711,7 @@
 		}).on('click', '#filter-results-button', function() {
 			var state_data = History.getState().data;
 			
-			if (!state_data['resp'] || state_data['resp'].length == 0) {
+			if (!state_data['resp'] || state_data['resp'].length === 0) {
 				IEMLApp.submit({'a': 'searchDictionary', 'lexicon': IEMLApp.lexicon, 'lang': IEMLApp.lang, 'search': ''});
 			} else {
 				$('#listview tbody [data-key="false"]').show();
@@ -698,37 +723,37 @@
 			
 			return false;
 		}).on('click', '#add-ieml-record', function() {
-		    IEMLApp.lastRetrievedData = {'expression':'', 'descriptor':'', 'enumCategory':'N', 'enumShowEmpties': 'N'};
-		    fillForm(IEMLApp.lastRetrievedData);
-		    
-		    readToWrite();
-		    
-	        $('#desc-result-id').val('');
-	        
-	        return false;
+			IEMLApp.lastRetrievedData = {'expression':'', 'descriptor':'', 'enumCategory':'N', 'enumShowEmpties': 'N'};
+			fillForm(IEMLApp.lastRetrievedData);
+			
+			readToWrite();
+			
+			$('#desc-result-id').val('');
+			
+			return false;
 		}).on('click', '#ieml-desc-result-save', function() {
-		    writeToRead();
-		    
-		    var reqVars = {}, cur_id = $('#desc-result-id').val();
-	        if ($('#desc-result-id').val().length == 0) {
-	            reqVars['a'] = 'newDictionary';
-	        } else {
-	            reqVars['a'] = 'editDictionary';
-	        }
-	        if (cur_id.length > 0) {
-	            reqVars['id'] = parseInt($('#desc-result-id').val(), 10);
-	        }
-	        
-	        reqVars['pkTable2D'] = IEMLApp.lastRetrievedData['pkTable2D'];
-	        reqVars['enumShowEmpties'] = $('#iemlEnumShowTable').is(':checked') ? 'Y' : 'N';
-	        
-	        reqVars['enumCategory'] = $('#iemlEnumCategoryModal').is(':checked') ? 'Y' : 'N';
-	        reqVars['oldEnumCategory'] = IEMLApp.lastRetrievedData['enumCategory'];
-	        IEMLApp.lastRetrievedData['enumCategory'] = IEMLApp.lastRetrievedData['enumCategory'] == 'Y' ? 'N' : 'Y';
-	        reqVars['exp'] = $('#ieml-result').text();
-	        reqVars['oldExp'] = IEMLApp.lastRetrievedData['expression'];
-	        
-	        reqVars['descriptor'] = $('#ieml-ex-result').text();
+			writeToRead();
+			
+			var reqVars = {}, cur_id = $('#desc-result-id').val();
+			if ($('#desc-result-id').val().length === 0) {
+				reqVars['a'] = 'newDictionary';
+			} else {
+				reqVars['a'] = 'editDictionary';
+			}
+			if (cur_id.length > 0) {
+				reqVars['id'] = parseInt($('#desc-result-id').val(), 10);
+			}
+			
+			reqVars['pkTable2D'] = IEMLApp.lastRetrievedData['pkTable2D'];
+			reqVars['enumShowEmpties'] = $('#iemlEnumShowTable').is(':checked') ? 'Y' : 'N';
+			
+			reqVars['enumCategory'] = $('#iemlEnumCategoryModal').is(':checked') ? 'Y' : 'N';
+			reqVars['oldEnumCategory'] = IEMLApp.lastRetrievedData['enumCategory'];
+			IEMLApp.lastRetrievedData['enumCategory'] = IEMLApp.lastRetrievedData['enumCategory'] == 'Y' ? 'N' : 'Y';
+			reqVars['exp'] = $('#ieml-result').text();
+			reqVars['oldExp'] = IEMLApp.lastRetrievedData['expression'];
+			
+			reqVars['descriptor'] = $('#ieml-ex-result').text();
 			reqVars['lang'] = $('#search-lang-select').val();
 			
 			reqVars['iemlEnumComplConcOff'] = $('#iemlEnumComplConcOff').is(':checked') ? $('#iemlEnumComplConcOff').val() : 'N';
@@ -741,83 +766,83 @@
 			
 			return false;
 		}).on('click', '#ieml-desc-result-cancel', function() {
-		    writeToRead();
+			writeToRead();
 			fillForm(IEMLApp.lastRetrievedData);
-		    
+			
 		}).on('click', '#ieml-desc-result-edit', function() {
 			if (!$('#ieml-desc-result-edit').hasClass('disabled')) {
-		    	readToWrite();
-		    }
-		    
-		    return false;
+				readToWrite();
+			}
+			
+			return false;
 		}).on('click', '#ieml-desc-result-delete', function() {
-		    if ($('#desc-result-id').val() != '') {
-	    		$('#iemlConfirmModal .modal-body').html('<div><span>Are you sure you want to delete "' + $('#ieml-result input').eq(0).val() + '"?<br /></span></div>');
-	    		$('#iemlConfirmModal').modal('show');
+			if ($('#desc-result-id').val() != '') {
+				$('#iemlConfirmModal .modal-body').html('<div><span>Are you sure you want to delete "' + $('#ieml-result input').eq(0).val() + '"?<br /></span></div>');
+				$('#iemlConfirmModal').modal('show');
 			}
 		
 			return false;
 		}).on('change', '.enable_check', function() {
-	        var thisID = $(this).data('ref-id'), thisval = $(this).is(':checked') ? 'Y' : 'N';
-	        if (thisval == 'N')
-	            $(this).siblings('.cell_wrap').hide();
-	        else
-	            $(this).siblings('.cell_wrap').show();
+			var thisID = $(this).data('ref-id'), thisval = $(this).is(':checked') ? 'Y' : 'N';
+			if (thisval == 'N')
+				$(this).siblings('.cell_wrap').hide();
+			else
+				$(this).siblings('.cell_wrap').show();
 			$.post('/ajax.php?a=setTableEl&id=' + thisID + '&enumEnabled=' + thisval, function(response) {});
-	    }).on('click', '.createEmptyExp', function() {
-	    	var jthis = $(this);
-		    IEMLApp.lastRetrievedData['expression'] = jthis.text();
-		    IEMLApp.lastRetrievedData['descriptor_en'] = '';
-		    IEMLApp.lastRetrievedData['descriptor_fr'] = '';
-		    IEMLApp.lastRetrievedData['enumCategory'] = 'N';
-		    IEMLApp.lastRetrievedData['enumShowEmpties'] = $('#iemlEnumShowTable').is(':checked') ? 'Y' : 'N';
-		    
-		    fillForm(IEMLApp.lastRetrievedData);
-		    
-		    readToWrite();
-		    
-	        $('#desc-result-id').val('');
-		    
-		    $('.relation-sel-cell').removeClass('relation-sel-cell');
-		    jthis.parents('div').eq(0).addClass('relation-sel-cell'); //TODO highlight line properly
-		    
-		    return false;
-	    }).on('click', '#iemlConfirmModal #iemlConfirmYesModal', function() {
+		}).on('click', '.createEmptyExp', function() {
+			var jthis = $(this);
+			IEMLApp.lastRetrievedData['expression'] = jthis.text();
+			IEMLApp.lastRetrievedData['descriptor_en'] = '';
+			IEMLApp.lastRetrievedData['descriptor_fr'] = '';
+			IEMLApp.lastRetrievedData['enumCategory'] = 'N';
+			IEMLApp.lastRetrievedData['enumShowEmpties'] = $('#iemlEnumShowTable').is(':checked') ? 'Y' : 'N';
+			
+			fillForm(IEMLApp.lastRetrievedData);
+			
+			readToWrite();
+			
+			$('#desc-result-id').val('');
+			
+			$('.relation-sel-cell').removeClass('relation-sel-cell');
+			jthis.parents('div').eq(0).addClass('relation-sel-cell'); //TODO highlight line properly
+			
+			return false;
+		}).on('click', '#iemlConfirmModal #iemlConfirmYesModal', function() {
 			IEMLApp.submit({'a':'deleteDictionary', 'id':$('#desc-result-id').val()});
 			
 			return false;
-	    }).on('click', '#ieml-view-users', function() {
-	        IEMLApp.submit({'a': 'viewUsers'});
-	        
-	        return false;
-	    }).on('click', '#addUser', function() {
-	        $('#iemlAddUserModal').modal('show');
-	        
-	        return false;
-	    }).on('click', '#iemlAddUserModalAdd', function() {
-	        var formData = form_arr_to_map($('#iemlUser').serializeArray());
-	        
-	        $('#iemlAddUserModal').modal('hide');
-	        
-	        IEMLApp.submit({ 'a' : formData['a'], 'username' : formData['addUserModalUsername'], 'pass' : formData['addUserModalPass'], 'enumType' : formData['addUserModalType'] });
-	        
-	        return false;
-	    }).on('click', '.delUser', function() {
-	        var jthis = $(this);
-	        
-	        showConfirmDialog('Are you sure?', function() {
-	            var jurl = jthis.attr('href');
-	            
-	            $.post(jurl, function(resp) {
-	                jthis.closest('tr').remove();
-	            });
-	        });
-	        
-	        return false;
-	    }).on('click', '.editUser', function() {
-	        
-	        return false;
-	    }).on('click', '#confirmCancelModalYes', function() {
+		}).on('click', '#ieml-view-users', function() {
+			IEMLApp.submit({'a': 'viewUsers'});
+			
+			return false;
+		}).on('click', '#addUser', function() {
+			$('#iemlAddUserModal').modal('show');
+			
+			return false;
+		}).on('click', '#iemlAddUserModalAdd', function() {
+			var formData = form_arr_to_map($('#iemlUser').serializeArray());
+			
+			$('#iemlAddUserModal').modal('hide');
+			
+			IEMLApp.submit({ 'a' : formData['a'], 'username' : formData['addUserModalUsername'], 'pass' : formData['addUserModalPass'], 'enumType' : formData['addUserModalType'] });
+			
+			return false;
+		}).on('click', '.delUser', function() {
+			var jthis = $(this);
+			
+			showConfirmDialog('Are you sure?', function() {
+				var jurl = jthis.attr('href');
+				
+				$.post(jurl, function(resp) {
+					jthis.closest('tr').remove();
+				});
+			});
+			
+			return false;
+		}).on('click', '.editUser', function() {
+			
+			return false;
+		}).on('click', '#confirmCancelModalYes', function() {
 			$('#confirmCancelModal').data('callback')();
 			
 			return false;
@@ -830,8 +855,8 @@
 			
 			return false;
 		}).on('submit', '#formLogin', function() {
-	        var formData = form_arr_to_map($(this).serializeArray());
-	        formData['a'] = 'login';
+			var formData = form_arr_to_map($(this).serializeArray());
+			formData['a'] = 'login';
 			IEMLApp.submit(formData);
 			
 			return false;

@@ -1,10 +1,8 @@
 <?php
 
-/*
-	determine highest layer
-*/
-
 include_once(dirname(__FILE__).'/IEMLASTNode.class.php');
+include_once(dirname(__FILE__).'/ParserException.class.php');
+include_once(dirname(__FILE__).'/ParserResult.class.php');
 
 class IEMLParser {
 	private static $LAYER_STRINGS = array(':', '.', '-', "'", ',', '_', ';'),
@@ -19,6 +17,26 @@ class IEMLParser {
 			'E', 'O', 'M', 'F', 'I'
 		);
 	
+	public static function handleErrors($severity, $message, $filename, $lineno) {
+		throw new Exception('[Internal Parser Error '.$severity.'] In "'.$filename.'":'.$lineno.' "'.$message.'"');
+	}
+	
+	public function parseAllStrings($string) {
+		set_error_handler('IEMLParser::handleErrors');
+		
+		$ret = NULL;
+		
+		try {
+			$ret = $this->parseString($string);
+		} catch (Exception $e) {
+			$ret = ParserResult::fromError($e);
+		}
+		
+		restore_error_handler();
+		
+		return $ret;
+	}
+	
 	public function parseString($string) {
 		try {
 			return ParserResult::fromAST($this->iniParse($string));
@@ -30,19 +48,23 @@ class IEMLParser {
 	function iniParse($string) {
 		if (is_string($string)) {
 			$parse_string = trim($string);
-			
-			$in_stars = NULL;
-			if (preg_match('/^\*\*([^\*]+)\*$/', $parse_string, $in_stars)) {
-				$parse_string = trim($in_stars[1]);
+
+			if ($parse_string) {
+				$in_stars = NULL;
+				if (preg_match('/^\*\*([^\*]+)\*$/', $parse_string, $in_stars)) {
+					$parse_string = trim($in_stars[1]);
+				}
+				
+				$AST = new IEMLASTNode($string, IEMLNodeType::$ROOT, array());
+				
+				$AST->push($this->subParse($parse_string, NULL, 0));
+				
+				return $AST;
+			} else {
+				throw new ParseException('Empty string provided.', 1);
 			}
-			
-			$AST = new IEMLASTNode($string, IEMLNodeType::$ROOT, array());
-			
-			$AST->push($this->subParse($parse_string, NULL, 0));
-			
-			return $AST;
 		} else {
-			throw new ParseException('"IEMLParser->parseString" can only parse strings', 1);
+			throw new ParseException('"IEMLParser->parseString" can only parse strings, '.gettype($string).' passed', 1);
 		}
 	}
 	
@@ -152,12 +174,39 @@ class IEMLParser {
 	}
 	
 	private function getAdditiveRelations($string, $highest_layer, $source_character) {
-		$additive_results = NULL;
+		$str_len = strlen($string);
+		$additive_results = array();
 		$esc_marker = preg_quote(IEMLParser::$LAYER_STRINGS[$highest_layer], '/');
-		$preg_result = preg_match_all('/ *([^'.$esc_marker.']+'.$esc_marker.')\ *\+?/', $string, $additive_results, PREG_OFFSET_CAPTURE);
+		$preg_result = NULL;
+		$offs = 0;
 		
-		if ($preg_result && IEMLParser::assertAllMatched($string, $additive_results[0], PREG_OFFSET_CAPTURE)) {
-			return $additive_results[1];
+		for ($i=0; $i == 0 || $preg_result || $offs < $str_len; $i++) {
+			$preg_match = NULL;
+			
+			if ($i == 0) {
+				$preg_result = preg_match('/ */', $string, $preg_match, PREG_OFFSET_CAPTURE, $offs);
+			} else {
+				$preg_result = preg_match('/ *\+/', $string, $preg_match, PREG_OFFSET_CAPTURE, $offs);
+			}
+			
+			if ($preg_result) {
+				$offs = $preg_match[0][1] + strlen($preg_match[0][0]);
+				
+				$preg_result = preg_match('/([^'.$esc_marker.']+'.$esc_marker.')/', $string, $preg_match, PREG_OFFSET_CAPTURE, $offs);
+				
+				if ($preg_result) {
+					$additive_results[] = $preg_match[1];
+					$offs = $preg_match[1][1] + strlen($preg_match[1][0]);
+				} else {
+					throw new ParseException('Could not match additive relation "'.$string.'" to Layer '.$highest_layer, 2, array($source_character + $offs, strlen($string)));
+				}
+			} else {
+				break;
+			}
+		}
+		
+		if ($offs == $str_len) {
+			return $additive_results;
 		} else {
 			throw new ParseException('Could not match additive relation "'.$string.'" to Layer '.$highest_layer, 2, array($source_character, strlen($string)));
 		}
@@ -175,7 +224,7 @@ class IEMLParser {
 			
 			return $multiplicative_results[1];
 		} else {
-			throw new MatchException('Could not match multiplicative relation in "'.$string.'" to highest layer: "'.$highest_layer.'"');
+			throw new ParseException('Could not match multiplicative relation in "'.$string.'" to highest layer: "'.$highest_layer.'"');
 		}
 	}
 	
@@ -255,104 +304,6 @@ class IEMLParser {
 		$res = IEMLParser::matchNestedPair(trim($string), array('(', ')'), TRUE);
 		
 		return $res && strlen($res[0]) + 2 == strlen($string);
-	}
-}
-
-class ParserResult {
-	private $AST, $exception, $hasError;
-	
-	public function __construct() {
-		$this->AST = NULL;
-		$this->exception = NULL;
-		$this->hasError = FALSE;
-	}
-	
-	public function AST(IEMLASTNode $AST = NULL) {
-		if (isset($AST)) {
-			$this->AST = $AST;
-			
-			return $this;
-		} else {
-			return $this->AST;
-		}
-	}
-	
-	public function except(ParseException $exception = NULL) {
-		if (isset($exception)) {
-			$this->exception = $exception;
-			
-			$this->hasError = TRUE;
-			
-			return $this;
-		} else {
-			return $this->exception;
-		}
-	}
-
-	
-	public static function fromAST(IEMLASTNode $AST) {
-		$inst = new ParserResult();
-		
-		$inst->AST($AST);
-		
-		return $inst;
-	}
-	
-	public static function fromException(ParseException $exception) {
-		$inst = new ParserResult();
-		
-		$inst->except($exception);
-		
-		return $inst;
-	}
-	
-	public function hasError() {
-		return $this->hasError;
-	}
-}
-
-class ParseException extends Exception {
-	private $source;
-	/*
-		exception codes:
-		0: generic error, code not provided
-		1: invalid string passed to parse function
-		2: additive relation mismatch
-		3: multiplicative relation mismatch
-		4: layer mismatch
-		5: parentheses mismatch
-		6: invalid layer 0 relation
-	*/
-	
-	public function __construct($message, $code = 0, array $source = NULL) {
-		$this->source = $source;
-		
-		parent::__construct($message, $code, NULL);
-	}
-	
-	public function getSource($ind = NULL) {
-		if (isset($ind)) {
-			return $this->source[$ind];
-		} else {
-			return $this->source;
-		}
-	}
-	
-	public static function formatError($string, ParseException $exc, $stack = FALSE) {
-		$out = 'Error '.$exc->getCode().": \n";
-		
-		$out .= '    <strong>'.$exc->getMessage().'</strong>'."\n";
-		
-		if ($exc->getSource()) {
-			$out .= '    at character '.$exc->getSource(0).":\n";
-			$out .= '    '.substr($string, 0, $exc->getSource(0)).'<u>'.substr($string, $exc->getSource(0), $exc->getSource(1)).'</u>'.substr($string, $exc->getSource(0)+$exc->getSource(1));
-			$out .= "\n\n";
-		}
-		if ($stack) {
-			$out .= 'Stack: '."\n".$exc->getTraceAsString();
-		}
-		
-		return $out;
 	}
 }
 
