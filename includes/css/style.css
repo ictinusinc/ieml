@@ -190,6 +190,10 @@ table.relation .cell_wrap span.cell_expression {
 	white-space: pre;
 }
 
+#filter-results-wrap {
+	min-width: 155px;
+}
+
 
 /* bootstrap tabs edit */
 #iemlRecord .nav-tabs > li > a {

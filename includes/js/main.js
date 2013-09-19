@@ -17,7 +17,7 @@
 			}), lang = path_arr[0];
 		
 		if (path_arr[1] == 'users') {
-			IEMLApp.submit({'a': 'viewUsers'});
+			IEMLApp.submit({'a': 'viewUsers', 'deleted' : 'no'});
 		} else if (path_arr[1] == 'login') {
 			switch_to_view('login');
 		} else if (path_arr.length > 2) {

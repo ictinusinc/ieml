@@ -36,6 +36,7 @@ require_once(APPROOT.'/includes/header.php');
 						<th>&nbsp;</th>
 					</tr>
 				</thead>
+				<tbody></tbody>
 			</table>
 		</div>
 
