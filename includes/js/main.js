@@ -320,6 +320,8 @@
 		
 		if (IEMLApp.user) {
 			$('.edit-buttons-wrap').show();
+		} else {
+			$('.edit-buttons-wrap').hide();
 		}
 		
 		$('#back-to-list-view').show();
@@ -338,13 +340,11 @@
 		$('.login-btn-wrap').hide();
 		$('.logout-btn-wrap').show();
 		$('#add-ieml-record-wrap').show();
-
-		$('.edit-buttons-wrap').hide();
 		
 		if (IEMLApp.user.enumType == 'admin') {
-			$('.edit-buttons-wrap').show();
+			$('.ieml-view-users-wrap').show();
 		} else {
-			$('.edit-buttons-wrap').hide();
+			$('.ieml-view-users-wrap').hide();
 		}
 		
 		$('.user-display-name').html(userObj['strDisplayName']);
