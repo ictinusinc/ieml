@@ -11,6 +11,8 @@ class ParseException extends Exception {
 		4: layer mismatch
 		5: parentheses mismatch
 		6: invalid layer 0 relation
+		7: internal parser exception
+		8: script is not properly ordered
 	*/
 	
 	public function __construct($message, $code = 0, array $source = NULL) {

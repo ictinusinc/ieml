@@ -5,16 +5,16 @@ require_once(APPROOT.'/includes/ieml_parser/DebugLog.class.php');
 require_once(APPROOT.'/includes/functions.php');
 require_once(APPROOT.'/includes/table_related/table_functions.php');
 require_once(APPROOT.'/includes/common_functions.php');
+require_once(APPROOT.'/includes/ieml_parser/IEMLParser.class.php');
+require_once(APPROOT.'/includes/ieml_parser/IEMLScriptGen.class.php');
 
 //point debug output to nowhere
-Debug::output_stream(NULL);
+Devlog::output_stream(NULL);
 
 function ensure_table_for_key($key) {
 	Conn::query("DELETE FROM table_2d_id WHERE fkExpression = ".goodInt($key['id'])); //relations will auto delete dependent rows
 	
 	$key['table_info'] = IEML_gen_table_info($key['expression']);
-	
-	//	echo '$key[\'table_info\']: '.pre_dump($key['table_info']);
 	
 	$key['concats'] = IEML_concat_complex_tables($key['table_info']);
 	
@@ -25,6 +25,21 @@ function ensure_table_for_key($key) {
 	}
 	
 	return $key;
+}
+
+function expression_sort_cmp($a, $b) {
+	$a_eff_layer = isset($a['intLayer']) ? $a['intLayer'] : -1;
+	$b_eff_layer = isset($b['intLayer']) ? $b['intLayer'] : -1;
+
+	if ($a['intLayer'] == $b['intLayer']) {
+		if ($a['intSetSize'] == $b['intSetSize']) {
+			return IEMLParser::bareLexicoCompare($b['strFullBareString'], $a['strFullBareString']);
+		} else {
+			return $b['intSetSize'] - $a['intSetSize'];
+		}
+	} else {
+		return $b_eff_layer - $a_eff_layer;
+	}
 }
 
 function handle_request($action, $req) {
@@ -43,6 +58,7 @@ function handle_request($action, $req) {
 							$ret = Conn::queryArray("
 								SELECT
 									prim.pkExpressionPrimary as id, prim.strExpression as expression,
+									prim.intSetSize, prim.intLayer, prim.strFullBareString,
 									prim.enumCategory, sublang.strDescriptor AS descriptor,
 									t_key.enumShowEmpties, t_key.enumCompConc, t_key.strEtymSwitch
 								FROM expression_primary prim
@@ -57,6 +73,7 @@ function handle_request($action, $req) {
 						$ret = Conn::queryArray("
 							SELECT
 								prim.pkExpressionPrimary as id, prim.strExpression as expression,
+								prim.intSetSize, prim.intLayer, prim.strFullBareString,
 								prim.enumCategory, sublang.strDescriptor AS descriptor,
 								t_key.enumShowEmpties, t_key.enumCompConc, t_key.strEtymSwitch
 							FROM expression_primary prim
@@ -99,14 +116,19 @@ function handle_request($action, $req) {
 				$ret = Conn::queryArrays("
 					SELECT
 						pkExpressionPrimary AS id, strExpression AS expression,
+						prim.intSetSize, prim.intLayer, prim.strFullBareString,
 						enumCategory, enumDeleted, sublang.strDescriptor AS descriptor
 					FROM expression_primary prim
 					LEFT JOIN expression_descriptors sublang
 						ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
 					WHERE prim.enumDeleted = 'N'
 					AND   strLanguageISO6391 = ".goodInput($req['lang'])."
-					".(strlen($req['search']) > 0 ? "AND   (strExpression LIKE '%".goodString($req['search'])."%' OR sublang.strDescriptor LIKE '%".goodString($req['search'])."%')" : '')."
+					".(strlen($req['search']) > 0
+						? "AND (strExpression LIKE '%".goodString($req['search'])."%' OR sublang.strDescriptor LIKE '%".goodString($req['search'])."%')"
+						: '')."
 					ORDER BY expression");
+
+				usort($ret, 'expression_sort_cmp');
 				
 				$request_ret = $ret;
 			} else {
@@ -130,61 +152,82 @@ function handle_request($action, $req) {
 			break;
 			
 		case 'editDictionary':
-			$asserts_ret = assert_arr(array('enumCategory', 'exp', 'descriptor', 'lang', 'id'), $req);
+			$asserts_ret = assert_arr(array('enumCategory', 'exp', 'descriptor', 'lang', 'id', 'enumShowEmpties', 'iemlEnumComplConcOff', 'iemlEnumSubstanceOff'), $req);
 			
 			if (TRUE === $asserts_ret) {
 				$lang = strtolower($req['lang']);
-				$oldState = Conn::queryArray("
-					SELECT
-						pkExpressionPrimary AS id, strExpression as expression, enumCategory
-					FROM expression_primary
-					WHERE pkExpressionPrimary = ".goodInt($req['id']));
-				$oldDescriptor = Conn::queryArrays("
-					SELECT pkExpressionDescriptors
-					FROM expression_descriptors
-					WHERE strLanguageISO6391 = '".goodString($lang)."'
-					AND fkExpressionPrimary = ".goodInt($req['id']));
-				
-				$ret = array(
-					'id' => $req['id'],
-					'expression' => $req['exp'],
-					'enumCategory' => $req['enumCategory'],
-					'descriptor' => $req['descriptor'],
-					'tables' => array()
-				);
-				
-				if (count($oldDescriptor) > 0) {
+
+					$parse_res = IEMLParser::AST_or_FAIL($req['exp']);
+
+				if ($parse_res['resultCode'] == 0) {
+					$set_size = $parse_res['AST']->getSize();
+					$layer = $parse_res['AST']->getLayer();
+					$bare_str = $parse_res['AST']->fullExpand()->bareStr();
+
+					$oldState = Conn::queryArray("
+						SELECT
+							pkExpressionPrimary AS id, strExpression as expression, enumCategory
+						FROM expression_primary
+						WHERE pkExpressionPrimary = ".goodInt($req['id']));
+					$oldDescriptor = Conn::queryArrays("
+						SELECT pkExpressionDescriptors
+						FROM expression_descriptors
+						WHERE strLanguageISO6391 = '".goodString($lang)."'
+						AND fkExpressionPrimary = ".goodInt($req['id']));
+					
+					$ret = array(
+						'id' => $req['id'],
+						'expression' => $req['exp'],
+						'enumCategory' => $req['enumCategory'],
+						'descriptor' => $req['descriptor'],
+						'enumCompConc' => $req['iemlEnumComplConcOff'],
+						'strEtymSwitch' => $req['iemlEnumSubstanceOff'].$req['iemlEnumAttributeOff'].$req['iemlEnumModeOff'],
+						'enumShowEmpties' => $req['enumShowEmpties'],
+						'tables' => array()
+					);
+					
+					if (count($oldDescriptor) > 0) {
+						Conn::query("
+							UPDATE expression_descriptors
+							SET
+								strDescriptor = ".goodInput($req['descriptor'])."
+							WHERE fkExpressionPrimary = ".goodInt($req['id'])."
+							AND   strLanguageISO6391 = ".goodInput($lang)." LIMIT 1");
+					} else {
+						Conn::query("
+							INSERT INTO expression_descriptors
+								(fkExpressionPrimary, strDescriptor, strLanguageISO6391)
+							VALUES
+								(".goodInt($req['id']).", ".goodInput($req['descriptor']).", ".goodInput($lang).")");
+					}
+					
 					Conn::query("
-						UPDATE expression_descriptors
+						UPDATE expression_primary
 						SET
-							strDescriptor = ".goodInput($req['descriptor'])."
-						WHERE fkExpressionPrimary = ".goodInt($req['id'])."
-						AND   strLanguageISO6391 = ".goodInput($lang)." LIMIT 1");
+							enumCategory = ".goodInput($req['enumCategory']).",
+							strExpression = ".goodInput($req['exp']).",
+							intSetSize = ".$set_size.",
+							intLayer = ".$layer.",
+							strFullBareString = '".goodString($bare_str)."',
+							enumShowEmpties = ".goodInput($req['enumShowEmpties']).",
+							enumCompConc = '".invert_bool($req['iemlEnumComplConcOff'], 'Y', 'N')."',
+							strEtymSwitch = '".invert_bool($req['iemlEnumSubstanceOff'], 'Y', 'N')
+											.invert_bool($req['iemlEnumAttributeOff'], 'Y', 'N')
+											.invert_bool($req['iemlEnumModeOff'], 'Y', 'N')."'
+						WHERE pkExpressionPrimary = ".goodInt($req['id']));
+				
+					if ($ret['enumCategory'] == 'Y' && $oldState['enumCategory'] == 'N') {
+						ensure_table_for_key($ret);
+					}
+					
+					$ret = getTableForElement($ret, goodInt($ret['id']), $req);
 				} else {
-					Conn::query("
-						INSERT INTO expression_descriptors
-							(fkExpressionPrimary, strDescriptor, strLanguageISO6391)
-						VALUES
-							(".goodInt($req['id']).", ".goodInput($req['descriptor']).", ".goodInput($lang).")");
+					$ret = array(
+						'result' => 'error',
+						'resultCode' => 1,
+						'error' => '"'.$req['exp'].'" is not a valid IEML string'
+					);
 				}
-				
-				Conn::query("
-					UPDATE expression_primary
-					SET
-						enumCategory = ".goodInput($req['enumCategory']).",
-						strExpression = ".goodInput($req['exp']).",
-						enumShowEmpties = ".goodInput($req['enumShowEmpties']).",
-						enumCompConc = '".invert_bool($req['iemlEnumComplConcOff'], 'Y', 'N')."',
-						strEtymSwitch = '".invert_bool($req['iemlEnumSubstanceOff'], 'Y', 'N')
-										.invert_bool($req['iemlEnumAttributeOff'], 'Y', 'N')
-										.invert_bool($req['iemlEnumModeOff'], 'Y', 'N')."'
-					WHERE pkExpressionPrimary = ".goodInt($req['id']));
-			
-				if ($ret['enumCategory'] == 'Y' && $oldState['enumCategory'] == 'N') {
-					ensure_table_for_key($ret);
-				}
-				
-				$ret = getTableForElement($ret, goodInt($ret['id']), $req);
 				
 				$request_ret = $ret;
 			} else {
@@ -198,34 +241,51 @@ function handle_request($action, $req) {
 			
 			if (TRUE === $asserts_ret) {
 				$lang = strtolower($req['lang']);
-				
-				Conn::query("
-					INSERT INTO expression_primary
-						(strExpression, enumCategory)
-					VALUES
-						(".goodInput($req['exp']).", ".goodInput($req['enumCategory']).")");
-						
-				$ret = array(
-					'id' => Conn::getId(),
-					'expression' => $req['exp'],
-					'enumCategory' => $req['enumCategory'],
-					'descriptor' => $req['descriptor'],
-					'enumShowEmpties' => $req['enumShowEmpties']
-				);
-				
-				Conn::query("
-					INSERT INTO expression_descriptors
-						(fkExpressionPrimary, strDescriptor, strLanguageISO6391)
-					VALUES
-						(".$ret['id'].", ".goodInput($req['descriptor']).", ".goodInput($lang).")");
-				
-				if ($req['enumCategory'] == 'Y') {
-					ensure_table_for_key($ret);
+
+				$parse_res = IEMLParser::AST_or_FAIL($req['exp']);
+
+				if ($parse_res['resultCode'] == 0) {
+					$set_size = $parse_res['AST']->getSize();
+					$layer = $parse_res['AST']->getLayer();
+					$bare_str = $parse_res['AST']->fullExpand()->bareStr();
+
+					Conn::query("
+						INSERT INTO expression_primary
+							(strExpression, enumCategory, intSetSize, intLayer, strFullBareString)
+						VALUES
+							(".goodInput($req['exp']).", ".goodInput($req['enumCategory']).", ".$set_size.", ".$layer.")");
+							
+					$ret = array(
+						'id' => Conn::getId(),
+						'expression' => $req['exp'],
+						'enumCategory' => $req['enumCategory'],
+						'descriptor' => $req['descriptor'],
+						'enumShowEmpties' => $req['enumShowEmpties'],
+						'intSetSize' => $set_size,
+						'intLayer' => $layer,
+						'strFullBareString' => $bare_str
+					);
+					
+					Conn::query("
+						INSERT INTO expression_descriptors
+							(fkExpressionPrimary, strDescriptor, strLanguageISO6391)
+						VALUES
+							(".$ret['id'].", ".goodInput($req['descriptor']).", ".goodInput($lang).")");
+					
+					if ($req['enumCategory'] == 'Y') {
+						ensure_table_for_key($ret);
+					}
+					
+					$ret = getTableForElement($ret, goodInt($ret['id']), $req);
+					
+					$request_ret = $ret;
+				} else {
+					$ret = array(
+						'result' => 'error',
+						'resultCode' => 1,
+						'error' => '"'.$req['exp'].'" is not a valid IEML string'
+					);
 				}
-				
-				$ret = getTableForElement($ret, goodInt($ret['id']), $req);
-				
-				$request_ret = $ret;
 			} else {
 				$request_ret = assert_format($asserts_ret);
 			}
@@ -364,28 +424,6 @@ function handle_request($action, $req) {
 		case 'validateExpression':
 			require_once(APPROOT.'/includes/ieml_parser/IEMLParser.class.php');
 			require_once(APPROOT.'/includes/ieml_parser/IEMLScriptGen.class.php');
-			
-			function handle_string($string) {
-				$parser = new IEMLParser();
-				$parserResult = $parser->parseAllStrings($string);
-				$ret = array();
-				
-				if ($parserResult->hasException()) {
-					$ret['result'] = 'error';
-					$ret['resultCode'] = 1;
-					$ret['error'] = ParseException::formatError($string, $parserResult->except(), FALSE);
-				} else if ($parserResult->hasError()) {
-					$ret['result'] = 'error';
-					$ret['resultCode'] = 2;
-					$ret['error'] = $parserResult->error()->getMessage();
-				} else {
-					$ret['result'] = 'success';
-					$ret['resultCode'] = 0;
-					$ret['AST_string'] = $parserResult->AST()->toString();
-				}
-				
-				return $ret;
-			}
 
 			$asserts_ret = assert_arr(array('expression'), $req);
 			
@@ -393,7 +431,7 @@ function handle_request($action, $req) {
 				$request_ret = array(
 					'result' => 'success',
 					'resultCode' => 0,
-					'parser_output' => handle_string($req['expression'])
+					'parser_output' => IEMLParser::AST_or_FAIL($req['expression'])
 				);
 			} else {
 				$request_ret = assert_format($asserts_ret);
@@ -410,14 +448,52 @@ function handle_request($action, $req) {
 	return $request_ret;
 }
 
+function request_error_handle($severity, $message, $filename, $lineno) {
+	if ($severity == E_USER_ERROR) {
+		throw new Exception('Fatal Error '.$severity.' in "'.$filename.'":'.$lineno.' "'.$message.'"');
+	} else {
+		//ignore; you didn't see anything...
+	}
+}
+
+function wrap_request($action, $req, $callback = NULL) {
+	api_log(api_message('{Action: '.$_REQUEST['a'].'}'));
+
+	ob_start();
+
+	set_error_handler('request_error_handle');
+
+	try {
+		$ret = handle_request($action, $req);
+	} catch (Exception $e) {
+		$ret = array(
+			'result' => 'error',
+			'resultCode' => '1',
+			'error' => $e->getMessage()
+		);
+	}
+
+	restore_error_handler();
+
+	if ($callback) {
+		echo $callback.'(';
+	}
+
+	echo json_encode($ret);
+
+	if ($callback) {
+		echo ')';
+	}
+
+	return ob_get_clean();
+}
+
 header('Content-type: application/json');
 
 //smart_session($_REQUEST);
 session_start();
 
-api_log(api_message('{Action: '.$_REQUEST['a'].'}'));
-
-echo (isset($_REQUEST['callback']) ? $_REQUEST['callback'].'(' : '').json_encode(handle_request($_REQUEST['a'], $_REQUEST)).(isset($_REQUEST['callback']) ? ')' : '');
+echo wrap_request($_REQUEST['a'], $_REQUEST, array_key_exists('callback', $_REQUEST) ? $_REQUEST['callback'] : NULL);
 
 //set_session_data($_SESSION['auth_token'], $_SESSION);
 

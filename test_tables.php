@@ -41,11 +41,11 @@ table tbody tr td, table tbody tr th {
 <?php
 
 $keys = array();
-//$keys[] = array('expression' => "O:O:.M:M:.-");
+$keys[] = array('expression' => "O:O:.M:M:.-");
 //$keys[] = array('expression' => "I:");
 //$keys[] = array('expression' => "O:O:.A:U:O:.-M:M:.S:M:.-'");
 //$keys[] = array('expression' => "O:M:.(M:+O:).-");
-$keys[] = array('expression' => "M:M:.-O:M:.- (E:.- + s.y.-)'");
+//$keys[] = array('expression' => "M:M:.-O:M:.- (E:.- + s.y.-)'");
 //$keys[] = array('expression' => "M:M:.O:M:.- + M:M:.M:O:.-");
 //$keys[] = array('expression' => "S:M:.e.-M:M:.u.-(E:.- + wa.e.-)' + B:M:.e.-M:M:.a.-(E:.- + wa.e.-)' + T:M:.e.-M:M:.i.-(E:.- + wa.e.-)'");
 

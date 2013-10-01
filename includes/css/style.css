@@ -184,6 +184,10 @@ table.relation .cell_wrap span.cell_expression {
 	padding-bottom: 5px;
 }
 
+.ieml-validation-result {
+	margin-top: 5px;
+}
+
 .ieml-validation-result .result-success, .ieml-validation-result .result-error {
 	display: block;
 	font-family: monospace;
@@ -192,6 +196,10 @@ table.relation .cell_wrap span.cell_expression {
 
 #filter-results-wrap {
 	min-width: 155px;
+}
+
+form#search-form select {
+	margin-bottom: 0;
 }
 
 

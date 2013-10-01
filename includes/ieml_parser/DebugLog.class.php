@@ -1,6 +1,6 @@
 <?php
 
-class Debug {
+class Devlog {
 	private static
 		$ERROR = 0,
 		$WARNING = 1,
@@ -13,16 +13,16 @@ class Debug {
 		$str = '';
 		
 		switch($level) {
-			case Debug::$ERROR:
+			case Devlog::$ERROR:
 				$str = 'ERROR';
 				break;
-			case Debug::$WARNING:
+			case Devlog::$WARNING:
 				$str = 'WARNING';
 				break;
-			case Debug::$NOTICE:
+			case Devlog::$NOTICE:
 				$str = 'NOTICE';
 				break;
-			case Debug::$INFO:
+			case Devlog::$INFO:
 				$str = 'INFO';
 				break;
 			default:
@@ -33,32 +33,41 @@ class Debug {
 	}
 	
 	public static function output_stream($resource) {
-		Debug::$output = $resource;
+		Devlog::$output = $resource;
 	}
 	
-	public static function Log($level, $msg) {
-		if (isset(Debug::$output)) {
-			fwrite(Debug::$output, '['.Debug::level_to_name($level).'] '.$msg);
+	private static function Log($level, $msg, $debug_stack) {
+		if (isset(Devlog::$output)) {
+			fwrite(Devlog::$output, '['.$debug_stack['function'].':'.$debug_stack['line'].'@'.date('Y-m-d H:i:s').' ('.Devlog::level_to_name($level).')] '.$msg."\n");
 		}
 	}
-	
-	public static function LogError($msg) {
-		Debug::Log(Debug::$ERROR, $msg);
+
+	private static function cons_stack() {
+		$stack = debug_backtrace();
+		$ret = $stack[2];
+
+		if (array_key_exists('line', $ret)) {
+			$ret['line'] = $stack[1]['line'];
+		}
+
+		return $ret;
 	}
 	
-	public static function LogWarning($msg) {
-		Debug::Log(Debug::$WARNING, $msg);
+	public static function e($msg) {
+		Devlog::Log(Devlog::$ERROR, $msg, Devlog::cons_stack());
 	}
 	
-	public static function LogNotice($msg) {
-		Debug::Log(Debug::$NOTICE, $msg);
+	public static function w($msg) {
+		Devlog::Log(Devlog::$WARNING, $msg, Devlog::cons_stack());
 	}
 	
-	public static function LogInfo($msg) {
-		Debug::Log(Debug::$INFO, $msg);
+	public static function n($msg) {
+		Devlog::Log(Devlog::$NOTICE, $msg, Devlog::cons_stack());
+	}
+	
+	public static function i($msg) {
+		Devlog::Log(Devlog::$INFO, $msg, Devlog::cons_stack());
 	}
 }
-
-Debug::$output = fopen('php://stdout', 'w');
 
 ?>

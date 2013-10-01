@@ -6,28 +6,34 @@ require_once(APPROOT.'/includes/functions.php');
 require_once(APPROOT.'/includes/ieml_parser/IEMLParser.class.php');
 require_once(APPROOT.'/includes/ieml_parser/IEMLScriptGen.class.php');
 
-Debug::output_stream(NULL);
+Devlog::output_stream(NULL);
+//Devlog::output_stream(fopen('php://output', 'w'));
 
 $strings = array();
 //$strings[] = "o.p.-A:E:T:.-wa.-'";
-//$strings[] = "(A:+E:+B:).-p.o.-'";asjdk
-//$strings[] = "M:.-(E:.- + s.y.-)' + O:.-(E:.- + y.s.-)'";
-//$strings[] = "(O:+M:)(U:+M:).";
-//$strings[] = 'A:.';
+//$strings[] = "(A:+E:+B:).-p.o.-'";
 //$strings[] = IEMLScriptGen::staticGenerate(2, 2, 2);
+$strings[] = array('id' => 0, 'expression' => "U:+E:");
+//$strings[] = array('id' => 0, 'expression' => "E:.-");
+//$strings[] = array('id' => 0, 'expression' => "s.y.-");
+//$strings[] = array('id' => 0, 'expression' => "A:.-'");
+//$strings[] = array('id' => 0, 'expression' => "A:S:.we.-'");
+//$strings[] = array('id' => 0, 'expression' => "wo.");
+//$strings[] = array('id' => 0, 'expression' => "I:");
 
+/*
 $strings = Conn::queryArrays("
 	SELECT pkExpressionPrimary AS id, strExpression AS expression
 	FROM expression_primary
 	WHERE enumDeleted = 'N'
 ");
-
+*/
 
 foreach ($strings as $string) {
 	$parser = new IEMLParser();
 	$parserResult = $parser->parseString($string['expression']);
 
-	echo '<pre>'.$string['id'].': '.$string['expression'].'</pre>';
+	echo pre_print($string['id'].': '.$string['expression']);
 
 	echo '<pre>';
 	if ($parserResult->hasException()) {
@@ -35,8 +41,8 @@ foreach ($strings as $string) {
 	} else if ($parserResult->hasError()) {
 		echo $parserResult->error()->getMessage();
 	} else {
-		//echo $parserResult->AST()->toString();
-		echo 'success';
+		echo $parserResult->AST()->toString();
+		//echo 'success';
 	}
 	echo '</pre><hr/>';
 }

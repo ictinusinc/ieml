@@ -236,19 +236,7 @@
 	
 	IEMLApp.receiveSearch = function (respObj) {
 		if (respObj && respObj.length > 0) {
-			var tstr = '', gram_sort = { 'Verb': 1, 'Noun': 2, 'AUXILIARY': 3, 'Hybrid': 4 };
-			
-			for (var i in respObj) {
-				respObj[i]['verbLayer'] = getVerbLayer(respObj[i]['expression']);
-			}
-			
-			respObj.sort(function(a, b) {
-				if (a['verbLayer']['layer'] == b['verbLayer']['layer']) {
-					return gram_sort[a['verbLayer']['gram']] - gram_sort[b['verbLayer']['gram']];
-				} else {
-					return a['verbLayer']['layer'] - b['verbLayer']['layer'];
-				}
-			});
+			var tstr = '';
 			
 			for (var j in respObj) {
 				tstr += formatResultRow(respObj[j]);
@@ -348,7 +336,6 @@
 		}
 		
 		$('.user-display-name').html(userObj['strDisplayName']);
-	
 	}
 	
 	function init_anon_user() {
