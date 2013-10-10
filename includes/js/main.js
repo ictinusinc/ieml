@@ -111,8 +111,8 @@
 		}
 		$('#search-lang-select').val(IEMLApp.lang.toLowerCase());
 		
-		if (_SESSION['user']) {
-			init_user_login(_SESSION['user']);
+		if (IEMLApp.user) {
+			init_user_login(IEMLApp.user);
 		} else {
 			init_anon_user();
 		}
@@ -568,12 +568,6 @@
 		
 		if (info['expression'] && info['expression'].length > 0) {
 			var details = getVerbLayer(info['expression']);
-
-			if (IEMLApp.user) {
-				$('.edit-buttons-wrap').show();
-			} else {
-				$('.edit-buttons-wrap').hide();
-			}
 			
 			$('#ieml-result').html(info['expression']);
 		

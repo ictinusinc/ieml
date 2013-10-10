@@ -76,7 +76,6 @@
 						<div class="span12">
 							<div class="pull-left" id="add-ieml-record-wrap"><a href="javascript:void(0);" class="btn" id="add-ieml-record"><span class="icon-plus">&nbsp;</span><span data-lang-switch="add_record"><?php echo trans_phrase('add_record', $lang); ?></span></a></div>
 							<div class="pull-left" id="ieml-view-users-wrap"><a href="javascript:void(0);" class="btn" id="ieml-view-users" data-lang-switch="view_users"><?php echo trans_phrase('view_users', $lang); ?></a></div>
-							<!--div class="pull-left"><div id="back-to-list-view" class="btn hide"><?php echo trans_phrase('back_to_res', $lang); ?></div></div-->
 							
 							<div class="pull-right">
 								<div class="edit-buttons-wrap hide">

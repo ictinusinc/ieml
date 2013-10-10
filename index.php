@@ -102,7 +102,7 @@ require_once(APPROOT.'/includes/header.php');
 					</div>
 
 					<div class="span6" id="ieml-desc-wrap">
-						<span class="desc-top-tag" data-lang-switch="example"><?php echo trans_phrase('example', $lang); ?></span>
+						<span class="desc-top-tag" data-lang-switch="descriptor"><?php echo trans_phrase('descriptor', $lang); ?></span>
 
 						<h3 id="ieml-desc-result"></h3>
 					</div>
