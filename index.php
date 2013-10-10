@@ -52,7 +52,7 @@ require_once(APPROOT.'/includes/header.php');
 					<tr>
 						<th data-lang-switch="list_tab_exp_col"><?php echo trans_phrase('list_tab_exp_col', $lang); ?></th>
 
-						<th data-lang-switch="list_tab_descriptor_col"><?php echo trans_phrase('list_tab_descriptor_col', $lang); ?></th>
+						<th data-lang-switch="list_tab_example_col"><?php echo trans_phrase('list_tab_example_col', $lang); ?></th>
 
 						<th>&nbsp;</th>
 					</tr>
@@ -102,9 +102,9 @@ require_once(APPROOT.'/includes/header.php');
 					</div>
 
 					<div class="span6" id="ieml-desc-wrap">
-						<span class="desc-top-tag" data-lang-switch="descriptor"><?php echo trans_phrase('descriptor', $lang); ?></span>
+						<span class="desc-top-tag" data-lang-switch="example"><?php echo trans_phrase('example', $lang); ?></span>
 
-						<div id="ieml-desc-result"></div>
+						<h3 id="ieml-desc-result"></h3>
 					</div>
 				</div>
 

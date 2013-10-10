@@ -5,9 +5,9 @@ if (isset($_REQUEST['id'])) {
     $ret = Conn::queryArray("
         SELECT
             pkExpressionPrimary as id, strExpression as expression,
-            enumCategory, sublang.strDescriptor AS descriptor
+            enumCategory, sublang.strExample AS example
         FROM expression_primary prim
-        LEFT JOIN expression_descriptors sublang
+        LEFT JOIN expression_data sublang
         	ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
         WHERE strLanguageISO6391 = ".goodInput($_REQUEST['lang'])."
         AND   pkExpressionPrimary = ".$goodID);
@@ -23,13 +23,13 @@ if (isset($_REQUEST['id'])) {
     $ret = Conn::queryArrays("
         SELECT
             pkExpressionPrimary AS id, strExpression AS expression,
-            enumCategory, enumDeleted, sublang.strDescriptor AS descriptor
+            enumCategory, enumDeleted, sublang.strExample AS example
         FROM expression_primary prim
-        LEFT JOIN expression_descriptors sublang
+        LEFT JOIN expression_data sublang
         	ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
         WHERE enumDeleted = 'N'
         AND   strLanguageISO6391 = ".goodInput($_REQUEST['lang'])."
-        AND   (strExpression LIKE '%".goodString($_REQUEST['search'])."%' OR sublang.strDescriptor LIKE '%".goodString($_REQUEST['search'])."%')
+        AND   (strExpression LIKE '%".goodString($_REQUEST['search'])."%' OR sublang.strExample LIKE '%".goodString($_REQUEST['search'])."%')
         ORDER BY expression");
     
     echo json_encode($ret);

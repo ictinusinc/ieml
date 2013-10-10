@@ -10,22 +10,19 @@ Devlog::output_stream(NULL);
 //Devlog::output_stream(fopen('php://output', 'w'));
 
 $strings = array();
-//$strings[] = "o.p.-A:E:T:.-wa.-'";
-//$strings[] = "(A:+E:+B:).-p.o.-'";
 //$strings[] = IEMLScriptGen::staticGenerate(2, 2, 2);
-$strings[] = array('id' => 0, 'expression' => "U:+E:");
+//$strings[] = array('id' => 0, 'expression' => "U:+E:");
 //$strings[] = array('id' => 0, 'expression' => "E:.-");
 //$strings[] = array('id' => 0, 'expression' => "s.y.-");
 //$strings[] = array('id' => 0, 'expression' => "A:.-'");
 //$strings[] = array('id' => 0, 'expression' => "A:S:.we.-'");
-//$strings[] = array('id' => 0, 'expression' => "wo.");
-//$strings[] = array('id' => 0, 'expression' => "I:");
+$strings[] = array('id' => 0, 'expression' => "wo.");
 
 /*
 $strings = Conn::queryArrays("
-	SELECT pkExpressionPrimary AS id, strExpression AS expression
+	SELECT *, strExpression as expression
 	FROM expression_primary
-	WHERE enumDeleted = 'N'
+	WHERE strExpression IN ('O:', 'S:', 'E:+U:')
 ");
 */
 

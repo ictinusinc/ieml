@@ -7,38 +7,38 @@ function lpad(str, l, chr) {
 }
 
 function LightDate() {
-    return this;
+	return this;
 }
 LightDate.LANG = 'EN';
 LightDate.__LANG = {
-    'EN': {
-        'date-short-mos' : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        'date-short-wkd' : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-        'date-long-mos' : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-        'date-long-wkd' : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-        'date-chrreg' : {
-            'Y':/^\d{4,}/, 'm':/^\d{2}/, 'd':/^\d{2}/, 'H':/^\d{2}/, 'i':/^\d{2}/, 's':/^\d{2}/, 'j':/^\d{1,2}/, 'S':/^st|nd|rd|th/,
-            'D':/^Sun|Mon|Tue|Wed|Thu|Fri|Sat/,
-            'M':/^Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec/,
-            'l':/^Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday/,
-            'F':/^January|February|March|April|May|June|July|August|September|October|November|December/
-        }
-    }
+	'EN': {
+		'date-short-mos' : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+		'date-short-wkd' : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+		'date-long-mos' : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+		'date-long-wkd' : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+		'date-chrreg' : {
+			'Y':/^\d{4,}/, 'm':/^\d{2}/, 'd':/^\d{2}/, 'H':/^\d{2}/, 'i':/^\d{2}/, 's':/^\d{2}/, 'j':/^\d{1,2}/, 'S':/^st|nd|rd|th/,
+			'D':/^Sun|Mon|Tue|Wed|Thu|Fri|Sat/,
+			'M':/^Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec/,
+			'l':/^Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday/,
+			'F':/^January|February|March|April|May|June|July|August|September|October|November|December/
+		}
+	}
 };
 
 LightDate.ensure_date = function(d) {
 	if (typeof d === 'string') { return new Date(parseInt(d, 10));
 	} else if (typeof d === 'number' && !isNaN(d.valueOf())) { return new Date(d);
 	} else if (typeof d === 'undefined') {
-	   return new Date();
+		return new Date();
 	} else if (d instanceof Date)
-	   return d;
+		return d;
 	
 	return new Date(d);
 };
 
 LightDate.date = function(format, ts) {
-    ts = LightDate.ensure_date(ts);
+	ts = LightDate.ensure_date(ts);
 	
 	var ret = '';
 	for (var i = 0; i<format.length; i++) {
@@ -97,7 +97,7 @@ LightDate.parse_date_format = function(format, datestr) {
 };
 
 LightDate.date_timezone_adjust = function(date) {
-    date = LightDate.ensure_date(date);
+	date = LightDate.ensure_date(date);
 	return new Date(date.getTime()+(date.getTimezoneOffset()*60*1000));
 };
 
@@ -106,51 +106,30 @@ function ordinal_str(n) {
 		return 'negative ' + ordinal_str(Math.abs(n));
 	} else if (n <= 20) {
 		switch (n) {
-			case 0:
-				return 'zeroth'; break;
-			case 1 :
-				return 'first'; break;
-			case 2:
-				return 'second'; break;
-			case 3:
-				return 'third'; break;
-			case 4:
-				return 'fourth'; break;
-			case 5:
-				return 'fifth'; break;
-			case 6:
-				return 'sixth'; break;
-			case 7:
-				return 'seventh'; break;
-			case 8:
-				return 'eigth'; break;
-			case 9:
-				return 'ninth'; break;
-			case 10:
-				return 'tenth'; break;
-			case 11:
-				return 'eleventh'; break;
-			case 12:
-				return 'twelfth'; break;
-			case 13:
-				return 'thirteenth'; break;
-			case 14:
-				return 'fourteenth'; break;
-			case 15:
-				return 'fifteenth'; break;
-			case 16:
-				return 'sixteenth'; break;
-			case 17:
-				return 'seventeenth'; break;
-			case 18:
-				return 'eightteenth'; break;
-			case 19:
-				return 'ninteenth'; break;
-			case 20:
-				return 'twentieth'; break;
+			case 0: return 'zeroth';
+			case 1: return 'first';
+			case 2: return 'second';
+			case 3: return 'third';
+			case 4: return 'fourth';
+			case 5: return 'fifth';
+			case 6: return 'sixth';
+			case 7: return 'seventh';
+			case 8: return 'eigth';
+			case 9: return 'ninth';
+			case 10: return 'tenth';
+			case 11: return 'eleventh';
+			case 12: return 'twelfth';
+			case 13: return 'thirteenth';
+			case 14: return 'fourteenth';
+			case 15: return 'fifteenth';
+			case 16: return 'sixteenth';
+			case 17: return 'seventeenth';
+			case 18: return 'eightteenth';
+			case 19: return 'ninteenth';
+			case 20: return 'twentieth';
 		}
 	} else {
-		return "Number too large. Tell your local dev to add support for more.";
+		return "Number too large. Tell your dev to get a better number-to-string converter.";
 	}
 }
 
@@ -252,23 +231,25 @@ function array_lastIndexOf(arr, el) {
 }
 
 function array_map(arr, callback) {
-    var ret = [];
-    for (var i in arr) {
-        ret[i] = callback.apply(arr[i], [i, arr[i]]);
-    }
-    return ret;
+	var ret = [];
+	for (var i in arr) {
+		ret[i] = callback.apply(arr[i], [i, arr[i]]);
+	}
+	return ret;
 }
 
 function array_filter(arr, callback) {
-    var ret = [];
-    for (var i in arr) {
-    	if (callback.apply(arr[i], [i, arr[i]])) {
-        	ret.push(arr[i]);
-        }
-    }
-    return ret;
+	var ret = [];
+	for (var i in arr) {
+		if (callback.apply(arr[i], [i, arr[i]])) {
+			ret.push(arr[i]);
+		}
+	}
+	return ret;
 }
 
 function path_split(path) {
-	return array_filter(path.split('/'), function(i, el) { return el.length > 0; });
+	return array_map(array_filter(path.split('/'), function(i, el) { return el.length > 0; }), function(i, el) {
+		return decodeURIComponent(el);
+	});
 }

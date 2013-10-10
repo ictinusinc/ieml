@@ -12,14 +12,14 @@ function getTableForElement($ret, $goodID, $options) {
 		$table_head_query = Conn::queryArrays("
 			SELECT
 				pkTable2D, intWidth, intHeight, intHorHeaderDepth, intVerHeaderDepth,
-				prim.strExpression as expression, sublang.strDescriptor as descriptor, jsonTableLogic,
+				prim.strExpression as expression, sublang.strExample as example, jsonTableLogic,
 				t2d.fkExpression as id, intLeftoverIndex, intConcatIndex
 			FROM table_2d_id t2d
 			JOIN expression_primary prim ON t2d.fkExpression = prim.pkExpressionPrimary
 			LEFT JOIN
 				(
-					SELECT fkExpressionPrimary, strDescriptor
-					FROM expression_descriptors
+					SELECT fkExpressionPrimary, strExample
+					FROM expression_data
 					WHERE strLanguageISO6391 = '".goodString($lang)."'
 				) sublang
 				ON sublang.fkExpressionPrimary = t2d.fkExpression
@@ -30,7 +30,7 @@ function getTableForElement($ret, $goodID, $options) {
 		$table_head_query = Conn::queryArrays("
 			SELECT
 				t2d.pkTable2D, t2d.intWidth, t2d.intHeight, t2d.intHorHeaderDepth, t2d.intVerHeaderDepth,
-				prim.strExpression AS expression, sublang.strDescriptor AS descriptor, t2d.jsonTableLogic,
+				prim.strExpression AS expression, sublang.strExample AS example, t2d.jsonTableLogic,
 				prim.pkExpressionPrimary as id,
 				t2d.intLeftoverIndex, t2d.intConcatIndex
 			FROM table_2d_id t2d
@@ -38,8 +38,8 @@ function getTableForElement($ret, $goodID, $options) {
 			JOIN table_2d_ref t2dref ON fkTable2D = pkTable2D
 			LEFT JOIN
 				(
-					SELECT fkExpressionPrimary, strDescriptor
-					FROM expression_descriptors
+					SELECT fkExpressionPrimary, strExample
+					FROM expression_data
 					WHERE strLanguageISO6391 = '".goodString($lang)."'
 				) sublang
 				ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
@@ -51,15 +51,15 @@ function getTableForElement($ret, $goodID, $options) {
 			array_append($related_tables, Conn::queryArrays("
 				SELECT
 					t2d.pkTable2D, t2d.intWidth, t2d.intHeight, t2d.intHorHeaderDepth, t2d.intVerHeaderDepth,
-					prim.strExpression AS expression, sublang.strDescriptor AS descriptor, t2d.jsonTableLogic,
+					prim.strExpression AS expression, sublang.strExample AS example, t2d.jsonTableLogic,
 					prim.pkExpressionPrimary as id,
 					t2d.intLeftoverIndex, t2d.intConcatIndex
 				FROM table_2d_id t2d
 				JOIN expression_primary prim ON prim.pkExpressionPrimary = t2d.fkExpression
 				LEFT JOIN
 					(
-						SELECT fkExpressionPrimary, strDescriptor
-						FROM expression_descriptors
+						SELECT fkExpressionPrimary, strExample
+						FROM expression_data
 						WHERE strLanguageISO6391 = '".goodString($lang)."'
 					) sublang
 					ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
@@ -74,7 +74,7 @@ function getTableForElement($ret, $goodID, $options) {
 		
 		$top = array(
 			'expression' => $table_head_query[0]['expression'],
-			'descriptor' => $table_head_query[0]['descriptor'],
+			'example' => $table_head_query[0]['example'],
 			'id' => $table_head_query[0]['id']
 		);
 	}
@@ -122,12 +122,12 @@ function format_table_for($table_head_query, $query_exp, $top, $options) {
 	$exp_query = Conn::queryArrays("
 		SELECT
 			pkExpressionPrimary as id, prim.strExpression as expression,
-			sublang.strDescriptor AS descriptor
+			sublang.strExample AS example
 		FROM expression_primary prim
 		LEFT JOIN
 			(
-				SELECT fkExpressionPrimary, strDescriptor
-				FROM expression_descriptors
+				SELECT fkExpressionPrimary, strExample
+				FROM expression_data
 				WHERE strLanguageISO6391 = ".goodInput($lang)."
 			) sublang
 			ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
@@ -169,9 +169,9 @@ function format_table_for($table_head_query, $query_exp, $top, $options) {
 	$ret['relations'] = postproc_exp_relations($ret['relations'], function($el) use ($flat_assoc) {
 		if (isset($el)) {
 			if (is_array($el) && array_key_exists('expression', $el) && array_key_exists($el['expression'], $flat_assoc)) {
-				return array('exp' => array($el['expression'], $el['intSpan']), 'desc' => $flat_assoc[$el['expression']]['descriptor'], 'id' => $flat_assoc[$el['expression']]['id']);
+				return array('exp' => array($el['expression'], $el['intSpan']), 'desc' => $flat_assoc[$el['expression']]['example'], 'id' => $flat_assoc[$el['expression']]['id']);
 			} else if (is_string($el) && array_key_exists($el, $flat_assoc)) {
-				return array('exp' => array($el, 1), 'desc' => $flat_assoc[$el]['descriptor'], 'id' => $flat_assoc[$el]['id']);
+				return array('exp' => array($el, 1), 'desc' => $flat_assoc[$el]['example'], 'id' => $flat_assoc[$el]['id']);
 			} else {
 				if (is_array($el)) {
 					$ret = array();
@@ -194,7 +194,7 @@ function format_table_for($table_head_query, $query_exp, $top, $options) {
 	
 	//add top as a vertical header
 	$table_info['headers'][1][] = array(array(array(
-		'descriptor' => $top['descriptor'],
+		'example' => $top['example'],
 		'enumElementType' => "header",
 		'enumEnabled' => "Y",
 		'enumHeaderType' => "ver",
@@ -208,9 +208,9 @@ function format_table_for($table_head_query, $query_exp, $top, $options) {
 		'body' => $table_info['body']
 	), function($el) use ($flat_assoc) {
 		if (array_key_exists($el['expression'], $flat_assoc)) {
-			$el['descriptor'] = $flat_assoc[$el['expression']]['descriptor'];
+			$el['example'] = $flat_assoc[$el['expression']]['example'];
 		} else {
-			$el['descriptor'] = NULL;
+			$el['example'] = NULL;
 		}
 		
 		return $el;
@@ -223,16 +223,16 @@ function get_etymology($query_exp, $lang) {
 	//get expression etymology
 	$temp_etym = gen_etymology($query_exp['expression']);
 	
-	//fetch some descriptors from the DB so that the eymological parts display nicely
+	//fetch some examples from the DB so that the eymological parts display nicely
 	$etym_query = Conn::queryArrays("
 		SELECT
 			pkExpressionPrimary as id, prim.strExpression as expression,
-			sublang.strDescriptor AS descriptor
+			sublang.strExample AS example
 		FROM expression_primary prim
 		LEFT JOIN
 			(
-				SELECT fkExpressionPrimary, strDescriptor
-				FROM expression_descriptors
+				SELECT fkExpressionPrimary, strExample
+				FROM expression_data
 				WHERE strLanguageISO6391 = ".goodInput($lang)."
 			) sublang
 			ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
@@ -247,7 +247,7 @@ function get_etymology($query_exp, $lang) {
 	//do some post-processing on the etymological array, to get some use preferences and API info out
 	$temp_etym = array_map(function($el) use ($flat_assoc) {
 		if (array_key_exists($el, $flat_assoc)) {
-			return array('exp' => $el, 'desc' => $flat_assoc[$el]['descriptor'], 'id' => $flat_assoc[$el]['id']);
+			return array('exp' => $el, 'desc' => $flat_assoc[$el]['example'], 'id' => $flat_assoc[$el]['id']);
 		} else {
 			return array('exp' => $el, 'desc' => NULL, 'id' => NULL);
 		}

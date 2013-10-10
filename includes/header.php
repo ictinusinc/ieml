@@ -17,7 +17,7 @@
 		<!-- bootstrap-2.0.1.css -->
 		<link rel="stylesheet" type="text/css" href="<?php echo WEBAPPROOT.'/includes/css/bootstrap-2.0.1.min.css'; ?>">
 		<!-- style.css -->
-		<link rel="stylesheet" type="text/css" href="<?php echo WEBAPPROOT.'/includes/css/style.css'; ?>">
+		<link rel="stylesheet" type="text/css" href="<?php echo WEBAPPROOT.'/includes/css/style.css'; ?>" />
 	</head>
 	<body>
 		<div id="ajax"></div>
@@ -37,6 +37,7 @@
 					</div>
 					<div class="row">
 						<form id="search-form" class="span12 navbar-search" action="/api/" method="post">
+							<input type="hidden" name="keys" value="" />
 							<a class="brand logo" href="/">&nbsp;</a>
 							<input type="hidden" name="a" value="searchDictionary" />
 							<div class="pull-left">
@@ -47,6 +48,22 @@
 								</select>
 							</div>
 							<div class="pull-right">
+								<select id="search-layer-select" name="layer" class="span2">
+									<option value="">Layer</option>
+									<option value="0">0</option>
+									<option value="1">1</option>
+									<option value="2">2</option>
+									<option value="3">3</option>
+									<option value="4">4</option>
+									<option value="5">5</option>
+									<option value="6">6</option>
+								</select>
+								<select id="search-class-select" name="class" class="span2">
+									<option value="">Class</option>
+									<option value="verb">Verb</option>
+									<option value="noun">Noun</option>
+									<option value="auxiliary">Auxiliary</option>
+								</select>
 								<input type="text" class="search-query span2" id="search" name="search" data-lang-switch="search" data-lang-switch-attr="placeholder" placeholder="<?php echo trans_phrase('search', $lang); ?>" />
 							</div>
 						</form>
@@ -67,9 +84,9 @@
 									<a class="btn" id="ieml-desc-result-edit" data-lang-switch="edit"><?php echo trans_phrase('edit', $lang); ?></a>
 								</div>
 								
-								<div class="btn-group" id="filter-results-wrap">
-									<button class="btn" id="filter-results-button" data-lang-switch="filter_show_all"><?php echo trans_phrase('filter_show_all', $lang); ?></button>
-									<button class="btn" id="filter-results-keys" data-lang-switch="filter_keys_only"><?php echo trans_phrase('filter_keys_only', $lang); ?></button>
+								<div class="btn-group" data-toggle="buttons-radio" id="filter-results-wrap">
+									<button type="button" class="btn" data-toggle="button" id="filter-results-button" data-lang-switch="filter_show_all" data-value=""><?php echo trans_phrase('filter_show_all', $lang); ?></button>
+									<button type="button" class="btn" data-toggle="button" id="filter-results-keys" data-lang-switch="filter_keys_only" data-value="keys"><?php echo trans_phrase('filter_keys_only', $lang); ?></button>
 								</div>
 							</div>
 						</div>

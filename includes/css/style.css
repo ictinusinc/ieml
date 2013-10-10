@@ -35,25 +35,6 @@
 	min-width: 200px;
 }
 
-#ieml-desc-result {
-   width: 100%;
-   margin-bottom: 20px;
-}
-#ieml-desc-result td {
-   height: 50px;
-   padding-left: 19px;
-   font-weight: bold;
-   font-size: 1.2em;
-   border-bottom: 1px solid #bbb;
-}
-#ieml-desc-result td input {
-   margin: 0;
-   width: 90%;
-}
-#ieml-desc-result td:nth-child(2) {
-   border-left: 1px dotted #ccc;
-   width: 50px;
-}
 .non-edit-buttons .btn {
 	margin-right: 5px;
 }

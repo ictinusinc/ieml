@@ -4,11 +4,12 @@
         <!-- native.history-1.7.1.js -->
         <script type="text/javascript" src="<?php echo WEBAPPROOT.'/includes/js/libs/native.history-1.8b2.min.js'; ?>"></script>
         <!-- jquery-1.9.1.min.js -->
-        <script type="text/javascript" src="<?php echo WEBAPPROOT.'/includes/js/libs/jquery-1.9.1.min.js'; ?>"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
         <!-- jquery.form-3.34.js -->
         <script type="text/javascript" src="<?php echo WEBAPPROOT.'/includes/js/libs/jquery.form-3.34.0.js'; ?>"></script>
         <!-- bootstrap-2.3.1.min.js -->
-        <script type="text/javascript" src="<?php echo WEBAPPROOT.'/includes/js/libs/bootstrap-2.3.2.min.js'; ?>"></script>
+        <script type="text/javascript" src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.0.4/js/bootstrap.min.js"></script>
+
         <!-- functions.js -->
         <script type="text/javascript" src="<?php echo WEBAPPROOT.'/includes/js/functions.js'; ?>"></script>
         <!-- UI_lang and _SESSION var dump -->

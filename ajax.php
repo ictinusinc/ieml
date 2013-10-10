@@ -55,29 +55,31 @@ function handle_request($action, $req) {
 				if (isset($req['id']) || isset($req['exp'])) {
 					if (isset($req['id'])) {
 						$goodID = goodInt($req['id']);
-							$ret = Conn::queryArray("
-								SELECT
-									prim.pkExpressionPrimary as id, prim.strExpression as expression,
-									prim.intSetSize, prim.intLayer, prim.strFullBareString,
-									prim.enumCategory, sublang.strDescriptor AS descriptor,
-									t_key.enumShowEmpties, t_key.enumCompConc, t_key.strEtymSwitch
-								FROM expression_primary prim
-								LEFT JOIN expression_descriptors sublang
-								ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
-								LEFT JOIN table_2d_ref t2dref ON prim.pkExpressionPrimary = t2dref.fkExpressionPrimary
-								LEFT JOIN table_2d_id t2did ON t2dref.fkTable2D = t2did.pkTable2D
-								LEFT JOIN expression_primary t_key ON t2did.fkExpression = t_key.pkExpressionPrimary
-								WHERE strLanguageISO6391 = ".goodInput($lang)."
-								AND   prim.pkExpressionPrimary = ".$goodID);
+						$ret = Conn::queryArray("
+							SELECT
+								prim.pkExpressionPrimary as id, prim.strExpression as expression,
+								prim.intSetSize, prim.intLayer, prim.strFullBareString,
+								prim.enumClass, prim.enumCategory, sublang.strExample AS example,
+								strDescriptor AS descriptor,
+								t_key.enumShowEmpties, t_key.enumCompConc, t_key.strEtymSwitch
+							FROM expression_primary prim
+							LEFT JOIN expression_data sublang
+							ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
+							LEFT JOIN table_2d_ref t2dref ON prim.pkExpressionPrimary = t2dref.fkExpressionPrimary
+							LEFT JOIN table_2d_id t2did ON t2dref.fkTable2D = t2did.pkTable2D
+							LEFT JOIN expression_primary t_key ON t2did.fkExpression = t_key.pkExpressionPrimary
+							WHERE strLanguageISO6391 = ".goodInput($lang)."
+							AND   prim.pkExpressionPrimary = ".$goodID);
 					} else if (isset($req['exp'])) {
 						$ret = Conn::queryArray("
 							SELECT
 								prim.pkExpressionPrimary as id, prim.strExpression as expression,
 								prim.intSetSize, prim.intLayer, prim.strFullBareString,
-								prim.enumCategory, sublang.strDescriptor AS descriptor,
+								prim.enumClass, prim.enumCategory, sublang.strExample AS example,
+								strDescriptor AS descriptor,
 								t_key.enumShowEmpties, t_key.enumCompConc, t_key.strEtymSwitch
 							FROM expression_primary prim
-							LEFT JOIN expression_descriptors sublang
+							LEFT JOIN expression_data sublang
 								ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
 							LEFT JOIN table_2d_ref t2dref ON prim.pkExpressionPrimary = t2dref.fkExpressionPrimary
 							LEFT JOIN table_2d_id t2did ON t2dref.fkTable2D = t2did.pkTable2D
@@ -87,7 +89,7 @@ function handle_request($action, $req) {
 							AND   prim.enumDeleted = 'N'");
 					}
 					
-					//if the query above failed because no descriptor exists for current expression
+					//if the query above failed because no example exists for current expression
 					if (!$ret) {
 						$ret = Conn::queryArray("
 							SELECT
@@ -113,19 +115,32 @@ function handle_request($action, $req) {
 			$asserts_ret = assert_arr(array('search', 'lang'), $req);
 			
 			if (TRUE === $asserts_ret) {
+				$filter_str = '';
+				
+				if (array_key_exists('search', $req) && strlen($req['search']) > 0) {
+					$filter_str .= " AND (strExpression LIKE '%".goodString($req['search'])."%' OR sublang.strExample LIKE '%".goodString($req['search'])."%') ";
+				}
+				if (array_key_exists('layer', $req) && strlen($req['layer']) > 0) {
+					$filter_str .= " AND intLayer = ".goodInt($req['layer'])." ";
+				}
+				if (array_key_exists('class', $req) && strlen($req['class']) > 0) {
+					$filter_str .= " AND enumClass = '".goodString($req['class'])."' ";
+				}
+				if (array_key_exists('keys', $req) && strlen($req['keys']) > 0 && $req['keys'] == 'keys') {
+					$filter_str .= " AND enumCategory = 'Y' ";
+				}
+
 				$ret = Conn::queryArrays("
 					SELECT
 						pkExpressionPrimary AS id, strExpression AS expression,
 						prim.intSetSize, prim.intLayer, prim.strFullBareString,
-						enumCategory, enumDeleted, sublang.strDescriptor AS descriptor
+						enumCategory, enumDeleted, sublang.strExample AS example
 					FROM expression_primary prim
-					LEFT JOIN expression_descriptors sublang
+					LEFT JOIN expression_data sublang
 						ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
 					WHERE prim.enumDeleted = 'N'
 					AND   strLanguageISO6391 = ".goodInput($req['lang'])."
-					".(strlen($req['search']) > 0
-						? "AND (strExpression LIKE '%".goodString($req['search'])."%' OR sublang.strDescriptor LIKE '%".goodString($req['search'])."%')"
-						: '')."
+					".$filter_str."
 					ORDER BY expression");
 
 				usort($ret, 'expression_sort_cmp');
@@ -152,26 +167,22 @@ function handle_request($action, $req) {
 			break;
 			
 		case 'editDictionary':
-			$asserts_ret = assert_arr(array('enumCategory', 'exp', 'descriptor', 'lang', 'id', 'enumShowEmpties', 'iemlEnumComplConcOff', 'iemlEnumSubstanceOff'), $req);
+			$asserts_ret = assert_arr(array('enumCategory', 'exp', 'example', 'descriptor', 'lang', 'id', 'enumShowEmpties', 'iemlEnumComplConcOff', 'iemlEnumSubstanceOff'), $req);
 			
 			if (TRUE === $asserts_ret) {
 				$lang = strtolower($req['lang']);
 
-					$parse_res = IEMLParser::AST_or_FAIL($req['exp']);
+				$parse_res = IEMLParser::AST_or_FAIL($req['exp']);
 
 				if ($parse_res['resultCode'] == 0) {
-					$set_size = $parse_res['AST']->getSize();
-					$layer = $parse_res['AST']->getLayer();
-					$bare_str = $parse_res['AST']->fullExpand()->bareStr();
-
 					$oldState = Conn::queryArray("
 						SELECT
 							pkExpressionPrimary AS id, strExpression as expression, enumCategory
 						FROM expression_primary
 						WHERE pkExpressionPrimary = ".goodInt($req['id']));
-					$oldDescriptor = Conn::queryArrays("
-						SELECT pkExpressionDescriptors
-						FROM expression_descriptors
+					$oldExample = Conn::queryArrays("
+						SELECT pkExpressionData
+						FROM expression_data
 						WHERE strLanguageISO6391 = '".goodString($lang)."'
 						AND fkExpressionPrimary = ".goodInt($req['id']));
 					
@@ -179,6 +190,7 @@ function handle_request($action, $req) {
 						'id' => $req['id'],
 						'expression' => $req['exp'],
 						'enumCategory' => $req['enumCategory'],
+						'example' => $req['example'],
 						'descriptor' => $req['descriptor'],
 						'enumCompConc' => $req['iemlEnumComplConcOff'],
 						'strEtymSwitch' => $req['iemlEnumSubstanceOff'].$req['iemlEnumAttributeOff'].$req['iemlEnumModeOff'],
@@ -186,19 +198,20 @@ function handle_request($action, $req) {
 						'tables' => array()
 					);
 					
-					if (count($oldDescriptor) > 0) {
+					if (count($oldExample) > 0) {
 						Conn::query("
-							UPDATE expression_descriptors
+							UPDATE expression_data
 							SET
-								strDescriptor = ".goodInput($req['descriptor'])."
+								strExample = '".goodString($req['example'])."',
+								strDescriptor = '".goodString($req['descriptor'])."'
 							WHERE fkExpressionPrimary = ".goodInt($req['id'])."
 							AND   strLanguageISO6391 = ".goodInput($lang)." LIMIT 1");
 					} else {
 						Conn::query("
-							INSERT INTO expression_descriptors
-								(fkExpressionPrimary, strDescriptor, strLanguageISO6391)
+							INSERT INTO expression_data
+								(fkExpressionPrimary, strExample, strDescriptor, strLanguageISO6391)
 							VALUES
-								(".goodInt($req['id']).", ".goodInput($req['descriptor']).", ".goodInput($lang).")");
+								(".goodInt($req['id']).", '".goodString($req['example'])."', '".goodString($req['descriptor'])."', ".goodInput($lang).")");
 					}
 					
 					Conn::query("
@@ -206,9 +219,10 @@ function handle_request($action, $req) {
 						SET
 							enumCategory = ".goodInput($req['enumCategory']).",
 							strExpression = ".goodInput($req['exp']).",
-							intSetSize = ".$set_size.",
-							intLayer = ".$layer.",
-							strFullBareString = '".goodString($bare_str)."',
+							intSetSize = ".$parse_res['AST']->getSize().",
+							intLayer = ".$parse_res['AST']->getLayer().",
+							strFullBareString = '".goodString($parse_res['AST']->fullExpand()->bareStr())."',
+							enumClass = '".goodString(IEMLParser::getClass($req['exp']))."',
 							enumShowEmpties = ".goodInput($req['enumShowEmpties']).",
 							enumCompConc = '".invert_bool($req['iemlEnumComplConcOff'], 'Y', 'N')."',
 							strEtymSwitch = '".invert_bool($req['iemlEnumSubstanceOff'], 'Y', 'N')
@@ -237,7 +251,7 @@ function handle_request($action, $req) {
 			break;
 			
 		case 'newDictionary':
-			$asserts_ret = assert_arr(array('exp', 'lang', 'enumCategory', 'descriptor', 'enumShowEmpties'), $req);
+			$asserts_ret = assert_arr(array('exp', 'lang', 'enumCategory', 'example', 'descriptor', 'enumShowEmpties'), $req);
 			
 			if (TRUE === $asserts_ret) {
 				$lang = strtolower($req['lang']);
@@ -248,29 +262,32 @@ function handle_request($action, $req) {
 					$set_size = $parse_res['AST']->getSize();
 					$layer = $parse_res['AST']->getLayer();
 					$bare_str = $parse_res['AST']->fullExpand()->bareStr();
+					$class = IEMLParser::getClass($req['exp']);
 
 					Conn::query("
 						INSERT INTO expression_primary
-							(strExpression, enumCategory, intSetSize, intLayer, strFullBareString)
+							(strExpression, enumCategory, intSetSize, intLayer, strFullBareString, enumClass)
 						VALUES
-							(".goodInput($req['exp']).", ".goodInput($req['enumCategory']).", ".$set_size.", ".$layer.")");
+							(".goodInput($req['exp']).", ".goodInput($req['enumCategory']).", ".$set_size.", ".$layer.", ".goodString($bare_str).", ".goodString($class).")");
 							
 					$ret = array(
 						'id' => Conn::getId(),
 						'expression' => $req['exp'],
 						'enumCategory' => $req['enumCategory'],
+						'example' => $req['example'],
 						'descriptor' => $req['descriptor'],
 						'enumShowEmpties' => $req['enumShowEmpties'],
 						'intSetSize' => $set_size,
 						'intLayer' => $layer,
-						'strFullBareString' => $bare_str
+						'strFullBareString' => $bare_str,
+						'enumClass' => $class
 					);
-					
+
 					Conn::query("
-						INSERT INTO expression_descriptors
-							(fkExpressionPrimary, strDescriptor, strLanguageISO6391)
+						INSERT INTO expression_data
+							(fkExpressionPrimary, strExample, strDescriptor, strLanguageISO6391)
 						VALUES
-							(".$ret['id'].", ".goodInput($req['descriptor']).", ".goodInput($lang).")");
+							(".goodInt($req['id']).", '".goodString($req['example'])."', '".goodString($req['descriptor'])."', ".goodInput($lang).")");
 					
 					if ($req['enumCategory'] == 'Y') {
 						ensure_table_for_key($ret);

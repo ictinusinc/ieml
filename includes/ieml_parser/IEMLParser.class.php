@@ -24,7 +24,9 @@ class IEMLParser {
 		),
 		$REVERSE_ATOMS = array(
 			'E' => 0, 'U' => 1, 'A' => 2, 'O'=> 3, 'S' => 4, 'B' => 5, 'T' => 6, 'M' => 7, 'F' => 8, 'I' => 9
-		);
+		), $CLASS_VERBS = array('O:', 'U:', 'A:', 'y.', 'o.', 'e.', 'u.', 'a.', 'i.', 'wo.', 'wa.', 'we.', 'wu.'),
+		$CLASS_NOUNS = array('M:', 'S:', 'B:', 'T:', 's.', 'b.', 't.', 'k.', 'm.', 'n.', 'd.', 'f.', 'l.', 'j.', 'h.', 'p.', 'g.', 'c.', 'x.'),
+		$CLASS_HYBRID = array('I:', 'F:');
 	
 	public static function handleErrors($severity, $message, $filename, $lineno) {
 		throw new ParseException('Fatal Error '.$severity.' in "'.$filename.'":'.$lineno.' "'.$message.'"', 7);
@@ -54,6 +56,21 @@ class IEMLParser {
 			return IEMLParser::bareLexicoCompare($working_a, $working_b);
 		} else {
 			return $code_map[$a_AST['resultCode']] - $code_map[$b_AST['resultCode']];
+		}
+	}
+
+	public static function getClass($exp) {
+		$exp = trim($exp);
+		if (in_array($exp.substr(0,2), IEMLParser::$CLASS_VERBS) || in_array(substr($exp,0,3), IEMLParser::$CLASS_VERBS)) {
+			return 'verb';
+		} else if (in_array(substr($exp,0,2), IEMLParser::$CLASS_NOUNS)) {
+			return 'noun';
+		} else if (substr($exp,0,2) == 'E:') {
+			return 'auxiliary';
+		} else if (in_array(substr($exp,0,2), IEMLParser::$CLASS_HYBRID) || strrpos($exp, '+')>=0) {
+			return 'hybrid';
+		} else {
+			return NULL;
 		}
 	}
 

@@ -9,34 +9,90 @@
 	IEMLApp.load_url = null;
 	IEMLApp.lang = 'EN';
 	IEMLApp.lexicon = 'BasicLexicon';
+	IEMLApp.lastGeneralSearch = null;
+	IEMLApp.searchFormSel = '#search-form';
+
+	IEMLApp.match_url_settings = function(url) {
+		var opt_map = {
+			'class': '(verb|noun|auxiliary)',
+			'key-filter': '(keys)',
+			'layer': 'layer-([0-6])',
+			'lexicon': '(BasicLexicon)',
+			'lang': '(en|fr)',
+			'mode': '(search|view|users|login)'
+		}, ret = {};
+
+		for (var i in opt_map) {
+			var mat = url.match(new RegExp('\/'+opt_map[i]+'\/?'));
+
+			if (mat) {
+				ret[i] = mat[1];
+			}
+		}
+
+		return ret;
+	};
+
+	IEMLApp.set_search_from_settings = function(settings, term) {
+		if (settings['layer']) {
+			$('#search-form #search-layer-select').val(settings['layer']);
+		}
+		if (settings['class']) {
+			$('#search-form #search-class-select').val(settings['class']);
+		}
+		if (settings['lexicon']) {
+			$('#search-form #search-spec-select').val(settings['lexicon']);
+		}
+		if (settings['lang']) {
+			$('#search-form #search-lang-select').val(settings['lang']);
+		}
+		if (settings['key-filter'] && settings['key-filter'] == 'keys') {
+			$('#filter-results-keys').click();
+		} else {
+			$('#filter-results-button').click();
+		}
+
+		$('#search-form #search').val(term);
+	};
 	
 	IEMLApp.init_from_url = function (url_obj) {
-		var qry = url_obj.search, qry_obj = get_URL_params(qry),
-			path_arr = array_map(path_split(url_obj.pathname), function (i, el) {
-				return decodeURIComponent(el);
-			}), lang = path_arr[0];
+		var qry = url_obj.search, path_arr = path_split(url_obj.pathname),
+			path_last = path_arr[path_arr.length-1], path = url_obj.pathname,
+			star_index = path.lastIndexOf('*'),
+			settings = IEMLApp.match_url_settings(path.substr(0, star_index > -1 ? star_index : path.length));
+
+		if (settings['lexicon']) {
+			IEMLApp.lexicon = settings['lexicon'];
+
+			$('#search-spec-select').val(IEMLApp.lexicon);
+		}
+
+		if (settings['lang']) {
+			IEMLApp.lang = settings['lang'];
+		}
 		
-		if (path_arr[1] == 'users') {
+		if (settings['mode'] == 'users') {
 			IEMLApp.submit({'a': 'viewUsers', 'deleted' : 'no'});
-		} else if (path_arr[1] == 'login') {
+		} else if (settings['mode'] == 'login') {
 			switch_to_view('login');
-		} else if (path_arr.length > 2) {
-			var lexicon = path_arr[1];
+		} else if (settings['mode'] == 'search') {
+			var term = path_last.substr(1);
+			IEMLApp.set_search_from_settings(settings, term);
 			
-			IEMLApp.lexicon = lexicon;
-			
-			$('#search-spec-select').val(lexicon);
-			
-			if (path_arr[2] == 'search') {
-				$('#search').val(path_arr[3]);
-				
-				IEMLApp.submit({ 'a': 'searchDictionary', 'lexicon': lexicon, 'lang': lang, 'search': (typeof path_arr[3] == 'undefined' ? '' : path_arr[3]) });
+			IEMLApp.submit({
+				'a': 'searchDictionary',
+				'lexicon': IEMLApp.lexicon,
+				'lang': IEMLApp.lang,
+				'layer': settings['layer'],
+				'class': settings['class'],
+				'keys': settings['key-filter'],
+				'search': term
+			});
+		} else if (settings['mode'] == 'view') {
+			if (isNaN(parseInt(path_last, 10))) {
+				IEMLApp.submit({ 'a': 'expression', 'lexicon': IEMLApp.lexicon, 'lang': IEMLApp.lang, 'exp': path_last });
 			} else {
-				if (isNaN(parseInt(path_arr[2], 10))) {
-					IEMLApp.submit({ 'a': 'expression', 'lexicon': lexicon, 'lang': lang, 'exp': path_arr[2] });
-				} else {
-					IEMLApp.submit({ 'a': 'expression', 'lexicon': lexicon, 'lang': lang, 'id': path_arr[2] });
-				}
+				IEMLApp.submit({ 'a': 'expression', 'lexicon': IEMLApp.lexicon, 'lang': IEMLApp.lang, 'id': path_last });
 			}
 		} else {
 			switch_to_list();
@@ -46,13 +102,14 @@
 	};
 	
 	IEMLApp.init_from_url_NO_STATE_CHANGE = function (url_obj) {
-		var path_arr = path_split(url_obj.pathname), lang = path_arr[0];
+		var path_arr = path_split(url_obj.pathname),
+			settings = IEMLApp.match_url_settings(url_obj.pathname);
 
-		if (lang !== IEMLApp.lang) {
-			IEMLApp.switch_lang(lang);
-			IEMLApp.lang = lang;
+		if (settings['lang'] && settings['lang'] !== IEMLApp.lang) {
+			IEMLApp.lang = settings['lang'];
+			IEMLApp.switch_lang(IEMLApp.lang);
 		}
-		$('#search-lang-select').val(lang.toLowerCase());
+		$('#search-lang-select').val(IEMLApp.lang.toLowerCase());
 		
 		if (_SESSION['user']) {
 			init_user_login(_SESSION['user']);
@@ -144,6 +201,31 @@
 		
 		window.History.replaceState.apply(null, arguments);
 	};
+
+	IEMLApp.form_data_make_server_safe = function(obj) {
+		var ret = {};
+
+		for (var k in obj) {
+			if (obj.hasOwnProperty(k) && obj[k]) {
+				ret[k] = obj[k];
+			}
+		}
+
+		return ret;
+	};
+
+	IEMLApp.form_data_make_url_safe = function(obj) {
+		if (obj['layer']) {
+			obj['layer'] = 'layer-'+obj['layer'];
+		}
+		if (obj['search']) {
+			obj['search'] = '*'+obj['search'];
+		} else {
+			obj['search'] = '*';
+		}
+
+		return obj;
+	};
 	
 	IEMLApp.submit = function (rvars, url, prev_state) {
 		if (!url || url.length <= 0) {
@@ -158,13 +240,22 @@
 		if (rvars) {
 			if (rvars['a'] == 'searchDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
-					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], 'search', rvars['search']]));
+					var rvars_url = IEMLApp.form_data_make_url_safe(rvars);
+
+					state_call(IEMLApp.cons_state(rvars, responseData), '',
+						cons_url([
+							rvars_url['lang'], rvars_url['lexicon'], 'search',
+							rvars_url['layer'], rvars_url['class'], rvars_url['keys'], rvars_url['search']
+						])
+					);
 					
 					IEMLApp.receiveSearch(responseData);
 				});
 			} else if (rvars['a'] == 'expression') {
 				$.getJSON(url, rvars, function(responseData) {
-					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], (rvars['exp'] ? rvars['exp'] : rvars['id'])]));
+					state_call(IEMLApp.cons_state(rvars, responseData), '',
+						cons_url([rvars['lang'], rvars['lexicon'], 'view', (rvars['id'] ? rvars['id'] : rvars['exp'])]
+					));
 					
 					IEMLApp.receiveExpression(responseData);
 				});
@@ -190,8 +281,8 @@
 				});
 			} else if (rvars['a'] == 'editDictionary' || rvars['a'] == 'newDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
-					if ($('#desc-result-id').val() == '') {
-						state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], responseData['expression']]));
+					if ($('#desc-result-id').val() === '') {
+						state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars['lang'], rvars['lexicon'], 'view', responseData['expression']]));
 						
 						$('#desc-result-id').val(responseData['id']);
 					}
@@ -283,7 +374,17 @@
 	};
 	
 	function cons_url(path, search, hash) {
-		return '/' + array_map(path, function(i,el) { return window.encodeURIComponent(el); }).join('/') + (typeof search != 'undefined' && search.length > 0 ? '?' + map_to_url(search) : '') + (typeof hash != 'undefined' && hash.length > 0 ? '#' + window.encodeURIComponent(hash) : '');
+		return '/'
+			+ array_map(
+				array_filter(path,
+					function(i, el) {
+						return el;
+					}),
+				function(i,el) {
+					return window.encodeURIComponent(el);
+				}).join('/')
+			+ (typeof search != 'undefined' && search.length > 0 ? '?' + map_to_url(search) : '')
+			+ (typeof hash != 'undefined' && hash.length > 0 ? '#' + window.encodeURIComponent(hash) : '');
 	}
 	
 	function reset_views() {
@@ -483,10 +584,16 @@
 			$('#ieml-result-details').html('NEW ENTRY');
 		}
 		
-		if (info['descriptor'] && info['descriptor'].length > 0) {
-			$('#ieml-ex-result').html(info['descriptor']);
+		if (info['example'] && info['example'].length > 0) {
+			$('#ieml-ex-result').html(info['example']);
 		} else {
 			$('#ieml-ex-result').empty();
+		}
+		
+		if (info['descriptor'] && info['descriptor'].length > 0) {
+			$('#ieml-desc-result').html(info['descriptor']);
+		} else {
+			$('#ieml-desc-result').empty();
 		}
 		
 		$('#iemlEnumCategoryModal').prop('checked', info['enumCategory'] == 'Y');
@@ -497,8 +604,8 @@
 			var str = '', render_callback = function(el) {
 				var out = '';
 				
-				if (el['descriptor']) {
-					out += '<div class="' + (el['enumEnabled'] == 'N' ? 'hide ' : '') + 'cell_wrap' + '">' + '<a href="/ajax.php?id=' + el['id'] + '&a=searchDictionary" data-exp="' + el['expression'] + '" data-id="' + el['id'] + '" class="editExp">' + '<span class="cell_expression">' + el['expression'] + '</span><span class="cell_descriptor">' + el['descriptor'] + '</span></a>' + '</div>';
+				if (el['example']) {
+					out += '<div class="' + (el['enumEnabled'] == 'N' ? 'hide ' : '') + 'cell_wrap' + '">' + '<a href="/ajax.php?id=' + el['id'] + '&a=searchDictionary" data-exp="' + el['expression'] + '" data-id="' + el['id'] + '" class="editExp">' + '<span class="cell_expression">' + el['expression'] + '</span><span class="cell_example">' + el['example'] + '</span></a>' + '</div>';
 				} else {
 					out += '<div><a href="javascript:void(0);" class="createEmptyExp">' + el['expression'] + '</a></div>';
 				}
@@ -512,7 +619,7 @@
 					info['tables'][i][j]['table']['hor_header_depth'] = info['tables'][i][j]['edit_horizontal_head_length'];
 					info['tables'][i][j]['table']['length'] = info['tables'][i][j]['length'];
 					info['tables'][i][j]['table']['height'] = info['tables'][i][j]['height'];
-					info['tables'][i][j]['table']['top'] = {'expression': 'top', 'descriptor': 'decriptor', 'id': undefined};
+					info['tables'][i][j]['table']['top'] = {'expression': 'top', 'example': 'decriptor', 'id': undefined};
 				}
 				
 				if (info['tables'][i].length > 1) {
@@ -587,7 +694,7 @@
 	}
 	
 	function formatResultRow(obj) {
-		return '<tr data-key="' + (obj['enumCategory'] == 'Y' ? 'true' : 'false') + '" data-result-id="' + obj['id'] + '"><td>'  + obj['expression'] + '</td><td>' + obj['descriptor'] + '</td><td><a href="/ajax.php?id=' + obj['id'] + '&a=searchDictionary" data-exp="'+obj['expression']+'" data-id="' + obj['id'] + '" class="btn editExp"><span class="icon-pencil"></span></a></td></tr>';
+		return '<tr data-key="' + (obj['enumCategory'] == 'Y' ? 'true' : 'false') + '" data-layer="'+(obj['intLayer'] >= 0 ? obj['intLayer'] : '-1')+'" data-result-id="' + obj['id'] + '"><td>'  + obj['expression'] + '</td><td>' + (obj['example'] ? obj['example'] : '') + '</td><td><a href="/ajax.php?id=' + obj['id'] + '&a=searchDictionary" data-exp="'+obj['expression']+'" data-id="' + obj['id'] + '" class="btn editExp"><span class="icon-pencil"></span></a></td></tr>';
 	}
 	
 	function formatUserRow(user) {
@@ -595,8 +702,11 @@
 	}
 	
 	function showConfirmDialog(text, callback, etc) {
-		if (typeof text !== 'undefined' && text != null && text.length > 0) $('#confirmCancelModalText').html(text);
-		else $('#confirmCancelModalText').html('Are you sure?');
+		if (typeof text !== 'undefined' && text != null && text.length > 0) {
+			$('#confirmCancelModalText').html(text);
+		} else {
+			$('#confirmCancelModalText').html('Are you sure?');
+		}
 	
 		$('#confirmCancelModal').data('callback', function() {
 			if (typeof callback !== 'undefined' && callback != null) callback();
@@ -620,6 +730,7 @@
 		$('#ieml-desc-result-edit').addClass('disabled');
 		textToInput($('#ieml-result'), 'input-large');
 		textToInput($('#ieml-ex-result'), 'input-xlarge');
+		textToInput($('#ieml-desc-result'), 'input-xlarge');
 		
 		$('#ieml-result > .input-large').on('input', function() {
 			var exp = $(this).val();
@@ -645,6 +756,7 @@
 		$('#ieml-desc-result-edit').removeClass('disabled');
 		inputToText($('#ieml-result'));
 		inputToText($('#ieml-ex-result'));
+		inputToText($('#ieml-desc-result'));
 
 		$('.ieml-validation-result').hide();
 
@@ -660,6 +772,12 @@
 			IEMLApp.submit(form_data);
 			
 			return false;
+		}).on('change', '#search-form select', function() {
+			$('#search-form').trigger('submit');
+		}).on('click', '#filter-results-wrap > button', function() {
+			$('#search-form [name="keys"]').val($(this).data('value'));
+
+			$('#search-form').trigger('submit');
 		}).on('change', '#iemlEnumShowTable', function() {
 			var info = IEMLApp.lastRetrievedData;
 			
@@ -717,7 +835,7 @@
 			
 			return false;
 		}).on('click', '#add-ieml-record', function() {
-			IEMLApp.lastRetrievedData = {'expression':'', 'descriptor':'', 'enumCategory':'N', 'enumShowEmpties': 'N'};
+			IEMLApp.lastRetrievedData = {'expression':'', 'example':'', 'enumCategory':'N', 'enumShowEmpties': 'N'};
 			fillForm(IEMLApp.lastRetrievedData);
 			
 			readToWrite();
@@ -747,7 +865,8 @@
 			reqVars['exp'] = $('#ieml-result').text();
 			reqVars['oldExp'] = IEMLApp.lastRetrievedData['expression'];
 			
-			reqVars['descriptor'] = $('#ieml-ex-result').text();
+			reqVars['example'] = $('#ieml-ex-result').text();
+			reqVars['descriptor'] = $('#ieml-desc-result').text();
 			reqVars['lang'] = $('#search-lang-select').val();
 			
 			reqVars['iemlEnumComplConcOff'] = $('#iemlEnumComplConcOff').is(':checked') ? $('#iemlEnumComplConcOff').val() : 'N';
@@ -786,8 +905,8 @@
 		}).on('click', '.createEmptyExp', function() {
 			var jthis = $(this);
 			IEMLApp.lastRetrievedData['expression'] = jthis.text();
-			IEMLApp.lastRetrievedData['descriptor_en'] = '';
-			IEMLApp.lastRetrievedData['descriptor_fr'] = '';
+			IEMLApp.lastRetrievedData['example_en'] = '';
+			IEMLApp.lastRetrievedData['example_fr'] = '';
 			IEMLApp.lastRetrievedData['enumCategory'] = 'N';
 			IEMLApp.lastRetrievedData['enumShowEmpties'] = $('#iemlEnumShowTable').is(':checked') ? 'Y' : 'N';
 			
@@ -864,7 +983,9 @@
 		IEMLApp.load_url = window.location;
 		
 		if (window.location.pathname.length == 1) {
-			IEMLApp.pushState(IEMLApp.cons_state({'a': 'searchDictionary'}, []), '', cons_url([IEMLApp.lang, IEMLApp.lexicon]));
+			//IEMLApp.pushState(IEMLApp.cons_state({'a': 'searchDictionary'}, []), '', cons_url([IEMLApp.lang, IEMLApp.lexicon, 'all']));
+			$('#filter-results-keys').click();
+			$('#search-form').submit();
 		}
 		
 		IEMLApp.init_from_url(window.location);
