@@ -58,7 +58,7 @@
 	IEMLApp.init_from_url = function (url_obj) {
 		var qry = url_obj.search, path_arr = path_split(url_obj.pathname),
 			path_last = path_arr[path_arr.length-1], path = url_obj.pathname,
-			star_index = path.lastIndexOf('*'),
+			star_index = path.indexOf('*'),
 			settings = IEMLApp.match_url_settings(path.substr(0, star_index > -1 ? star_index : path.length));
 
 		if (settings['lexicon']) {
