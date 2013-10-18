@@ -8,12 +8,18 @@ define("USERNAME","ieml");
 define("PASSWORD","ieml#ictinus");
 define("DATABASE","ieml");
 
-//use include(APPROOT.'...'); and src="<?php echo WEBAPPROOT; ? >..." for absolute URLs
-//this helps to simplify the process of moving the app around the place
-//also clears up confusion about nested relative includes
-define('TOPDOMAIN', $_SERVER['HTTP_HOST']);
-define('DOCROOT', $_SERVER['DOCUMENT_ROOT']);
-define('WEBROOT', 'http://'.TOPDOMAIN);
+if (array_key_exists('DOCUMENT_ROOT',$_SERVER)) {
+	define('DOCROOT', $_SERVER['DOCUMENT_ROOT']);
+} else {
+	define('DOCROOT', dirname(__FILE__).'/..');
+}
+
+if (array_key_exists('HTTP_HOST',$_SERVER)) {
+	define('WEBROOT', 'http://'.$_SERVER['HTTP_HOST']);
+} else {
+	define('WEBROOT', 'http://rentals.beaconlite.ca');
+}
+
 define('OFFROOT', ''); //in case the app needs to be in a subdirectory
 define('APPROOT', DOCROOT . OFFROOT);
 define('WEBAPPROOT', WEBROOT . OFFROOT);
