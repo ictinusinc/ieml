@@ -33,12 +33,12 @@ function expression_sort_cmp($a, $b) {
 
 	if ($a['intLayer'] == $b['intLayer']) {
 		if ($a['intSetSize'] == $b['intSetSize']) {
-			return IEMLParser::bareLexicoCompare($b['strFullBareString'], $a['strFullBareString']);
+			return IEMLParser::bareLexicoCompare($a['strFullBareString'], $b['strFullBareString']);
 		} else {
-			return $b['intSetSize'] - $a['intSetSize'];
+			return $a['intSetSize'] - $b['intSetSize'];
 		}
 	} else {
-		return $b_eff_layer - $a_eff_layer;
+		return $a_eff_layer - $b_eff_layer;
 	}
 }
 

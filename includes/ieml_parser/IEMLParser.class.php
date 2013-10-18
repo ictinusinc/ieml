@@ -61,13 +61,13 @@ class IEMLParser {
 
 	public static function getClass($exp) {
 		$exp = trim($exp);
-		if (in_array($exp.substr(0,2), IEMLParser::$CLASS_VERBS) || in_array(substr($exp,0,3), IEMLParser::$CLASS_VERBS)) {
+		if (in_array(substr($exp, 0, 2), IEMLParser::$CLASS_VERBS) || in_array(substr($exp, 0, 3), IEMLParser::$CLASS_VERBS)) {
 			return 'verb';
-		} else if (in_array(substr($exp,0,2), IEMLParser::$CLASS_NOUNS)) {
+		} else if (in_array(substr($exp, 0, 2), IEMLParser::$CLASS_NOUNS)) {
 			return 'noun';
 		} else if (substr($exp,0,2) == 'E:') {
 			return 'auxiliary';
-		} else if (in_array(substr($exp,0,2), IEMLParser::$CLASS_HYBRID) || strrpos($exp, '+')>=0) {
+		} else if (in_array(substr($exp, 0, 2), IEMLParser::$CLASS_HYBRID) || strrpos($exp, '+')>=0) {
 			return 'hybrid';
 		} else {
 			return NULL;
