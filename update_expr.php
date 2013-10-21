@@ -1,6 +1,6 @@
 <?php
 
-die('Die called. X_X');
+//die('Die called. X_X');
 
 require_once(dirname(__FILE__).'/includes/config.php');
 require_once(APPROOT.'/includes/ieml_parser/DebugLog.class.php');
@@ -13,6 +13,7 @@ $expr = Conn::queryArrays("
 	SELECT pkExpressionPrimary, strExpression
 	FROM expression_primary
 	WHERE enumDeleted = 'N'
+	AND intLayer IS NULL
 	ORDER BY pkExpressionPrimary
 ");
 
@@ -37,7 +38,7 @@ for ($i=0; $i<count($expr); $i++) {
 	}
 
 	if ($i%10 == 0) {
-		echo $i.': '.htmlentities($expr[$i]['strExpression']).'<br/>'."\n";
+		echo $expr[$i]['pkExpressionPrimary'].': '.htmlentities($expr[$i]['strExpression']).'<br/>'."\n";
 	}
 
 }

@@ -253,3 +253,22 @@ function path_split(path) {
 		return decodeURIComponent(el);
 	});
 }
+
+function object_equals(a, b) {
+	if (typeof a != 'object') {
+		return a == b;
+	} else {
+		for (var i in a) {
+			if (a.hasOwnProperty(i) && !object_equal(a[i], b[i])) {
+				return false;
+			}
+		}
+		for (var i in b) {
+			if (b.hasOwnProperty(i) && !object_equal(b[i], a[i])) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}

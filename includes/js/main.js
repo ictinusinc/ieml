@@ -15,7 +15,7 @@
 	IEMLApp.match_url_settings = function(url) {
 		var opt_map = {
 			'class': '(verb|noun|auxiliary)',
-			'key-filter': '(keys)',
+			'key': '(keys)',
 			'layer': 'layer-([0-6])',
 			'lexicon': '(BasicLexicon)',
 			'lang': '(en|fr)',
@@ -23,7 +23,7 @@
 		}, ret = {};
 
 		for (var i in opt_map) {
-			var mat = url.match(new RegExp('\/'+opt_map[i]+'\/?'));
+			var mat = url.match(new RegExp('\/'+opt_map[i]+'\/?', 'i'));
 
 			if (mat) {
 				ret[i] = mat[1];
@@ -33,7 +33,7 @@
 		return ret;
 	};
 
-	IEMLApp.set_search_from_settings = function(settings, term) {
+	IEMLApp.set_search_from_settings = function(settings) {
 		if (settings['layer']) {
 			$('#search-form #search-layer-select').val(settings['layer']);
 		}
@@ -46,13 +46,15 @@
 		if (settings['lang']) {
 			$('#search-form #search-lang-select').val(settings['lang']);
 		}
-		if (settings['key-filter'] && settings['key-filter'] == 'keys') {
+		if (settings['key'] && settings['key'] == 'keys') {
 			$('#filter-results-keys').click();
 		} else {
 			$('#filter-results-button').click();
 		}
 
-		$('#search-form #search').val(term);
+		if (settings['search']) {
+			$('#search-form #search').val(settings['search']);
+		}
 	};
 	
 	IEMLApp.init_from_url = function (url_obj) {
@@ -68,7 +70,7 @@
 		}
 
 		if (settings['lang']) {
-			IEMLApp.lang = settings['lang'];
+			IEMLApp.set_lang(settings['lang']);
 		}
 		
 		if (settings['mode'] == 'users') {
@@ -76,8 +78,8 @@
 		} else if (settings['mode'] == 'login') {
 			switch_to_view('login');
 		} else if (settings['mode'] == 'search') {
-			var term = path_last.substr(1);
-			IEMLApp.set_search_from_settings(settings, term);
+			settings['search'] = path_last.substr(1)
+			IEMLApp.set_search_from_settings(settings);
 			
 			IEMLApp.submit({
 				'a': 'searchDictionary',
@@ -85,8 +87,8 @@
 				'lang': IEMLApp.lang,
 				'layer': settings['layer'],
 				'class': settings['class'],
-				'keys': settings['key-filter'],
-				'search': term
+				'keys': settings['key'],
+				'search': settings['search']
 			});
 		} else if (settings['mode'] == 'view') {
 			if (isNaN(parseInt(path_last, 10))) {
@@ -102,14 +104,7 @@
 	};
 	
 	IEMLApp.init_from_url_NO_STATE_CHANGE = function (url_obj) {
-		var path_arr = path_split(url_obj.pathname),
-			settings = IEMLApp.match_url_settings(url_obj.pathname);
-
-		if (settings['lang'] && settings['lang'] !== IEMLApp.lang) {
-			IEMLApp.lang = settings['lang'];
-			IEMLApp.switch_lang(IEMLApp.lang);
-		}
-		$('#search-lang-select').val(IEMLApp.lang.toLowerCase());
+		var path_arr = path_split(url_obj.pathname);
 		
 		if (IEMLApp.user) {
 			init_user_login(IEMLApp.user);
@@ -124,6 +119,8 @@
 	
 	IEMLApp.init_from_state = function(full_state) {
 		var state = full_state.data, url_obj = url_to_location_obj(full_state.url);
+
+		IEMLApp.switch_lang(IEMLApp.lang, full_state);
 		
 		if (state && state['req'] && state['resp']) {
 			var req = state['req'], resp = state['resp'];
@@ -145,22 +142,23 @@
 		
 		return true;
 	};
+
+	IEMLApp.set_lang = function(lang) {
+		IEMLApp.lang = lang.toUpperCase();
+
+		return IEMLApp.lang;
+	};
 	
-	IEMLApp.switch_lang = function(new_lang) {
-		new_lang = new_lang && new_lang.toUpperCase();
-		if (IEMLApp.lang !== new_lang) {
-			var cur_path = path_split(window.location.pathname), cur_state = History.getState().data;
-			cur_path[0] = new_lang;
+	IEMLApp.switch_lang = function(new_lang, cur_state) {
+		new_lang = new_lang.toUpperCase();
+		if (typeof cur_state == 'undefined') cur_state = window.History.getState();
+
+		if (cur_state && cur_state['req'] && cur_state['req']['lang'] != new_lang) {
+			cur_state['req']['lang'] = new_lang;
 			
-			if (cur_state && cur_state['req']) {
-				cur_state['req']['lang'] = new_lang;
-				
-				IEMLApp.submit(cur_state['req']);
-			} else {
-				IEMLApp.pushState(cur_state, '', cons_url(cur_path, window.location.search, window.location.hash));
-			}
+			IEMLApp.submit(cur_state['req']);
 			
-			IEMLApp.lang = new_lang;
+			IEMLApp.set_lang(new_lang);
 			
 			$('[data-lang-switch]').each(function(ind, el) {
 				var jel = $(el), lang_els = jel.data('lang-switch').split(','), lang_attrs_str = jel.data('lang-switch-attr');
@@ -200,18 +198,6 @@
 		window.History.ready = true;
 		
 		window.History.replaceState.apply(null, arguments);
-	};
-
-	IEMLApp.form_data_make_server_safe = function(obj) {
-		var ret = {};
-
-		for (var k in obj) {
-			if (obj.hasOwnProperty(k) && obj[k]) {
-				ret[k] = obj[k];
-			}
-		}
-
-		return ret;
 	};
 
 	IEMLApp.form_data_make_url_safe = function(obj) {
@@ -263,7 +249,7 @@
 				$.getJSON(url, rvars, function(responseData) {
 					init_user_login(responseData);
 
-					IEMLApp.init_from_state(History.getState());
+					IEMLApp.init_from_state(History.getState(), null);
 				});
 			} else if (rvars['a'] == 'logout') {
 				$.getJSON(url, rvars, init_anon_user);
@@ -291,7 +277,7 @@
 				});
 			} else if (rvars['a'] == 'deleteDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
-					History.back(); //TODO: find a more elegant solution
+					History.back(); //@TODO: find a more elegant solution
 					
 					$('[data-result-id="'+$('#desc-result-id').val()+'"]').remove();
 					
@@ -368,7 +354,7 @@
 			var id = ev.state, state_obj = window.History.getStateById(id);
 			
 			if (state_obj) {
-				IEMLApp.init_from_state(state_obj);
+				IEMLApp.init_from_state(state_obj, window.History.getState());
 			}
 		}
 	};

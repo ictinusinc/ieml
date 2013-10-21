@@ -7,7 +7,7 @@ ini_set('error_reporting', E_ALL);
 
 define('DEBUG', TRUE);
 
-header('Content-Type: text/html; charset=utf-8;q=0.7,*;q=0.3');
+header('Content-Type: text/html; charset=utf-8;');
 include_once('includes/config.php');
 include_once(APPROOT.'/includes/functions.php');
 include_once(APPROOT.'/includes/table_related/table_functions.php');

@@ -1,4 +1,7 @@
-<!DOCTYPE html>
+<?php
+header('Content-Type: text/html; charset=utf-8;');
+
+?><!DOCTYPE html>
 	<html lang="en">
 	<head>
 		<meta charset="utf-8">
@@ -43,8 +46,8 @@
 							<div class="pull-left">
 								<select id="search-spec-select" name="lexicon" class="span2"><option value="BasicLexicon">Basic Lexicon</option></select>
 								<select id="search-lang-select" name="lang" class="span2">
-									<option <?php if (array_key_exists('lang', $_REQUEST) && $_REQUEST['lang'] == 'en') echo 'selected="selected"'; ?>value="en">English</option>
-									<option <?php if (array_key_exists('lang', $_REQUEST) && $_REQUEST['lang'] == 'fr') echo 'selected="selected"'; ?>value="fr">Français</option>
+									<option <?php if (array_key_exists('lang', $_REQUEST) && $_REQUEST['lang'] == 'en') echo 'selected="selected"'; ?>value="EN">English</option>
+									<option <?php if (array_key_exists('lang', $_REQUEST) && $_REQUEST['lang'] == 'fr') echo 'selected="selected"'; ?>value="FR">Français</option>
 								</select>
 							</div>
 							<div class="pull-right">

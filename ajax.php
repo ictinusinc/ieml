@@ -505,7 +505,7 @@ function wrap_request($action, $req, $callback = NULL) {
 	return ob_get_clean();
 }
 
-header('Content-type: application/json');
+header('Content-type: application/json; charset=utf-8;');
 
 //smart_session($_REQUEST);
 session_start();
