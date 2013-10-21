@@ -19,7 +19,7 @@ $headers = 	"From: ieml_autonotify@ictinusdesign.com\r\n".
 // GitHub will hit us with POST (http://help.github.com/post-receive-hooks/)
 if (!empty($_REQUEST['payload'])) {
 	// pull from master
-	$result = `git fetch origin master`;
+	$result = `git pull origin master`;
 	
 	/* mail has been disabled for the entire ictinusdesign.com server, so this is pointless
 	
