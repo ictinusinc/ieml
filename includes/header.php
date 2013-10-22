@@ -52,7 +52,7 @@ header('Content-Type: text/html; charset=utf-8;');
 							</div>
 							<div class="pull-right">
 								<select id="search-layer-select" name="layer" class="span2">
-									<option value="">Layer</option>
+									<option value="">All Layers</option>
 									<option value="0">0</option>
 									<option value="1">1</option>
 									<option value="2">2</option>
@@ -62,7 +62,7 @@ header('Content-Type: text/html; charset=utf-8;');
 									<option value="6">6</option>
 								</select>
 								<select id="search-class-select" name="class" class="span2">
-									<option value="">Class</option>
+									<option value="">All Classes</option>
 									<option value="verb">Verb</option>
 									<option value="noun">Noun</option>
 									<option value="auxiliary">Auxiliary</option>
