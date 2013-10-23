@@ -81,7 +81,7 @@
 			settings['search'] = path_last.substr(1);
 			IEMLApp.set_search_from_settings(settings);
 			
-			IEMLApp.submit(IEMLApp.form_data_make_url_safe({
+			IEMLApp.submit({
 				'a': 'searchDictionary',
 				'lexicon': IEMLApp.lexicon,
 				'lang': IEMLApp.lang,
@@ -89,7 +89,7 @@
 				'class': settings['class'],
 				'keys': settings['key'],
 				'search': settings['search']
-			}));
+			});
 		} else if (settings['mode'] == 'view') {
 			if (isNaN(parseInt(path_last, 10))) {
 				IEMLApp.submit({ 'a': 'expression', 'lexicon': IEMLApp.lexicon, 'lang': IEMLApp.lang, 'exp': path_last });
@@ -200,10 +200,10 @@
 	};
 
 	IEMLApp.form_data_make_url_safe = function(obj) {
-		if (obj['layer']) {
+		if (obj['layer'] && obj['layer'].substr(0, 5) != 'layer') {
 			obj['layer'] = 'layer-'+obj['layer'];
 		}
-		if (obj['search']) {
+		if (obj['search'] && obj['search'].substr(0, 1) != '*') {
 			obj['search'] = '*'+obj['search'];
 		} else {
 			obj['search'] = '*';
@@ -225,10 +225,12 @@
 		if (rvars) {
 			if (rvars['a'] == 'searchDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
+					var rvars_url = IEMLApp.form_data_make_url_safe(rvars);
+
 					state_call(IEMLApp.cons_state(rvars, responseData), '',
 						cons_url([
-							rvars['lang'], rvars['lexicon'], 'search',
-							rvars['layer'], rvars['class'], rvars['keys'], rvars['search']
+							rvars_url['lang'], rvars_url['lexicon'], 'search',
+							rvars_url['layer'], rvars_url['class'], rvars_url['keys'], rvars_url['search']
 						])
 					);
 					
@@ -746,7 +748,7 @@
 		
 		$(document).on('submit', '#search-form', function() {
 			var form_data = form_arr_to_map($(this).serializeArray());
-			IEMLApp.submit(IEMLApp.form_data_make_url_safe(form_data));
+			IEMLApp.submit(form_data);
 			
 			return false;
 		}).on('change', '#search-form select', function() {
@@ -801,7 +803,7 @@
 			var state_data = History.getState().data;
 			
 			if (!state_data['resp'] || state_data['resp'].length === 0) {
-				IEMLApp.submit(IEMLApp.form_data_make_url_safe({'a': 'searchDictionary', 'lexicon': IEMLApp.lexicon, 'lang': IEMLApp.lang, 'search': ''}));
+				IEMLApp.submit({'a': 'searchDictionary', 'lexicon': IEMLApp.lexicon, 'lang': IEMLApp.lang, 'search': ''});
 			} else {
 				$('#listview tbody [data-key="false"]').show();
 			}
