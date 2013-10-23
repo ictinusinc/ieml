@@ -54,7 +54,13 @@ $UI_lang = array(
 		'attribute' => 'Attribute',
 		'mode' => 'Mode',
 		'filter_show_all' => 'Show All',
-		'filter_keys_only' => 'Keys Only'
+		'filter_keys_only' => 'Keys Only',
+		'all_classes' => 'All Classes',
+		'all_layers' => 'All Layers',
+		'noun' => 'Noun',
+		'verb' => 'Verb',
+		'auxiliary' => 'Auxiliary',
+		'basic_lexicon' => 'Basic Lexicon'
 	),
 	'EN' => array(
 		'key' => 'Key',
@@ -108,7 +114,13 @@ $UI_lang = array(
 		'attribute' => 'Attribute',
 		'mode' => 'Mode',
 		'filter_show_all' => 'Show All',
-		'filter_keys_only' => 'Keys Only'
+		'filter_keys_only' => 'Keys Only',
+		'all_classes' => 'All Classes',
+		'all_layers' => 'All Layers',
+		'noun' => 'Noun',
+		'verb' => 'Verb',
+		'auxiliary' => 'Auxiliary',
+		'basic_lexicon' => 'Basic Lexicon'
 	)
 );
 

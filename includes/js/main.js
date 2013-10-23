@@ -78,10 +78,10 @@
 		} else if (settings['mode'] == 'login') {
 			switch_to_view('login');
 		} else if (settings['mode'] == 'search') {
-			settings['search'] = path_last.substr(1)
+			settings['search'] = path_last.substr(1);
 			IEMLApp.set_search_from_settings(settings);
 			
-			IEMLApp.submit({
+			IEMLApp.submit(IEMLApp.form_data_make_url_safe({
 				'a': 'searchDictionary',
 				'lexicon': IEMLApp.lexicon,
 				'lang': IEMLApp.lang,
@@ -89,7 +89,7 @@
 				'class': settings['class'],
 				'keys': settings['key'],
 				'search': settings['search']
-			});
+			}));
 		} else if (settings['mode'] == 'view') {
 			if (isNaN(parseInt(path_last, 10))) {
 				IEMLApp.submit({ 'a': 'expression', 'lexicon': IEMLApp.lexicon, 'lang': IEMLApp.lang, 'exp': path_last });
@@ -151,7 +151,6 @@
 	
 	IEMLApp.switch_lang = function(new_lang, cur_state) {
 		new_lang = new_lang.toUpperCase();
-		if (typeof cur_state == 'undefined') cur_state = window.History.getState();
 
 		if (cur_state && cur_state['req'] && cur_state['req']['lang'] != new_lang) {
 			cur_state['req']['lang'] = new_lang;
@@ -226,12 +225,10 @@
 		if (rvars) {
 			if (rvars['a'] == 'searchDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
-					var rvars_url = IEMLApp.form_data_make_url_safe(rvars);
-
 					state_call(IEMLApp.cons_state(rvars, responseData), '',
 						cons_url([
-							rvars_url['lang'], rvars_url['lexicon'], 'search',
-							rvars_url['layer'], rvars_url['class'], rvars_url['keys'], rvars_url['search']
+							rvars['lang'], rvars['lexicon'], 'search',
+							rvars['layer'], rvars['class'], rvars['keys'], rvars['search']
 						])
 					);
 					
@@ -749,7 +746,7 @@
 		
 		$(document).on('submit', '#search-form', function() {
 			var form_data = form_arr_to_map($(this).serializeArray());
-			IEMLApp.submit(form_data);
+			IEMLApp.submit(IEMLApp.form_data_make_url_safe(form_data));
 			
 			return false;
 		}).on('change', '#search-form select', function() {
@@ -797,14 +794,14 @@
 			
 			return false;
 		}).on('change', '#search-lang-select', function() {
-			IEMLApp.switch_lang($(this).val());
+			IEMLApp.switch_lang($(this).val(), window.History.getState()['data']);
 			
 			return false;
 		}).on('click', '#filter-results-button', function() {
 			var state_data = History.getState().data;
 			
 			if (!state_data['resp'] || state_data['resp'].length === 0) {
-				IEMLApp.submit({'a': 'searchDictionary', 'lexicon': IEMLApp.lexicon, 'lang': IEMLApp.lang, 'search': ''});
+				IEMLApp.submit(IEMLApp.form_data_make_url_safe({'a': 'searchDictionary', 'lexicon': IEMLApp.lexicon, 'lang': IEMLApp.lang, 'search': ''}));
 			} else {
 				$('#listview tbody [data-key="false"]').show();
 			}
