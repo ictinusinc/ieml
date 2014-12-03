@@ -68,7 +68,7 @@ function handle_request($action, $req) {
 							LEFT JOIN table_2d_ref t2dref ON prim.pkExpressionPrimary = t2dref.fkExpressionPrimary
 							LEFT JOIN table_2d_id t2did ON t2dref.fkTable2D = t2did.pkTable2D
 							LEFT JOIN expression_primary t_key ON t2did.fkExpression = t_key.pkExpressionPrimary
-							WHERE strLanguageISO6391 = ".goodInput($lang)."
+							WHERE strLanguageISO6391 = '".goodString($lang)."'
 							AND   prim.pkExpressionPrimary = ".$goodID);
 					} else if (isset($req['exp'])) {
 						$ret = Conn::queryArray("
@@ -84,7 +84,7 @@ function handle_request($action, $req) {
 							LEFT JOIN table_2d_ref t2dref ON prim.pkExpressionPrimary = t2dref.fkExpressionPrimary
 							LEFT JOIN table_2d_id t2did ON t2dref.fkTable2D = t2did.pkTable2D
 							LEFT JOIN expression_primary t_key ON t2did.fkExpression = t_key.pkExpressionPrimary
-							WHERE strLanguageISO6391 = ".goodInput($lang)."
+							WHERE strLanguageISO6391 = '".goodString($lang)."'
 							AND   prim.strExpression = '".goodString($req['exp'])."'
 							AND   prim.enumDeleted = 'N'");
 					}
@@ -139,7 +139,7 @@ function handle_request($action, $req) {
 					LEFT JOIN expression_data sublang
 						ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
 					WHERE prim.enumDeleted = 'N'
-					AND   strLanguageISO6391 = ".goodInput($req['lang'])."
+					AND   strLanguageISO6391 = '".goodString($req['lang'])."'
 					".$filter_str."
 					ORDER BY expression");
 
@@ -157,7 +157,7 @@ function handle_request($action, $req) {
 				
 				$request_ret = array('result' => 'success');
 			} else if (isset($req['exp'])) {
-				Conn::query("UPDATE expression_primary SET enumDeleted = 'Y' WHERE strExpression = ".goodInput($req['exp']));
+				Conn::query("UPDATE expression_primary SET enumDeleted = 'Y' WHERE strExpression = '".goodString($req['exp'])."'");
 				
 				$request_ret = array('result' => 'success');
 			} else {
@@ -205,25 +205,25 @@ function handle_request($action, $req) {
 								strExample = '".goodString($req['example'])."',
 								strDescriptor = '".goodString($req['descriptor'])."'
 							WHERE fkExpressionPrimary = ".goodInt($req['id'])."
-							AND   strLanguageISO6391 = ".goodInput($lang)." LIMIT 1");
+							AND   strLanguageISO6391 = '".goodString($lang)."' LIMIT 1");
 					} else {
 						Conn::query("
 							INSERT INTO expression_data
 								(fkExpressionPrimary, strExample, strDescriptor, strLanguageISO6391)
 							VALUES
-								(".goodInt($req['id']).", '".goodString($req['example'])."', '".goodString($req['descriptor'])."', ".goodInput($lang).")");
+								(".goodInt($req['id']).", '".goodString($req['example'])."', '".goodString($req['descriptor'])."', '".goodString($lang)."')");
 					}
 					
 					Conn::query("
 						UPDATE expression_primary
 						SET
-							enumCategory = ".goodInput($req['enumCategory']).",
-							strExpression = ".goodInput($req['exp']).",
+							enumCategory = '".goodString($req['enumCategory'])."',
+							strExpression = '".goodString($req['exp'])."',
 							intSetSize = ".$parse_res['AST']->getSize().",
 							intLayer = ".$parse_res['AST']->getLayer().",
 							strFullBareString = '".goodString($parse_res['AST']->fullExpand()->bareStr())."',
 							enumClass = '".goodString(IEMLParser::getClass($req['exp']))."',
-							enumShowEmpties = ".goodInput($req['enumShowEmpties']).",
+							enumShowEmpties = '".goodString($req['enumShowEmpties'])."',
 							enumCompConc = '".invert_bool($req['iemlEnumComplConcOff'], 'Y', 'N')."',
 							strEtymSwitch = '".invert_bool($req['iemlEnumSubstanceOff'], 'Y', 'N')
 											.invert_bool($req['iemlEnumAttributeOff'], 'Y', 'N')
@@ -268,7 +268,7 @@ function handle_request($action, $req) {
 						INSERT INTO expression_primary
 							(strExpression, enumCategory, intSetSize, intLayer, strFullBareString, enumClass)
 						VALUES
-							(".goodInput($req['exp']).", ".goodInput($req['enumCategory']).", ".$set_size.", ".$layer.", ".goodString($bare_str).", ".goodString($class).")");
+							('".goodString($req['exp'])."', '".goodString($req['enumCategory'])."', ".$set_size.", ".$layer.", '".goodString($bare_str)."', '".goodString($class)."')");
 							
 					$ret = array(
 						'id' => Conn::getId(),
@@ -287,7 +287,7 @@ function handle_request($action, $req) {
 						INSERT INTO expression_data
 							(fkExpressionPrimary, strExample, strDescriptor, strLanguageISO6391)
 						VALUES
-							(".goodInt($req['id']).", '".goodString($req['example'])."', '".goodString($req['descriptor'])."', ".goodInput($lang).")");
+							(".goodInt($ret['id']).", '".goodString($req['example'])."', '".goodString($req['descriptor'])."', '".goodString($lang)."')");
 					
 					if ($req['enumCategory'] == 'Y') {
 						ensure_table_for_key($ret);
@@ -313,7 +313,7 @@ function handle_request($action, $req) {
 			$asserts_ret = assert_arr(array('id'), $req);
 			
 			if (TRUE === $asserts_ret) {
-				Conn::query("UPDATE table_2d_ref SET enumEnabled = ".goodInput($req['enumEnabled'])." WHERE pkTable2DRef = ".goodInt($req['id']));
+				Conn::query("UPDATE table_2d_ref SET enumEnabled = '".goodString($req['enumEnabled'])."' WHERE pkTable2DRef = ".goodInt($req['id']));
 				
 				$request_ret = array('result' => 'success');
 			} else {
@@ -332,7 +332,7 @@ function handle_request($action, $req) {
 					INSERT INTO
 						users (strEmail, strPassHash, enumType, tsDateCreated)
 					VALUES
-						(".goodInput($req['username']).", ".goodInput(bcrypt_hash($req['pass'])).", ".goodInput($req['enumType']).", ".$now.")");
+						('".goodString($req['username'])."', '".goodString(bcrypt_hash($req['pass']))."', '".goodString($req['enumType'])."', ".$now.")");
 				
 				$newUser = array(
 					'pkUser' => Conn::getId(),
@@ -357,8 +357,8 @@ function handle_request($action, $req) {
 				Conn::query("
 					UPDATE users
 					SET
-						strEmail = ".goodInput($req['strEmail']).",
-						enumType = ".goodInput($req['enumType'])."
+						strEmail = '".goodString($req['strEmail'])."',
+						enumType = '".goodString($req['enumType'])."'
 					WHERE pkUser = ".goodInt($req['pkUser'])."
 					LIMIT 1");
 				
@@ -378,7 +378,7 @@ function handle_request($action, $req) {
 				if (!isset($req['enumDeleted'])) {
 					Conn::query("UPDATE users SET enumDeleted = 'yes' WHERE pkUser = ".goodInt($req['pkUser']));
 				} else {
-					Conn::query("UPDATE users SET enumDeleted = ".goodInput($req['enumDeleted'])." WHERE pkUser = ".goodInt($req['pkUser']));
+					Conn::query("UPDATE users SET enumDeleted = '".goodString($req['enumDeleted'])."' WHERE pkUser = ".goodInt($req['pkUser']));
 				}
 				
 				$request_ret = array('result' => 'success');

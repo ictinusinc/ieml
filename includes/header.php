@@ -33,7 +33,7 @@ header('Content-Type: text/html; charset=utf-8;');
 								<a class="btn login-btn" href="/login/" data-lang-switch="login"><?php echo trans_phrase('login', $lang); ?></a>
 							</div>
 							<div class="logout-btn-wrap hide">
-								<span class="color-white user-display-name"><?php echo $_SESSION['strDisplayName']; ?></span>
+								<span class="color-white user-display-name"><?php echo isset($_SESSION['strDisplayName']) ? $_SESSION['strDisplayName'] : ''; ?></span>
 								<a class="btn logout-btn" href="?a=logout" data-lang-switch="logout"><?php echo trans_phrase('logout', $lang); ?></a>
 							</div>
 						</div>

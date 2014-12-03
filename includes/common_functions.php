@@ -128,11 +128,11 @@ function format_table_for($table_head_query, $query_exp, $top, $options) {
 			(
 				SELECT fkExpressionPrimary, strExample
 				FROM expression_data
-				WHERE strLanguageISO6391 = ".goodInput($lang)."
+				WHERE strLanguageISO6391 = '".goodString($lang)."'
 			) sublang
 			ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
 		WHERE enumDeleted = 'N'
-		AND   prim.strExpression IN (".implode(',', array_map(function($a) { return goodInput($a['expression']); }, $table_body_query)).")");
+		AND   prim.strExpression IN (".implode(',', array_map(function($a) { return "'".goodString($a['expression'])."'"; }, $table_body_query)).")");
 	
 	$table_info = reconstruct_table_info($top, $table_head_query, $table_body_query);
 	$table_info['post_raw_table'] = json_decode($table_head_query['jsonTableLogic'], TRUE);
@@ -233,11 +233,11 @@ function get_etymology($query_exp, $lang) {
 			(
 				SELECT fkExpressionPrimary, strExample
 				FROM expression_data
-				WHERE strLanguageISO6391 = ".goodInput($lang)."
+				WHERE strLanguageISO6391 = '".goodString($lang)."'
 			) sublang
 			ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
 		WHERE enumDeleted = 'N'
-		AND   prim.strExpression IN (".implode(',', array_map(function($a) { return goodInput($a); }, $temp_etym)).")");
+		AND   prim.strExpression IN (".implode(',', array_map(function($a) { return "'".goodString($a)."'"; }, $temp_etym)).")");
 	
 	$flat_assoc = array();
 	for ($i=0; $i<count($etym_query); $i++) {

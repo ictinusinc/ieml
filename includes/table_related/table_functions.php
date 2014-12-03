@@ -243,8 +243,14 @@ function IEML_save_cell($tab_id, $cell_info, $exp_assoc, $db_info) {
 	INSERT INTO table_2d_ref 
 		(fkTable2D, fkExpressionPrimary, intPosInTable, enumElementType, enumHeaderType, intHeaderLevel, strCellExpression, intSpan)
 	VALUES
-		(".$tab_id.", ".(array_key_exists($cell_info, $exp_assoc) ? $exp_assoc[$cell_info]['id'] : 'NULL').", ".$db_info['intPosInTable'].", ".goodInput($db_info['enumElementType']).",
-			".goodInput($db_info['enumHeaderType']).", ".$db_info['intHeaderLevel'].", ".goodInput($cell_info).", ".goodInt($db_info['intSpan']).")");
+		(".$tab_id.",
+			".(array_key_exists($cell_info, $exp_assoc) ? $exp_assoc[$cell_info]['id'] : 'NULL').",
+			".$db_info['intPosInTable'].",
+			'".goodString($db_info['enumElementType'])."',
+			'".goodString($db_info['enumHeaderType'])."',
+			".$db_info['intHeaderLevel'].",
+			'".goodString($cell_info)."',
+			".goodInt($db_info['intSpan']).")");
 }
 
 
@@ -255,7 +261,7 @@ function IEML_save_table($key_id, $table, $leftover_index, $con_index) {
 			pkExpressionPrimary as id, strExpression as expression
 		FROM expression_primary prim
 		WHERE enumDeleted = 'N'
-		AND   prim.strExpression IN (".implode(',', array_map(function($a) { return goodInput($a); }, $table['flat_tables'])).")");
+		AND   prim.strExpression IN (".implode(',', array_map(function($a) { return "'".goodString($a)."'"; }, $table['flat_tables'])).")");
 
 	$exp_assoc = array();
 	for ($i=0; $i<count($exp_query); $i++) {

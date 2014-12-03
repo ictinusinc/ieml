@@ -9,7 +9,7 @@ if (isset($_REQUEST['id'])) {
         FROM expression_primary prim
         LEFT JOIN expression_data sublang
         	ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
-        WHERE strLanguageISO6391 = ".goodInput($_REQUEST['lang'])."
+        WHERE strLanguageISO6391 = '".goodString($_REQUEST['lang'])."'
         AND   pkExpressionPrimary = ".$goodID);
     
     if (!isset($_REQUEST['disableTableGen']) || $_REQUEST['disableTableGen'] != 'true') {
@@ -28,7 +28,7 @@ if (isset($_REQUEST['id'])) {
         LEFT JOIN expression_data sublang
         	ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
         WHERE enumDeleted = 'N'
-        AND   strLanguageISO6391 = ".goodInput($_REQUEST['lang'])."
+        AND   strLanguageISO6391 = '".goodString($_REQUEST['lang'])."'
         AND   (strExpression LIKE '%".goodString($_REQUEST['search'])."%' OR sublang.strExample LIKE '%".goodString($_REQUEST['search'])."%')
         ORDER BY expression");
     

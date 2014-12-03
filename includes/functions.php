@@ -17,13 +17,6 @@ function mysql_escape_mimic($inp) {
     return $inp; 
 } 
 
-function goodInput($var) {
-	if (get_magic_quotes_gpc()) $var = stripslashes($var);
-	$var = "'".mysql_escape_mimic(trim($var))."'";
-	
-	return $var;
-}
-
 function goodString($var){
 	if (get_magic_quotes_gpc()) $var = stripslashes($var);
 	$var = mysql_escape_mimic(trim($var));
@@ -230,7 +223,7 @@ function api_login($userName, $password) {
 		SELECT
 			pkUser, strDisplayName, strEmail, strPassHash, enumType
 		FROM users u
-		WHERE u.strEmail = ".goodInput($userName)."
+		WHERE u.strEmail = '".goodString($userName)."'
 		AND   u.enumDeleted = 'no'
 		LIMIT 1
 	");
