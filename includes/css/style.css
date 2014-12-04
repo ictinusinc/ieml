@@ -96,6 +96,10 @@ table.relation .cell_wrap span.cell_expression {
 	font-weight: 200;
 }
 
+.relation-list, .concurring-relation {
+	text-align: left;
+}
+
 .no-bot-margin {
     margin-bottom: 0;
 }
