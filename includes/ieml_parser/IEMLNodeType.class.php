@@ -8,7 +8,8 @@ class IEMLNodeType {
 		$MUL = 3,
 		$ATOM = 4,
 		$VOWEL = 5,
-		$PAREN = 6;
+		$PAREN = 6,
+		$CATEGORY = 7;
 	
 	public static function toString($type) {
 		$ret = NULL;
@@ -34,6 +35,8 @@ class IEMLNodeType {
 				break;
 			case IEMLNodeType::$PAREN:
 				$ret = 'PAREN';
+			case IEMLNodeType::$CATEGORY:
+				$ret = 'CATEGORY';
 				break;
 			default:
 				throw new Exception('No such type: "'.$type.'"');

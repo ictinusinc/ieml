@@ -13,6 +13,7 @@ class ParseException extends Exception {
 		6: invalid layer 0 relation
 		7: internal parser exception
 		8: script is not properly ordered
+		9: could not match category
 	*/
 	
 	public function __construct($message, $code = 0, array $source = NULL) {

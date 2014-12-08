@@ -6,8 +6,11 @@ require_once(APPROOT.'/includes/functions.php');
 require_once(APPROOT.'/includes/ieml_parser/IEMLParser.class.php');
 require_once(APPROOT.'/includes/ieml_parser/IEMLScriptGen.class.php');
 
-Devlog::output_stream(NULL);
+$stream = fopen('php://memory', 'r+');
+
+//Devlog::output_stream(NULL);
 //Devlog::output_stream(fopen('php://output', 'w'));
+Devlog::output_stream($stream);
 
 $strings = array();
 //$strings[] = IEMLScriptGen::staticGenerate(2, 2, 2);
@@ -16,7 +19,7 @@ $strings = array();
 //$strings[] = array('id' => 0, 'expression' => "s.y.-");
 //$strings[] = array('id' => 0, 'expression' => "A:.-'");
 //$strings[] = array('id' => 0, 'expression' => "A:S:.we.-'");
-$strings[] = array('id' => 0, 'expression' => "wo.");
+$strings[] = array('id' => 0, 'expression' => "wo. / wa.");
 
 /*
 $strings = Conn::queryArrays("
@@ -43,5 +46,8 @@ foreach ($strings as $string) {
 	}
 	echo '</pre><hr/>';
 }
+
+rewind($stream);
+echo stream_get_contents($stream);
 
 ?>

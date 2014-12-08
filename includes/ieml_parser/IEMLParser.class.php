@@ -151,12 +151,24 @@ class IEMLParser {
 	}
 	
 	private function subParse($string, $highest_layer, $source_character) {
-		Devlog::i(pre_dump(func_get_args()));
+		Devlog::i(__FUNCTION__.pre_dump(func_get_args()));
 		
 		$AST = NULL;
 		$str_len = strlen($string);
 		
-		if ($this->parenEnclosed($string)) {
+		if ($this->hasMultipleCategories($string)) {
+			//deal with multiple categories
+			$AST = new IEMLASTNode($string, IEMLNodeType::$CATEGORY, array(), $source_character);
+
+			$categories = $this->splitCategories($string, $source_character);
+
+			Devlog::i('$categories'.pre_dump($categories));
+
+			for ($i = 0; $i < count($categories); $i++)
+			{
+				$AST->push($this->subParse(trim($categories[$i][0]), $highest_layer, $categories[$i][1]));
+			}
+		} else if ($this->parenEnclosed($string)) {
 			//deal with parentheses
 			$AST = new IEMLASTNode($string, IEMLNodeType::$PAREN, array(), $source_character);
 			
@@ -247,6 +259,7 @@ class IEMLParser {
 	}
 	
 	private function getHighestLayer($string) {
+		Devlog::i(__FUNCTION__.pre_dump(func_get_args()));
 		$highest_layer = NULL;
 			
 		for ($i=count(IEMLParser::$LAYER_STRINGS)-1; $i>=0; $i--) {
@@ -263,7 +276,7 @@ class IEMLParser {
 	}
 	
 	private function getAdditiveRelations($string, $highest_layer, $source_character) {
-		Devlog::i('getAdditiveRelations'.pre_dump(func_get_args()));
+		Devlog::i(__FUNCTION__.pre_dump(func_get_args()));
 
 		$str_len = strlen($string);
 		$additive_results = array();
@@ -305,7 +318,7 @@ class IEMLParser {
 	}
 	
 	private function getMultiplicativeRelations($string, $highest_layer, $source_character) {
-		Devlog::i('getMultiplicativeRelations'.pre_dump(func_get_args()));
+		Devlog::i(__FUNCTION__.pre_dump(func_get_args()));
 		
 		$multiplicative_results = NULL;
 		$esc_marker = preg_quote(IEMLParser::$LAYER_STRINGS[$highest_layer], '/');
@@ -321,6 +334,7 @@ class IEMLParser {
 	}
 	
 	private static function assertAllMatched($string, $results, $flags = 0) {
+		Devlog::i(__FUNCTION__.pre_dump(func_get_args()));
 		$len = 0;
 		
 		if ($flags == 0) {
@@ -337,6 +351,7 @@ class IEMLParser {
 	}
 	
 	private function matchLayer($string, $layer, $source_character) {
+		Devlog::i(__FUNCTION__.pre_dump(func_get_args()));
 		$match_results = NULL;
 		$esc_marker = preg_quote(IEMLParser::$LAYER_STRINGS[$layer], '/');
 		$preg_result = preg_match('/^([^'.$esc_marker.']+)'.$esc_marker.'$/', trim($string), $match_results, PREG_OFFSET_CAPTURE);
@@ -349,6 +364,7 @@ class IEMLParser {
 	}
 	
 	private static function matchNestedPair($string, $pair = array('(', ')'), $return = FALSE) {
+		Devlog::i(__FUNCTION__.pre_dump(func_get_args()));
 		$openCount = 0;
 		$matched = FALSE;
 		$start = NULL; $end = NULL;
@@ -383,6 +399,7 @@ class IEMLParser {
 	}
 	
 	private function matchInsideParens($string, $source_character) {
+		Devlog::i(__FUNCTION__.pre_dump(func_get_args()));
 		$match_results = IEMLParser::matchNestedPair(trim($string), array('(', ')'), TRUE);
 		
 		if ($match_results === FALSE) {
@@ -393,9 +410,35 @@ class IEMLParser {
 	}
 	
 	private function parenEnclosed($string) {
+		Devlog::i(__FUNCTION__.pre_dump(func_get_args()));
 		$res = IEMLParser::matchNestedPair(trim($string), array('(', ')'), TRUE);
 		
 		return $res && strlen($res[0]) + 2 == strlen($string);
+	}
+
+	private function splitCategories($string, $source_character) {
+		Devlog::i(__FUNCTION__.pre_dump(func_get_args()));
+		$match_results = NULL;
+		$preg_result = preg_match('#^([^/]+)/(.*)$#', trim($string), $match_results, PREG_OFFSET_CAPTURE);
+
+		if (1 === $preg_result) {
+			$sub_result = array();
+
+			try {
+				$sub_result = $this->splitCategories($match_results[2][0], strlen($match_results[1][0]));
+			} catch (ParseException $e) {
+				$sub_result = array($match_results[2]);
+			}
+
+			return array_merge(array($match_results[1]), $sub_result);
+		} else {
+			throw new ParseException('Could not match category: "'.$string.'"', 9, array($source_character, strlen($string)));
+		}
+	}
+
+	private function hasMultipleCategories($string) {
+		Devlog::i(__FUNCTION__.pre_dump(func_get_args()));
+		return !!preg_match('#^.*/.*$#', $string);
 	}
 }
 
