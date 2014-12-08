@@ -391,25 +391,34 @@ function handle_request($action, $req) {
 		case 'viewUsers':
 			$asserts_ret = assert_arr(array('deleted'), $req);
 			
-			if (TRUE === $asserts_ret) {
-				$res = NULL;
-				
-				if ($req['deleted'] == 'yes') {
-					$res = Conn::queryArrays("SELECT pkUser, strEmail, tsDateCreated, UNIX_TIMESTAMP(tsLastUpdate) AS tsLastUpdate, enumType, enumDeleted FROM users WHERE enumDeleted = 'yes'");
-				} else {
-					$res = Conn::queryArrays("SELECT pkUser, strEmail, tsDateCreated, UNIX_TIMESTAMP(tsLastUpdate) AS tsLastUpdate, enumType, enumDeleted FROM users WHERE enumDeleted = 'no'");
-				}
-				
-				for ($i=0; $i<count($res); $i++) {
-					$res[$i]['tsDateCreated'] = goodInt($res[$i]['tsDateCreated']);
-					$res[$i]['tsLastUpdate'] = goodInt($res[$i]['tsLastUpdate']);
-					$res[$i]['pkUser'] = goodInt($res[$i]['pkUser']);
-				}
-				
-				$request_ret = $res;
-			} else {
+			if (TRUE !== $asserts_ret) {
 				$request_ret = assert_format($asserts_ret);
+				break;
 			}
+
+			if (!isset($_SESSION['user'])) {
+				$request_ret = array(
+					'result' => 'error',
+					'error' => 'Must be logged in to view users.'
+				);
+				break;
+			}
+
+			$res = NULL;
+			
+			if ($req['deleted'] == 'yes') {
+				$res = Conn::queryArrays("SELECT pkUser, strEmail, tsDateCreated, UNIX_TIMESTAMP(tsLastUpdate) AS tsLastUpdate, enumType, enumDeleted FROM users WHERE enumDeleted = 'yes'");
+			} else {
+				$res = Conn::queryArrays("SELECT pkUser, strEmail, tsDateCreated, UNIX_TIMESTAMP(tsLastUpdate) AS tsLastUpdate, enumType, enumDeleted FROM users WHERE enumDeleted = 'no'");
+			}
+			
+			for ($i=0; $i<count($res); $i++) {
+				$res[$i]['tsDateCreated'] = goodInt($res[$i]['tsDateCreated']);
+				$res[$i]['tsLastUpdate'] = goodInt($res[$i]['tsLastUpdate']);
+				$res[$i]['pkUser'] = goodInt($res[$i]['pkUser']);
+			}
+			
+			$request_ret = $res;
 			
 			break;
 		

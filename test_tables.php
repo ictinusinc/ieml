@@ -69,7 +69,7 @@ foreach ($keys as &$key) {
 			//echo 'post_raw_table: '.pre_dump($key['concats'][$i][$j]);
 			$key['concats'][$i][$j]['table'] = IEML_postprocess_table($key['concats'][$i][$j]['tables'], function($el) { return $el; });
 			
-			//echo IEML_render_tables($key['concats'][$i][$j]['tables'], function($el) { echo $el; });
+			//echo ieml_render_tables($key['concats'][$i][$j]['tables'], function($el) { echo $el; });
 		}
 	}
 }
@@ -90,19 +90,19 @@ foreach ($keys as &$key) {
 			};
 		
 		expressions.forEach(function(exp) {
-			var tables = exp['concats'];
+			var tables = exp.concats;
 			
 			for (var i=0; i<tables.length; i++) {
 				if (tables[i].length > 1) {
 				    str +='<table class="relation"><tbody>';
 				    
 					for (var j=0; j<tables[i].length; j++) {
-					    str += IEML_render_table_body(tables[i][j]['table'], render_callback);
+					    str += ieml_render_table_body(tables[i][j].table, render_callback);
 					}
 					
 					str += '</tbody></table>';
 				} else {
-					str += IEML_render_table(tables[i][0]['table'], render_callback);
+					str += ieml_render_table(tables[i][0].table, render_callback);
 				}
 				
 				str += '<hr/>';

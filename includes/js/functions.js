@@ -49,10 +49,10 @@ LightDate.date = function(format, ts) {
 		else if (format[i] == 'H') ret += lpad(ts.getHours(), 2, '0');
 		else if (format[i] == 'i') ret += lpad(ts.getMinutes(), 2, '0');
 		else if (format[i] == 's') ret += lpad(ts.getSeconds(), 2, '0');
-		else if (format[i] == 'D') ret += LightDate['__LANG'][LightDate.LANG]['date-short-wkd'][ts.getDay()];
-		else if (format[i] == 'M') ret += LightDate['__LANG'][LightDate.LANG]['date-short-mos'][ts.getMonth()];
-		else if (format[i] == 'l') ret += LightDate['__LANG'][LightDate.LANG]['date-long-wkd'][ts.getDay()];
-		else if (format[i] == 'F') ret += LightDate['__LANG'][LightDate.LANG]['date-long-mos'][ts.getMonth()];
+		else if (format[i] == 'D') ret += LightDate.__LANG[LightDate.LANG]['date-short-wkd'][ts.getDay()];
+		else if (format[i] == 'M') ret += LightDate.__LANG[LightDate.LANG]['date-short-mos'][ts.getMonth()];
+		else if (format[i] == 'l') ret += LightDate.__LANG[LightDate.LANG]['date-long-wkd'][ts.getDay()];
+		else if (format[i] == 'F') ret += LightDate.__LANG[LightDate.LANG]['date-long-mos'][ts.getMonth()];
 		else if (format[i] == 'j') ret += ts.getDate();
 		else if (format[i] == 'S') {
 			var tday = ts.getDate();
@@ -67,7 +67,7 @@ LightDate.date = function(format, ts) {
 };
 
 LightDate.__do_parse_match = function(str, off, format) {
-	var match = str.substr(off).match(LightDate['__LANG'][LightDate.LANG]['date-chrreg'][format]);
+	var match = str.substr(off).match(LightDate.__LANG[LightDate.LANG]['date-chrreg'][format]);
 	if (match !== null) return match[0];
 	return false;
 };
@@ -85,9 +85,9 @@ LightDate.parse_date_format = function(format, datestr) {
 		else if (format[i] == 'i') { if ((mat = LightDate.__do_parse_match(datestr, sp, format[i])) !== false) { sp+=mat.length; retArr[4] = parseInt(mat,10); } }
 		else if (format[i] == 's') { if ((mat = LightDate.__do_parse_match(datestr, sp, format[i])) !== false) { sp+=mat.length; retArr[5] = parseInt(mat,10); } }
 		else if (format[i] == 'D') { if ((mat = LightDate.__do_parse_match(datestr, sp, format[i])) !== false) { sp+=mat.length; } }
-		else if (format[i] == 'M') { if ((mat = LightDate.__do_parse_match(datestr, sp, format[i])) !== false) { sp+=mat.length; retArr[1] = LightDate['__LANG'][LightDate.LANG]['date-short-mos'].indexOf(mat); } }
+		else if (format[i] == 'M') { if ((mat = LightDate.__do_parse_match(datestr, sp, format[i])) !== false) { sp+=mat.length; retArr[1] = LightDate.__LANG[LightDate.LANG]['date-short-mos'].indexOf(mat); } }
 		else if (format[i] == 'l') { if ((mat = LightDate.__do_parse_match(datestr, sp, format[i])) !== false) { sp+=mat.length; } }
-		else if (format[i] == 'F') { if ((mat = LightDate.__do_parse_match(datestr, sp, format[i])) !== false) { sp+=mat.length; retArr[1] = LightDate['__LANG'][LightDate.LANG]['date-long-mos'].indexOf(mat); } }
+		else if (format[i] == 'F') { if ((mat = LightDate.__do_parse_match(datestr, sp, format[i])) !== false) { sp+=mat.length; retArr[1] = LightDate.__LANG[LightDate.LANG]['date-long-mos'].indexOf(mat); } }
 		else if (format[i] == 'j') { if ((mat = LightDate.__do_parse_match(datestr, sp, format[i])) !== false) { sp+=mat.length; retArr[2] = parseInt(mat,10); } }
 		else if (format[i] == 'S') { if ((mat = LightDate.__do_parse_match(datestr, sp, format[i])) !== false) { sp+=mat.length; } }
 		else { sp += 1; }
@@ -145,7 +145,7 @@ function form_arr_to_map(arr) {
 	var ret = {};
 	
 	for (var i in arr) {
-		ret[arr[i]['name']] = arr[i]['value'];
+		ret[arr[i].name] = arr[i].value;
 	}
 	
 	return ret;
@@ -160,7 +160,7 @@ function get_URL_params(url) {
 	
 	if (typeof url == "undefined") url = document.location.href;
 	
-	while (match = re.exec(url)) {
+	while (null !== (match = re.exec(url))) {
 		params[decode(match[1])] = decode(match[2]);
 	}
 	
@@ -186,7 +186,7 @@ function url_to_location_obj(url) {
 
 function map_to_url(map) {
 	var str = '', f = true;
-	for (i in map)  {
+	for (var i in map)  {
 		if (map.hasOwnProperty(i)) {
 			str += (f ? '' : '&') + encodeURIComponent(i) + '=' + encodeURIComponent(map[i]);
 		}
@@ -263,8 +263,8 @@ function object_equals(a, b) {
 				return false;
 			}
 		}
-		for (var i in b) {
-			if (b.hasOwnProperty(i) && !object_equal(b[i], a[i])) {
+		for (var j in b) {
+			if (b.hasOwnProperty(j) && !object_equal(b[j], a[j])) {
 				return false;
 			}
 		}

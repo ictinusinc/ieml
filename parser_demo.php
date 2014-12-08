@@ -38,8 +38,8 @@ if (array_key_exists('eval', $_REQUEST) && $_REQUEST['eval']) {
 <head>
 	<meta charset="utf-8">
 	<title>IEML Dictionary</title>
-	<!-- bootstrap-2.0.1.css -->
-	<link rel="stylesheet" type="text/css" href="<?php echo WEBAPPROOT.'/includes/css/bootstrap-2.0.1.min.css'; ?>">
+	<!-- Bootstrap -->
+	<link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
 	<style>
 		.container {
 			margin-top: 30px;
@@ -49,27 +49,27 @@ if (array_key_exists('eval', $_REQUEST) && $_REQUEST['eval']) {
 <body>
 	<div class="container">
 		<div class="row">
-			<div class="span3 offset4">
-				<input type="text" class="input-large string-in" />
+			<div class="col-md-4 col-md-offset-4">
+				<input type="text" class="form-control string-in" />
 			</div>
 		</div>
 		<div class="row">
-			<div class="span12">
+			<div class="col-md-12">
 				<pre class="string-out"></pre>
 			</div>
 		</div>
 	</div>
 	
-	<script type="text/javascript" src="<?php echo WEBAPPROOT.'/includes/js/libs/jquery-1.9.1.min.js'; ?>"></script>
-	<script type="text/javascript" src="<?php echo WEBAPPROOT.'/includes/js/libs/bootstrap-2.3.2.min.js'; ?>"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
 	<script>
 		$(function() {
 			$('.string-in').on('input', function(ev) {
 				$.getJSON('', { 'eval': ev.target.value }, function(response) {
-					if (response['resultCode'] > 0) {
-						$('.string-out').html(response['error']);
+					if (response.resultCode > 0) {
+						$('.string-out').html(response.error);
 					} else {
-						$('.string-out').html(response['AST_string']);
+						$('.string-out').html(response.AST_string);
 					}
 				});
 			});

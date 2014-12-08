@@ -1,6 +1,5 @@
 
 
-
 /*---tables---*/
 
 #iemlRecord .tab-content {
@@ -156,19 +155,6 @@ table.relation .cell_wrap span.cell_expression {
 	margin-left: 20px;
 }
 
-.subtop-bar {
-	padding-left: 0;
-	padding-right: 0;
-	-webkit-border-radius: 0;
-	-moz-border-radius: 0;
-	border-radius: 0;
-	background-color: #ddd;
-}
-
-.subtop-bar .container {
-	padding-bottom: 5px;
-}
-
 .ieml-validation-result {
 	margin-top: 5px;
 }
@@ -187,8 +173,43 @@ form#search-form select {
 	margin-bottom: 0;
 }
 
+/* Navigation ----- */
 
-/* bootstrap tabs edit */
+.ieml-top-nav {
+	position: fixed;
+	top: 0;
+	right: 0;
+	left: 0;
+	background-color: #222;
+	z-index: 1;
+}
+
+.ieml-top-nav .main-navigation {
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+.ieml-top-nav .main-navigation .row {
+	margin-bottom: 10px;
+}
+
+.ieml-top-nav .main-navigation .row:last-child {
+	margin-bottom: 0;
+}
+
+.ieml-top-nav .subtop-bar {
+	padding-left: 0;
+	padding-right: 0;
+	border-radius: 0;
+	background-color: #ddd;
+}
+
+.ieml-top-nav .subtop-bar .container {
+	padding-bottom: 5px;
+	padding-top: 5px;
+}
+
+/* Bootstrap overrides */
 #iemlRecord .nav-tabs > li > a {
 	border-left: 1px solid #ddd;
 	border-right: 1px solid #ddd;

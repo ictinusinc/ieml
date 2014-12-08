@@ -13,14 +13,14 @@ require_once(APPROOT.'/includes/header.php');
 
 ?>
 	<div class="container user-padding">
-		<div id="user-view-container" class="hide">
+		<div id="user-view-container" class="hidden">
 			<div class="row">
-				<div class="span9">
+				<div class="col-md-9">
 					<h3 data-lang-switch="users"><?php echo trans_phrase('users', $lang); ?></h3>
 				</div>
 
-				<div class="span3">
-					<a href="#" id="addUser" class="btn pull-right" data-lang-switch="add_user"><?php echo trans_phrase('add_user', $lang); ?></a>
+				<div class="col-md-3">
+					<button type="button" id="addUser" class="btn btn-default pull-right" data-lang-switch="add_user"><?php echo trans_phrase('add_user', $lang); ?></button>
 				</div>
 			</div>
 
@@ -40,14 +40,14 @@ require_once(APPROOT.'/includes/header.php');
 			</table>
 		</div>
 
-		<div id="list-view-container" class="hide">
+		<div id="list-view-container" class="hidden">
 			<div class="row">
-				<div class="span12">
+				<div class="col-md-12">
 					<h3 data-lang-switch="results"><?php echo trans_phrase('results', $lang); ?></h3>
 				</div>
 			</div>
 
-			<table id="listview" class="table table table-striped table-bordered">
+			<table id="listview" class="table table-striped table-bordered table-condensed">
 				<thead>
 					<tr>
 						<th data-lang-switch="list_tab_exp_col"><?php echo trans_phrase('list_tab_exp_col', $lang); ?></th>
@@ -61,24 +61,24 @@ require_once(APPROOT.'/includes/header.php');
 			</table>
 		</div>
 
-		<div id="record-view-container" class="hide">
+		<div id="record-view-container" class="hidden">
 			<form id="iemlRecord" method="post" action="/api/">
 				<input type="hidden" name="id" id="desc-result-id" value="">
 
 				<div class="row">
-					<div class="span2">
+					<div class="col-md-2">
 						<span class="pull-left" id="ieml-result-details"></span>
 					</div>
-					<div class="span3">
+					<div class="col-md-3">
 						<span class="pull-left" id="ieml-result"></span>
 					</div>
-					<div class="span3">
-						<span class="pull-left ieml-validation-result hide">
-							<div class="result-success-icon hide"><i class=" icon-ok">&nbsp;</i></div>
-							<div class="result-error-icon hide"><i class="icon-remove">&nbsp;</i></div>
+					<div class="col-md-3">
+						<span class="pull-left ieml-validation-result hidden">
+							<div class="result-success-icon hidden"><i class="glyphicon glyphicon-ok">&nbsp;</i></div>
+							<div class="result-error-icon hidden"><i class="glyphicon glyphicon-remove">&nbsp;</i></div>
 						</span>
 					</div>
-					<div class="span3 pull-right">
+					<div class="col-md-3 pull-right">
 						<label class="checkbox pull-right" for="iemlEnumCategoryModal">
 							<input type="checkbox" disabled="disabled" class="checkbox" name="iemlEnumCategoryModal" id="iemlEnumCategoryModal" value="Y"><?php echo trans_phrase('key', $lang); ?>
 						</label>
@@ -86,8 +86,8 @@ require_once(APPROOT.'/includes/header.php');
 				</div>
 
 				<div class="row">
-					<div class="span12">
-						<span class="pull-left ieml-validation-result hide">
+					<div class="col-md-12">
+						<span class="pull-left ieml-validation-result hidden">
 							<span class="result-success"></span>
 							<span class="result-error"></span>
 						</span>
@@ -95,13 +95,13 @@ require_once(APPROOT.'/includes/header.php');
 				</div>
 
 				<div class="row">
-					<div class="span6" id="ieml-ex-wrap">
+					<div class="col-md-6" id="ieml-ex-wrap">
 						<span class="example-top-tag" data-lang-switch="example"><?php echo trans_phrase('example', $lang); ?></span>
 
 						<h3 id="ieml-ex-result"></h3>
 					</div>
 
-					<div class="span6" id="ieml-desc-wrap">
+					<div class="col-md-6" id="ieml-desc-wrap">
 						<span class="desc-top-tag" data-lang-switch="descriptor"><?php echo trans_phrase('descriptor', $lang); ?></span>
 
 						<h3 id="ieml-desc-result"></h3>
@@ -109,33 +109,33 @@ require_once(APPROOT.'/includes/header.php');
 				</div>
 
 				<div class="row">
-					<div class="span12">
-						<span data-lang-switch="paradigmatic_curcuits"><?php echo trans_phrase('paradigmatic_curcuits', $lang); ?></span> <div class="hide edit-only">
+					<div class="col-md-12">
+						<span data-lang-switch="paradigmatic_curcuits"><?php echo trans_phrase('paradigmatic_curcuits', $lang); ?></span> <div class="hidden edit-only">
 						<label class="checkbox" id="iemlEnumComplConcOffWrap" for="iemlEnumComplConcOff"><input type="checkbox" class="checkbox" name="iemlEnumComplConcOff" id="iemlEnumComplConcOff" value="Y" /><span data-lang-switch="turn_off_comp_conc"><?php echo trans_phrase('turn_off_comp_conc', $lang); ?></span></label>
 						
 						<div class="row">
-							<div class="span4">
+							<div class="col-md-4">
 								<p data-lang-switch="disable"><?php echo trans_phrase('disable', $lang); ?></p>
 							</div>
 						</div>
 						
 						<div class="row">
-							<div class="span12">
-								<div class="span2">
+							<div class="col-md-12">
+								<div class="col-md-2">
 									<label class="checkbox" id="iemlEnumSubstanceOffWrap" for="iemlEnumSubstanceOff"><input type="checkbox" class="checkbox" name="iemlEnumSubstanceOff" id="iemlEnumSubstanceOff" value="Y" /><span data-lang-switch="substance"><?php echo trans_phrase('substance', $lang); ?></span></label>
 								</div>
-								<div class="span2">
+								<div class="col-md-2">
 									<label class="checkbox" id="iemlEnumAttributeOffWrap" for="iemlEnumAttributeOff"><input type="checkbox" class="checkbox" name="iemlEnumAttributeOff" id="iemlEnumAttributeOff" value="Y" /><span data-lang-switch="attribute"><?php echo trans_phrase('attribute', $lang); ?></span></label>
 								</div>
-								<div class="span2">
+								<div class="col-md-2">
 									<label class="checkbox" id="iemlEnumModeOffWrap" for="iemlEnumModeOff"><input type="checkbox" class="checkbox" name="iemlEnumModeOff" id="iemlEnumModeOff" value="Y" /><span data-lang-switch="mode"><?php echo trans_phrase('mode', $lang); ?></span></label>
 								</div>
 							</div>
 						</div>
 						
 						<div class="row">
-							<div class="span4">
-								<div class="hide edit-only">
+							<div class="col-md-4">
+								<div class="hidden edit-only">
 									<label class="checkbox" id="iemlEnumShowTableWrap" for="iemlEnumShowTable"><input type="checkbox" class="checkbox" name="iemlEnumShowTable" id="iemlEnumShowTable" value="Y"><span data-lang-switch="users"><?php echo trans_phrase('show_empty_cells', $lang); ?></span></label>
 								</div>
 							</div>
@@ -154,15 +154,33 @@ require_once(APPROOT.'/includes/header.php');
 			</form>
 		</div>
 	
-		<div id="login-view-container" class="hide">
-			<form id="formLogin" method="POST" action="/api/">
-				<input type="hidden" name="a" value="login" />
-				<label for="loginEmail" data-lang-switch="user"><?php echo trans_phrase('user', $lang); ?>:</label>
-				<input type="text" name="loginEmail" id="loginEmail" /><br />
-				<label for="loginPassword" data-lang-switch="password"><?php echo trans_phrase('password', $lang); ?>:</label>
-				<input type="password" name="loginPassword" id="loginPassword" /><br />
-				<input class="btn" type="submit" name="submit" data-lang-switch-attr="value" data-lang-switch="login" value="<?php echo trans_phrase('login', $lang); ?>" />
-			</form>
+		<div id="login-view-container" class="hidden">
+			<div class="row">
+				<div class="col-md-4">
+					<form id="formLogin" role="form" class="form-horizontal" method="POST" action="/api/">
+						<input type="hidden" name="a" value="login" />
+						<div class="form-group">
+							<label for="loginEmail" class="col-sm-4 control-label" data-lang-switch="user"><?php echo trans_phrase('user', $lang); ?>:</label>
+							<div class="col-sm-8">
+								<input type="email" name="loginEmail" id="loginEmail" class="form-control" />
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="loginPassword" class="col-sm-4 control-label" data-lang-switch="password"><?php echo trans_phrase('password', $lang); ?>:</label>
+							<div class="col-sm-8">
+								<input type="password" name="loginPassword" id="loginPassword" class="form-control" />
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="col-sm-offset-4 col-sm-8">
+								<button type="submit" class="btn btn-default" name="submit" data-lang-switch="login">
+									<?php echo trans_phrase('login', $lang); ?>
+								</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
 		</div>
 	</div>
 
@@ -183,13 +201,13 @@ require_once(APPROOT.'/includes/header.php');
 							<h3 class="heading_underline"><span data-lang-switch="taxonomic"><?php echo trans_phrase('taxonomic', $lang); ?></span></h3>
 
 							<div class="row">
-								<div class="span6">
+								<div class="col-md-6">
 									<span class=""><strong data-lang-switch="contained_by"><?php echo trans_phrase('contained_by', $lang); ?></strong></span>
 
 									<div id="ieml-contained-wrap"></div>
 								</div>
 
-								<div class="span6">
+								<div class="col-md-6">
 									<span class=""><strong data-lang-switch="containing"><?php echo trans_phrase('containing', $lang); ?></strong></span>
 
 									<div id="ieml-containing-wrap"></div>
@@ -220,7 +238,7 @@ require_once(APPROOT.'/includes/header.php');
 		</div>
 	</div>
 
-	<div class="modal hide" id="iemlConfirmModal">
+	<div class="modal" id="iemlConfirmModal" aria-hidden="true">
 		<div class="modal-header">
 			<a class="close" data-dismiss="modal">x</a>
 
@@ -230,11 +248,11 @@ require_once(APPROOT.'/includes/header.php');
 		<div class="modal-body"></div>
 
 		<div class="modal-footer">
-			<a id="iemlConfirmYesModal" class="btn" href="#" data-lang-switch="yes"><?php echo trans_phrase('yes', $lang); ?></a><a id="iemlConfirmCancelModal" data-dismiss="modal" class="btn" href="#" data-lang-switch="cancel"><?php echo trans_phrase('cancel', $lang); ?></a>
+			<button type="button" id="iemlConfirmYesModal" class="btn btn-default" data-lang-switch="yes"><?php echo trans_phrase('yes', $lang); ?></button><button type="button" id="iemlConfirmCancelModal" data-dismiss="modal" class="btn btn-default" data-lang-switch="cancel"><?php echo trans_phrase('cancel', $lang); ?></button>
 		</div>
 	</div>
 
-	<div class="modal hide" id="iemlAddUserModal">
+	<div class="modal" id="iemlAddUserModal" aria-hidden="true">
 		<div class="modal-header">
 			<a class="close" data-dismiss="modal">x</a>
 
@@ -288,17 +306,17 @@ require_once(APPROOT.'/includes/header.php');
 		</div>
 
 		<div class="modal-footer">
-			<a id="iemlAddUserModalAdd" class="btn btn-primary" href="#" data-lang-switch="add"><?php echo trans_phrase('add', $lang); ?></a><a data-dismiss="modal" class="btn" href="javascript:void(0);" data-lang-switch="cancel"><?php echo trans_phrase('cancel', $lang); ?></a>
+			<button type="button" id="iemlAddUserModalAdd" class="btn btn-primary" data-lang-switch="add"><?php echo trans_phrase('add', $lang); ?></button><button type="button" data-dismiss="modal" class="btn btn-default" data-lang-switch="cancel"><?php echo trans_phrase('cancel', $lang); ?></button>
 		</div>
 	</div>
 
-	<div id="confirmCancelModal" class="modal hide" data-backdrop="static">
+	<div id="confirmCancelModal" class="modal" aria-hidden="true" data-backdrop="static">
 		<div class="modal-body no-bot-margin">
 			<a class="close" data-dismiss="modal" id="workPrintModalX">x</a><span id="confirmCancelModalText"></span>
 		</div>
 
 		<div class="modal-footer">
-			<a id="confirmCancelModalYes" class="btn btn-primary" href="#" data-dismiss="modal" data-lang-switch="yes"><?php echo trans_phrase('yes', $lang); ?></a><a class="btn" data-dismiss="modal" href="#" data-lang-switch="no"><?php echo trans_phrase('no', $lang); ?></a>
+			<button type="button" id="confirmCancelModalYes" class="btn btn-primary" data-dismiss="modal" data-lang-switch="yes"><?php echo trans_phrase('yes', $lang); ?></button><button type="button" class="btn btn-default" data-dismiss="modal" data-lang-switch="no"><?php echo trans_phrase('no', $lang); ?></button>
 		</div>
 	</div><!--/confirmCancelModal-->
 	<?php
