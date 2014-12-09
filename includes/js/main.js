@@ -10,7 +10,6 @@
 	IEMLApp.lang = 'EN';
 	IEMLApp.lexicon = 'BasicLexicon';
 	IEMLApp.lastGeneralSearch = null;
-	IEMLApp.searchFormSel = '#search-form';
 
 	IEMLApp.match_url_settings = function(url) {
 		var opt_map = {
@@ -792,22 +791,26 @@
 			return false;
 		}).on('change', '#filter-results-wrap [name="filter-results"]', function() {
 			var $this = $(this);
-			//$('#search-form [name="keys"]').val($this.val());
-			//$('#search-form').trigger('submit');
 
+			$('#search-form [name="keys"]').val($this.val());
+
+			if ($this.val() != 'keys')
+			{
+				var state_data = History.getState().data;
+				if (state_data.req.keys == 'keys')
+				{
+					$('#search-form').trigger('submit');
+					return;
+				}
+			}
+			
 			if ($this.val() == 'keys')
 			{
 				$('#listview tbody [data-key="false"]').addClass('hidden');
 			}
 			else
 			{
-				var state_data = History.getState().data;
-				
-				if (!state_data.resp || state_data.resp.length === 0) {
-					IEMLApp.submit({'a': 'searchDictionary', 'lexicon': IEMLApp.lexicon, 'lang': IEMLApp.lang, 'search': ''});
-				} else {
-					$('#listview tbody [data-key="false"]').removeClass('hidden');
-				}
+				$('#listview tbody [data-key="false"]').removeClass('hidden');
 			}
 		}).on('click', '#add-ieml-record', function() {
 			IEMLApp.lastRetrievedData = {'expression':'', 'example':'', 'enumCategory':'N', 'enumShowEmpties': 'N'};
