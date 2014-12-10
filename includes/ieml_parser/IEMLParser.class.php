@@ -4,6 +4,22 @@ include_once(dirname(__FILE__).'/IEMLASTNode.class.php');
 include_once(dirname(__FILE__).'/ParserException.class.php');
 include_once(dirname(__FILE__).'/ParserResult.class.php');
 
+function loffstrim($string, $character_mask = " \t\n\r\0\x0B")
+{
+	$mask_quoted = preg_quote($character_mask);
+	$match_results = NULL;
+	$preg_result = preg_match('/[' . $mask_quoted . ']*(.+)[' . $mask_quoted . ']*/', $string, $match_results, PREG_OFFSET_CAPTURE);
+
+	if ($preg_result)
+	{
+		return $match_results[1];
+	}
+	else
+	{
+		return array($string, 0);
+	}
+}
+
 class IEMLParser {
 	//in ascending order
 	public static $LAYER_STRINGS = array(':', '.', '-', "'", ',', '_', ';'),
@@ -127,7 +143,7 @@ class IEMLParser {
 		}
 	}
 	
-	function iniParse($string) {
+	private function iniParse($string) {
 		if (is_string($string)) {
 			$parse_string = trim($string);
 
@@ -166,7 +182,8 @@ class IEMLParser {
 
 			for ($i = 0; $i < count($categories); $i++)
 			{
-				$AST->push($this->subParse(trim($categories[$i][0]), $highest_layer, $categories[$i][1]));
+				$trimmed = loffstrim($categories[$i][0]);
+				$AST->push($this->subParse($trimmed[0], $highest_layer, $categories[$i][1] + $trimmed[1]));
 			}
 		} else if ($this->parenEnclosed($string)) {
 			//deal with parentheses
@@ -176,52 +193,60 @@ class IEMLParser {
 			
 			$AST->push($this->subParse($sub_layer[0], $highest_layer, $source_character + $sub_layer[1]));
 		} else {
-			if (!isset($highest_layer)) {
-				$highest_layer = $this->getHighestLayer($string);
-			}
-			
-			if ($highest_layer < 0 || $highest_layer >= count(IEMLParser::$LAYER_STRINGS)) {
-				throw new ParseException('Layer mismatch', 4, array($source, strlen($string)));
-			} else if ($highest_layer < 1) {
-				$sub_layer = NULL;
+			$tentative_highest_layer = $this->getHighestLayer($string);
+
+			if ($this->hasNeedlessUpcast($string, $tentative_highest_layer)) {
+				$sub_layer = $this->matchLayer($string, $tentative_highest_layer, $source_character);
+
+				$AST = new IEMLASTNode($string, IEMLNodeType::$LAYER, array(), $source_character + $sub_layer[1]);
+
+				$AST->push($this->subParse($sub_layer[0], $tentative_highest_layer - 1, $source_character + $sub_layer[1]));
+			} else {
+				if (!isset($highest_layer)) {
+					$highest_layer = $tentative_highest_layer;
+				}
 				
-				try {
-					//deal with L0 expressions
-					$sub_layer = $this->matchLayer($string, $highest_layer, $source_character);
+				if ($highest_layer < 0 || $highest_layer >= count(IEMLParser::$LAYER_STRINGS)) {
+					throw new ParseException('Layer mismatch', 4, array($source, strlen($string)));
+				} else if ($highest_layer < 1) {
+					$sub_layer = NULL;
 					
+					try {
+						//deal with L0 expressions
+						$sub_layer = $this->matchLayer($string, $highest_layer, $source_character);
+						
+						$AST = new IEMLASTNode($string, IEMLNodeType::$LAYER, array(), $source_character);
+						
+						if (in_array($sub_layer[0], IEMLParser::$ATOMS)) {
+							$AST->push(new IEMLASTNode($sub_layer[0], IEMLNodeType::$ATOM, array(), $source_character + $sub_layer[1]));
+						} else {
+							throw new ParseException('Invalid Layer 0 expression "'.$sub_layer[0].'"', 6, array($source_character, strlen($sub_layer[0])));
+						}
+					} catch (ParseException $e) {
+						if ($e->getCode() == 4) {
+							//deal with L0 additive expressions
+							$additive_relations = $this->getAdditiveRelations($string, $highest_layer, $source_character);
+							
+							$AST = new IEMLASTNode($string, IEMLNodeType::$ADD, array(), $source_character);
+							
+							for ($i=0; $i<count($additive_relations); $i++) {
+								$AST->push($this->subParse($additive_relations[$i][0], $highest_layer, $source_character + $additive_relations[$i][1]));
+							}
+						} else {
+							throw $e;
+						}
+					}
+				} else if ($str_len <= 3 && in_array($string, IEMLParser::$VOWELS)) {
+					//determine vowel nodes
 					$AST = new IEMLASTNode($string, IEMLNodeType::$LAYER, array(), $source_character);
 					
-					if (in_array($sub_layer[0], IEMLParser::$ATOMS)) {
-						$AST->push(new IEMLASTNode($sub_layer[0], IEMLNodeType::$ATOM, array(), $source_character + $sub_layer[1]));
-					} else {
-						throw new ParseException('Invalid Layer 0 expression "'.$sub_layer[0].'"', 6, array($source_character, strlen($sub_layer[0])));
-					}
-				} catch (ParseException $e) {
-					if ($e->getCode() == 4) {
-						//deal with L0 additive expressions
-						$additive_relations = $this->getAdditiveRelations($string, $highest_layer, $source_character);
-						
-						$AST = new IEMLASTNode($string, IEMLNodeType::$ADD, array(), $source_character);
-						
-						for ($i=0; $i<count($additive_relations); $i++) {
-							$AST->push($this->subParse($additive_relations[$i][0], $highest_layer, $source_character + $additive_relations[$i][1]));
-						}
-					} else {
-						throw $e;
-					}
-				}
-			} else if ($str_len <= 3 && in_array($string, IEMLParser::$VOWELS)) {
-				//determine vowel nodes
-				$AST = new IEMLASTNode($string, IEMLNodeType::$LAYER, array(), $source_character);
-				
-				$sub_layer = $this->matchLayer($string, $highest_layer, $source_character);
-				
-				$AST->push(new IEMLASTNode($sub_layer[0], IEMLNodeType::$VOWEL, array(), $source_character + $sub_layer[1]));
-			} else {
-				//determine additive relations
-				$additive_relations = $this->getAdditiveRelations($string, $highest_layer, $source_character);
-				
-				if (count($additive_relations) > 1) {
+					$sub_layer = $this->matchLayer($string, $highest_layer, $source_character);
+					
+					$AST->push(new IEMLASTNode($sub_layer[0], IEMLNodeType::$VOWEL, array(), $source_character + $sub_layer[1]));
+				} else if ($this->hasTopLevelAddition($string, $highest_layer)) {
+					//determine additive relations
+					$additive_relations = $this->getAdditiveRelations($string, $highest_layer, $source_character);
+					
 					$AST = new IEMLASTNode($string, IEMLNodeType::$ADD, array(), $source_character);
 					
 					for ($i=0; $i<count($additive_relations); $i++) {
@@ -229,26 +254,24 @@ class IEMLParser {
 					}
 				} else {
 					//deal with multiplicative expressions
-					$sub_layer = $this->matchLayer($string, $highest_layer, $source_character);
-					
-					$multiplicative_relations = $this->getMultiplicativeRelations($sub_layer[0], $highest_layer-1, $source_character + $sub_layer[1]);
+					$multiplicative_relations = $this->getMultiplicativeRelations($string, $highest_layer, $source_character);
 					
 					if (count($multiplicative_relations) > 3) {
-						throw new ParseException('Too many multiplicative relations at Layer '.($highest_layer-1), 3, array($source_character + $sub_layer[1], strlen($sub_layer[0])));
+						throw new ParseException('Too many multiplicative relations at Layer '.($highest_layer), 3, array($source_character, strlen($string)));
 					} else if (count($multiplicative_relations) > 1) {
-						$mul_AST = new IEMLASTNode($sub_layer[0], IEMLNodeType::$MUL, array(), $source_character + $sub_layer[1]);
+						$mul_AST = new IEMLASTNode($string, IEMLNodeType::$MUL, array(), $source_character);
 						
 						for ($i=0; $i<count($multiplicative_relations); $i++) {
-							$mul_AST->push($this->subParse($multiplicative_relations[$i][0], $highest_layer-1, $source_character + $sub_layer[1] + $multiplicative_relations[$i][1]));
+							$mul_AST->push($this->subParse($multiplicative_relations[$i][0], $highest_layer, $source_character + $multiplicative_relations[$i][1]));
 						}
 					
 						$AST = new IEMLASTNode($string, IEMLNodeType::$LAYER, array(), $source_character);
 						$AST->push($mul_AST);
 					} else if (count($multiplicative_relations) > 0) {
 						$AST = new IEMLASTNode($string, IEMLNodeType::$LAYER, array(), $source_character);
-						$mul_AST = new IEMLASTNode($sub_layer[0], IEMLNodeType::$MUL, array(), $source_character + $sub_layer[1]);
+						$mul_AST = new IEMLASTNode($string, IEMLNodeType::$MUL, array(), $source_character );
 
-						$mul_AST->push($this->subParse($sub_layer[0], $highest_layer-1, $source_character + $sub_layer[1]));
+						$mul_AST->push($this->subParse($string, $highest_layer, $source_character));
 						$AST->push($mul_AST);
 					}
 				}
@@ -271,6 +294,7 @@ class IEMLParser {
 				break;
 			}
 		}
+		Devlog::i(__FUNCTION__.' results'.pre_dump($highest_layer));
 		
 		return $highest_layer;
 	}
@@ -308,13 +332,27 @@ class IEMLParser {
 				break;
 			}
 		}
-		Devlog::i('$additive_results: '.pre_dump($additive_results));
+		Devlog::i(__FUNCTION__.' results'.pre_dump($additive_results));
 
 		if ($offs == $str_len) {
 			return $additive_results;
 		} else {
 			throw new ParseException('Could not match additive relation "'.$string.'" to Layer '.$highest_layer, 2, array($source_character, strlen($string)));
 		}
+	}
+
+	private function hasTopLevelAddition($string, $highest_layer) {
+		Devlog::i(__FUNCTION__.pre_dump(func_get_args()));
+
+		$esc_marker = preg_quote(IEMLParser::$LAYER_STRINGS[$highest_layer], '/');
+		$term_regex = '[^' . $esc_marker . ']+' . $esc_marker . ' *';
+		$esc_plus = preg_quote('+', '/');
+
+		$preg_results = !!preg_match('/^' . $term_regex . '(?:' . $esc_plus . $term_regex . ')+$/', $string);
+
+		Devlog::i(__FUNCTION__.' results'.pre_dump($preg_results));
+
+		return $preg_results;
 	}
 	
 	private function getMultiplicativeRelations($string, $highest_layer, $source_character) {
@@ -324,7 +362,7 @@ class IEMLParser {
 		$esc_marker = preg_quote(IEMLParser::$LAYER_STRINGS[$highest_layer], '/');
 		$preg_result = preg_match_all('/((?:\([^)]+\)'.$esc_marker.'?)|(?:[^'.$esc_marker.']+'.$esc_marker.')) *\*?/', $string, $multiplicative_results, PREG_OFFSET_CAPTURE);
 
-		Devlog::i('$multiplicative_results: '.pre_dump($multiplicative_results));
+		Devlog::i(__FUNCTION__.' results'.pre_dump($multiplicative_results));
 		if ($preg_result && IEMLParser::assertAllMatched($string, $multiplicative_results[0], PREG_OFFSET_CAPTURE)) {
 			
 			return $multiplicative_results[1];
@@ -352,14 +390,18 @@ class IEMLParser {
 	
 	private function matchLayer($string, $layer, $source_character) {
 		Devlog::i(__FUNCTION__.pre_dump(func_get_args()));
+
 		$match_results = NULL;
+		$trimmed = loffstrim($string);
 		$esc_marker = preg_quote(IEMLParser::$LAYER_STRINGS[$layer], '/');
-		$preg_result = preg_match('/^([^'.$esc_marker.']+)'.$esc_marker.'$/', trim($string), $match_results, PREG_OFFSET_CAPTURE);
+		$preg_result = preg_match('/^([^'.$esc_marker.']+)'.$esc_marker.'$/', $trimmed[0], $match_results, PREG_OFFSET_CAPTURE);
 		
 		if ($preg_result) {
+			Devlog::i(__FUNCTION__.' results'.pre_dump($match_results[1]));
+
 			return $match_results[1];
 		} else {
-			throw new ParseException('Could not match layer in string "'.$string.'" to Layer: '.$layer, 4, array($source_character, strlen($string)));
+			throw new ParseException('Could not match layer in string "'.$string.'" to Layer: '.$layer, 4, array($source_character + $trimmed[1], strlen($trimmed[0])));
 		}
 	}
 	
@@ -411,34 +453,55 @@ class IEMLParser {
 	
 	private function parenEnclosed($string) {
 		Devlog::i(__FUNCTION__.pre_dump(func_get_args()));
+
 		$res = IEMLParser::matchNestedPair(trim($string), array('(', ')'), TRUE);
-		
-		return $res && strlen($res[0]) + 2 == strlen($string);
+		$res = $res && strlen($res[0]) + 2 == strlen($string);
+
+		Devlog::i(__FUNCTION__.' results'.pre_dump($res));
+
+		return $res;
 	}
 
 	private function splitCategories($string, $source_character) {
 		Devlog::i(__FUNCTION__.pre_dump(func_get_args()));
+		$trimmed = loffstrim($string);
 		$match_results = NULL;
-		$preg_result = preg_match('#^([^/]+)/(.*)$#', trim($string), $match_results, PREG_OFFSET_CAPTURE);
+		$preg_result = preg_match('#^([^/]+)/(.*)$#', $trimmed[0], $match_results, PREG_OFFSET_CAPTURE);
 
 		if (1 === $preg_result) {
 			$sub_result = array();
 
 			try {
-				$sub_result = $this->splitCategories($match_results[2][0], strlen($match_results[1][0]));
+				$sub_result = $this->splitCategories($match_results[2][0], strlen($match_results[1][0]) + $trimmed[1]);
 			} catch (ParseException $e) {
 				$sub_result = array($match_results[2]);
 			}
 
 			return array_merge(array($match_results[1]), $sub_result);
 		} else {
-			throw new ParseException('Could not match category: "'.$string.'"', 9, array($source_character, strlen($string)));
+			throw new ParseException('Could not match category: "'.$string.'"', 9, array($source_character + $trimmed[1], strlen($string)));
 		}
 	}
 
 	private function hasMultipleCategories($string) {
 		Devlog::i(__FUNCTION__.pre_dump(func_get_args()));
-		return !!preg_match('#^.*/.*$#', $string);
+
+		$multi_cats = !!preg_match('#^.*/.*$#', $string);
+
+		Devlog::i(__FUNCTION__.' results'.pre_dump($multi_cats));
+		return $multi_cats;
+	}
+
+	private function hasNeedlessUpcast($string, $highest_layer) {
+		Devlog::i(__FUNCTION__.pre_dump(func_get_args()));
+
+		$esc_marker = preg_quote(IEMLParser::$LAYER_STRINGS[$highest_layer], '/');
+		$layer_result = !!preg_match('/^([^'.$esc_marker.']+)'.$esc_marker.'$/', $string);
+		$layer_result = $layer_result && $highest_layer > 0;
+
+		Devlog::i(__FUNCTION__.' results'.pre_dump($layer_result));
+
+		return $layer_result;
 	}
 }
 

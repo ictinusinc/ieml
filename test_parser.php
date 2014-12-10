@@ -19,7 +19,9 @@ $strings = array();
 //$strings[] = array('id' => 0, 'expression' => "s.y.-");
 //$strings[] = array('id' => 0, 'expression' => "A:.-'");
 //$strings[] = array('id' => 0, 'expression' => "A:S:.we.-'");
-$strings[] = array('id' => 0, 'expression' => "wo. / wa.");
+//$strings[] = array('id' => 0, 'expression' => "(b.a.-b.a.-f.o.-'+ t.a.-b.a.-f.o.-') (E:A:T:.-' + E:F:.wa.-')E:E:U:.-',_");
+//$strings[] = array('id' => 0, 'expression' => "(T:. + F:.)U:.-'");
+$strings[] = array('id' => 0, 'expression' => "E:A:.");
 
 /*
 $strings = Conn::queryArrays("
@@ -31,7 +33,7 @@ $strings = Conn::queryArrays("
 
 foreach ($strings as $string) {
 	$parser = new IEMLParser();
-	$parserResult = $parser->parseString($string['expression']);
+	$parserResult = $parser->parseAllStrings($string['expression']);
 
 	echo pre_print($string['id'].': '.$string['expression']);
 
