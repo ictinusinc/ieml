@@ -318,7 +318,7 @@ class IEMLParser {
 		$term_regex = '[^' . $esc_marker . ']+' . $esc_marker;
 		$esc_plus = preg_quote('+', '/');
 
-		$preg_results = !!preg_match('/^' . $term_regex . '(?:[^' . $esc_plus . ']*' . $esc_plus . $term_regex . ')+$/', $string);
+		$preg_results = !!preg_match('/^' . $term_regex . '(?:[^' . $esc_plus . ']*' . $esc_plus . $term_regex . ')+$/', trim($string));
 
 		Devlog::i(__FUNCTION__.' results'.pre_dump($preg_results));
 
