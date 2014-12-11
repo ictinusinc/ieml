@@ -8,7 +8,7 @@ define("USERNAME","ieml");
 define("PASSWORD","ieml#ictinus");
 define("DATABASE","ieml");
 
-if (array_key_exists('DOCUMENT_ROOT',$_SERVER)) {
+if (array_key_exists('DOCUMENT_ROOT', $_SERVER) && $_SERVER['DOCUMENT_ROOT']) {
 	define('DOCROOT', $_SERVER['DOCUMENT_ROOT']);
 } else {
 	define('DOCROOT', dirname(__FILE__).'/..');
