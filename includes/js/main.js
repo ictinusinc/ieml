@@ -6,9 +6,10 @@
 	function IEMLApp() {}
 	
 	IEMLApp.user = null;
+	IEMLApp.userLibraries = null;
 	IEMLApp.load_url = null;
 	IEMLApp.lang = 'EN';
-	IEMLApp.lexicon = 'BasicLexicon';
+	IEMLApp.lexicon = '1';
 	IEMLApp.lastGeneralSearch = null;
 
 	IEMLApp.match_url_settings = function(url) {
@@ -16,7 +17,7 @@
 			'class': '(verb|noun|auxiliary)',
 			'key': '(keys)',
 			'layer': 'layer-([0-6])',
-			'lexicon': '(BasicLexicon)',
+			'lexicon': 'library-([1-9][0-9]*)',
 			'lang': '(en|fr)',
 			'mode': '(search|view|users|login)'
 		}, ret = {};
@@ -222,7 +223,24 @@
 		var state_call = obj_size(prev_state.data) === 0 ? IEMLApp.replaceState : IEMLApp.pushState;
 		
 		if (rvars) {
-			if (rvars.a == 'searchDictionary') {
+			if (rvars.a == 'getUserLibraries') {
+				$.getJSON(url, rvars, function(responseData) {
+					if (responseData.result != 'error') {
+						IEMLApp.userLibraries = responseData;
+					}
+				});
+			} else if (rvars.a == 'getAllLibraries') {
+				$.getJSON(url, rvars, function(responseData) {
+					var libHtml = '';
+
+					for (var i=0; i<responseData.length; i++) {
+						libHtml += '<option data-owned-by="' + responseData[i].fkUser +
+							'" value="' + responseData[i].pkLibrary + '">' + responseData[i].strName + '</option>';
+					}
+
+					$('#search-spec-select').html(libHtml);
+				});
+			} else if (rvars.a == 'searchDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
 					var rvars_url = IEMLApp.form_data_make_url_safe(rvars);
 
@@ -245,9 +263,14 @@
 				});
 			} else if (rvars.a == 'login') {
 				$.getJSON(url, rvars, function(responseData) {
-					init_user_login(responseData);
+					if (responseData.result == "error") {
+						//TODO: change this to show some meaningful message to the user
+						console.log("Unable to log in.");
+					} else {
+						init_user_login(responseData);
 
-					IEMLApp.init_from_state(History.getState(), null);
+						IEMLApp.init_from_state(History.getState(), null);
+					}
 				});
 			} else if (rvars.a == 'logout') {
 				$.getJSON(url, rvars, init_anon_user);
@@ -404,6 +427,7 @@
 	
 	function init_user_login(userObj) {
 		IEMLApp.user = userObj;
+		IEMLApp.submit({'a': 'getUserLibraries'});
 		
 		$('.login-btn-wrap').addClass('hidden');
 		$('.logout-btn-wrap').removeClass('hidden');
@@ -667,7 +691,30 @@
 	}
 	
 	function formatResultRow(obj) {
-		return '<tr data-key="' + (obj.enumCategory == 'Y' ? 'true' : 'false') + '" data-layer="'+(obj.intLayer >= 0 ? obj.intLayer : '-1')+'" data-result-id="' + obj.id + '"><td>'  + obj.expression + '</td><td>' + (obj.example ? obj.example : '') + '</td><td><a href="/ajax.php?id=' + obj.id + '&a=searchDictionary" data-exp="'+obj.expression+'" data-id="' + obj.id + '" class="btn btn-default editExp"><span class="glyphicon glyphicon-pencil"></span></a></td></tr>';
+		return '<tr data-key="' + (obj.enumCategory == 'Y' ? 'true' : 'false') + '"' +
+			'data-layer="'+(obj.intLayer >= 0 ? obj.intLayer : '-1') + '"' +
+			'data-result-id="' + obj.id + '">' +
+			'<td>' + obj.expression + '</td>' +
+			'<td>' + (obj.example ? obj.example : '') + '</td>' +
+			'<td>' +
+				'<a href="/ajax.php?id=' + obj.id + '&a=searchDictionary"' +
+					'data-exp="' + obj.expression + '"' +
+					'data-id="' + obj.id + '"' +
+					'class="btn btn-default editExp"><span class="glyphicon glyphicon-pencil"></span></a>' +
+				(IEMLApp.user && IEMLApp.user.pkUser != obj.fkLibrary ?
+					'<div class="btn-group">' +
+						'<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">' +
+							'<span class="glyphicon glyphicon-plus">&nbsp;</span><span class="caret"></span>' +
+						'</button>' +
+						'<ul class="dropdown-menu" role="menu">' +
+							array_map(IEMLApp.userLibraries, function(i, lib) {
+								return '<li><a href="javascript:void(0);" data-lib-id="' + lib.pkLibrary + '">' + lib.strName + '</a></li>';
+							}) +
+						'</ul>' +
+					'</div>'
+				: '') +
+			'</td>' +
+			'</tr>';
 	}
 	
 	function formatUserRow(user) {
@@ -747,6 +794,14 @@
 			return false;
 		}).on('change', '#search-form select', function() {
 			$('#search-form').trigger('submit');
+		}).on('change', '#search-spec-select', function() {
+			var $this = $(this);
+			var selected_option = $this.children('option[value="' + $this.val() + '"]');
+			if (IEMLApp.user && selected_option.data('owned-by') == IEMLApp.user.pkUser) {
+				$('.list-view-wrap').addClass('editor-in');
+			} else {
+				$('.list-view-wrap').removeClass('editor-in');
+			}
 		}).on('change', '#iemlEnumShowTable', function() {
 			var info = IEMLApp.lastRetrievedData;
 			
@@ -976,6 +1031,7 @@
 		{
 			init_anon_user();
 		}
+		IEMLApp.submit({'a': 'getAllLibraries'});
 		
 		IEMLApp.init_from_url(window.location);
 	});

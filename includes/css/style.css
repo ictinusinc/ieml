@@ -1,179 +1,8 @@
-
-
-/*---tables---*/
-
-#iemlRecord .tab-content {
-	overflow: visible;
-	
-}
-
-#table {
-	text-align: center;
-}
-
-.tablerow {
-	text-align: center;
-}
-
-#ieml-table-span {
-    padding-top: 25px;
-    text-align: center;
-    overflow: visible;
-}
-
-
-.tab-content {
-	overflow: visible;
-}
-#table table td a, #table table th a {
-	color: #333333;
-	font-size: 12px !important;
-}
-
-#table table td {
-	min-width: 200px;
-}
-
-.non-edit-buttons .btn {
-	margin-right: 5px;
-}
-#ieml-result {
-	margin-left: 10px;
-}
-
-table.relation {
-    border-collapse: collapse;
-    margin: 0 auto;
-    
-}
-table.relation tbody tr td, table.relation tbody tr th {
-    border: 1px solid;
-    text-align: center;
-    border-color: #cccccc;
-	font-family: "proxima-nova-alt-condensed",sans-serif;
-	font-size: 16px;
-	min-height: 80px !important;
-
-}
-table.relation tbody tr td {
-	font-weight: 300;
-}
-table.relation .empty_cell {
-    border: none;
-}
-table.relation .relation-sel-cell {
-    background-color: #dedede;
-}
-table.relation .relation-top-cell {
-    background-color: #c4bb93;
-}
-table.relation .small_def {
-    font-size: 11pt;
-}
-table.relation .short_hr {
-    width: 50%;
-    max-width: 125px;
-    margin: 5px auto 3px auto;
-    border-color: #eeeeee;
-    
-}
-table.relation .enable_check {
-    position: absolute;
-    top: 0;
-    right: 0;
-}
-table.relation .cell_wrap {
-		display: block;
-		padding: 8px;
-    	min-height: 70px !important;
-    	color: #333333;
-}
-
-table.relation .cell_wrap span.cell_expression {
-	display: block;
-	color: #999999;
-	font-weight: 200;
-}
-
-.relation-list, .concurring-relation {
-	text-align: left;
-}
-
-.no-bot-margin {
-    margin-bottom: 0;
-}
-
-.heading_underline {
-	border-bottom: 1px solid #ddd;
-	display: block;
-}
-
-.concurring-relation {
-	display: block;
-}
-
-.color-white {
-	color: #fff;
-}
-
-#back-to-list-view {
-	margin-left: 10px;
-}
-
-.guest-padding {
-	padding-top: 135px;
-}
-
-.user-padding {
-	padding-top: 155px;
-}
-
-#ieml-ex-wrap, #ieml-desc-wrap {
-	margin-right: -2px;
-	border: 1px solid #ddd;
-	margin-bottom: 30px;
-	float: left;
-	position: relative;
-	min-height: 80px;
-}
-
-.example-top-tag, .desc-top-tag {
-	display: block;
-	position: absolute;
-	top: 0;
-	left: 0;
-	padding: 3px 8px;
-	background-color: #ddd;
-}
-
-#ieml-ex-result, #ieml-desc-result {
-	margin: 0 auto;
-	text-align: center;
-	position: absolute;
-	top: 50%;
-	margin-top: -9px;
-	margin-left: 20px;
-}
-
-.ieml-validation-result {
-	margin-top: 5px;
-}
-
-.ieml-validation-result .result-success, .ieml-validation-result .result-error {
-	display: block;
-	font-family: monospace;
-	white-space: pre;
-}
-
-#filter-results-wrap {
-	min-width: 155px;
-}
-
-form#search-form select {
-	margin-bottom: 0;
-}
-
 /* Navigation ----- */
+
+.user-display-name {
+	color: #FFF;
+}
 
 .ieml-top-nav {
 	position: fixed;
@@ -209,7 +38,241 @@ form#search-form select {
 	padding-top: 5px;
 }
 
-/* Bootstrap overrides */
+.guest-padding {
+	padding-top: 135px;
+}
+
+.user-padding {
+	padding-top: 155px;
+}
+
+/* Editor ----- */
+
+.list-view-wrap .editor-drawer {
+	display: none;
+	visibility: hidden;
+}
+
+.list-view-wrap.editor-in .editor-drawer {
+	display: block;
+	visibility: visible;
+}
+
+.list-view-wrap .table {
+	width: 100%;
+}
+
+.list-view-wrap.editor-in .table {
+	width: 50%;
+	float: right;
+}
+
+.editor-drawer {
+	position: fixed;
+	left: 0;
+	width: 48%;
+	background-color: #FFF;
+	z-index: 2;
+	margin-left: 14px;
+}
+
+.editor {
+	border: 1px solid #BBB;
+}
+
+.editor-proper {
+	height: 500px;
+}
+
+.editor-head {
+	background-color: #EEE;
+	padding: 10px;
+}
+
+.editor-button-row {
+	margin-bottom: 10px;
+}
+
+.editor-example {
+	background-color: #EEE;
+	padding: 10px;
+}
+
+.editor-example > .row {
+	margin-bottom: 10px;
+}
+
+.editor-example > .row:last-child {
+	margin-bottom: 0;
+}
+
+
+/* Search Form ----- */
+
+#filter-results-wrap {
+	min-width: 169px;
+}
+
+
+/* List Table ----- */
+
+#listview tbody tr td:last-child > * {
+	margin-right: 10px;
+}
+
+#listview tbody tr td:last-child > *:last-child {
+	margin-right: 0;
+}
+
+#listview tbody tr td:last-child {
+	width: 123px;
+}
+
+
+/* Expression ----- */
+
+#ieml-result {
+	margin-left: 10px;
+}
+
+#ieml-ex-wrap, #ieml-desc-wrap {
+	margin-right: -2px;
+	border: 1px solid #ddd;
+	margin-bottom: 30px;
+	float: left;
+	position: relative;
+	min-height: 80px;
+}
+
+.example-top-tag, .desc-top-tag {
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	padding: 3px 8px;
+	background-color: #ddd;
+}
+
+#ieml-ex-result, #ieml-desc-result {
+	margin: 0 auto;
+	text-align: center;
+	position: absolute;
+	top: 50%;
+	margin-top: -9px;
+	margin-left: 20px;
+}
+
+#table table td a, #table table th a {
+	color: #333333;
+	font-size: 12px !important;
+}
+
+#ieml-table-span {
+	text-align: center;
+	overflow: visible;
+	padding: 25px 1px 1px 1px;
+}
+
+#table table td {
+	min-width: 200px;
+}
+
+
+/* Expression Tables ----- */
+
+table.relation {
+	border-collapse: collapse;
+	margin: 0 auto;
+}
+
+table.relation tbody tr td, table.relation tbody tr th {
+	border: 1px solid;
+	text-align: center;
+	border-color: #cccccc;
+	font-family: "proxima-nova-alt-condensed",sans-serif;
+	font-size: 16px;
+	min-height: 80px !important;
+
+}
+table.relation tbody tr td {
+	font-weight: 300;
+}
+table.relation .empty_cell {
+    border: none;
+}
+table.relation .relation-sel-cell {
+    background-color: #dedede;
+}
+table.relation .relation-top-cell {
+    background-color: #c4bb93;
+}
+table.relation .small_def {
+    font-size: 11pt;
+}
+table.relation .short_hr {
+    width: 50%;
+    max-width: 125px;
+    margin: 5px auto 3px auto;
+    border-color: #eeeeee;
+    
+}
+table.relation .enable_check {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+table.relation .cell_wrap {
+	display: block;
+	padding: 8px;
+	min-height: 70px !important;
+	color: #333333;
+}
+
+table.relation .cell_wrap span.cell_expression {
+	display: block;
+	color: #999999;
+	font-weight: 200;
+}
+
+
+/* Expression Relations ----- */
+
+.heading_underline {
+	border-bottom: 1px solid #ddd;
+	display: block;
+}
+
+.concurring-relation {
+	display: block;
+}
+
+.relation-list, .concurring-relation {
+	text-align: left;
+}
+
+
+/* Expression Edit Buttons ----- */
+
+.non-edit-buttons .btn {
+	margin-right: 5px;
+}
+
+
+/* Expression Validation ----- */
+
+.ieml-validation-result {
+	margin-top: 5px;
+}
+
+.ieml-validation-result .result-success, .ieml-validation-result .result-error {
+	display: block;
+	font-family: monospace;
+	white-space: pre;
+}
+
+
+/* Bootstrap Overrides ----- */
+
 #iemlRecord .nav-tabs > li > a {
 	border-left: 1px solid #ddd;
 	border-right: 1px solid #ddd;

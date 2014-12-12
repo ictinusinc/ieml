@@ -28,11 +28,8 @@ require_once(APPROOT.'/includes/header.php');
 				<thead>
 					<tr>
 						<th data-lang-switch="user_tab_user_col"><?php echo trans_phrase('user_tab_user_col', $lang); ?></th>
-
 						<th data-lang-switch="user_tab_type_col"><?php echo trans_phrase('user_tab_type_col', $lang); ?></th>
-
 						<th data-lang-switch="user_tab_created_col"><?php echo trans_phrase('user_tab_created_col', $lang); ?></th>
-
 						<th>&nbsp;</th>
 					</tr>
 				</thead>
@@ -41,24 +38,73 @@ require_once(APPROOT.'/includes/header.php');
 		</div>
 
 		<div id="list-view-container" class="hidden">
-			<div class="row">
-				<div class="col-md-12">
-					<h3 data-lang-switch="results"><?php echo trans_phrase('results', $lang); ?></h3>
-				</div>
+			<div class="list-view-wrap">
+					
+					<div class="editor-drawer">
+						<div class="row">
+							<div class="col-md-12">
+								<div class="editor">
+									<div class="editor-head">
+										<div class="row">
+											<div class="col-md-4">
+												<span class="content-type">Preposition (phrase)</span>
+											</div>
+											<div class="col-md-6">
+												<button type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
+												<button type="button" class="btn btn-default"><span class="glyphicon glyphicon-remove"></span></button>
+												<button type="button" class="btn btn-default"><strong>(...)</strong></button>
+												<button type="button" class="btn btn-default"><strong>E</strong></button>
+											</div>
+										</div>
+									</div>
+									<div class="editor-proper">
+										
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-12">
+								<div class="editor-example">
+									<div class="row">
+										<div class="col-md-6">
+											<span>Example</span>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-12">
+											<input type="text" class="form-control" />
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-3">
+											<a href="//ieml.org/3i4uhr" class="btn btn-link">ieml.org/3i4uhr</a>
+										</div>
+										<div class="col-md-4 col-md-offset-5">
+											<button type="button" class="btn btn-default">Cancel</button>
+											<button type="button" class="btn btn-default">Save</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					
+					<table id="listview" class="table table-striped table-bordered table-condensed">
+						<thead>
+							<tr>
+								<th data-lang-switch="list_tab_exp_col"><?php echo trans_phrase('list_tab_exp_col', $lang); ?></th>
+
+								<th data-lang-switch="list_tab_example_col"><?php echo trans_phrase('list_tab_example_col', $lang); ?></th>
+
+								<th>&nbsp;</th>
+							</tr>
+						</thead>
+						<tbody></tbody>
+					</table>
+
 			</div>
-
-			<table id="listview" class="table table-striped table-bordered table-condensed">
-				<thead>
-					<tr>
-						<th data-lang-switch="list_tab_exp_col"><?php echo trans_phrase('list_tab_exp_col', $lang); ?></th>
-
-						<th data-lang-switch="list_tab_example_col"><?php echo trans_phrase('list_tab_example_col', $lang); ?></th>
-
-						<th>&nbsp;</th>
-					</tr>
-				</thead>
-				<tbody></tbody>
-			</table>
 		</div>
 
 		<div id="record-view-container" class="hidden">
@@ -74,7 +120,7 @@ require_once(APPROOT.'/includes/header.php');
 					</div>
 					<div class="col-md-3">
 						<span class="pull-left ieml-validation-result hidden">
-							<div class="result-success-icon hidden"><i class="glyphicon glyphicon-ok">&nbsp;</i></div>
+							<div class="result-success-icon hidden"><i class="glyphicon glyphicon-ok"></i></div>
 							<div class="result-error-icon hidden"><i class="glyphicon glyphicon-remove">&nbsp;</i></div>
 						</span>
 					</div>

@@ -129,12 +129,16 @@ function handle_request($action, $req) {
 				if (array_key_exists('keys', $req) && strlen($req['keys']) > 0 && $req['keys'] == 'keys') {
 					$filter_str .= " AND enumCategory = 'Y' ";
 				}
+				if (array_key_exists('library', $req) && strlen($req['library']) > 0) {
+					$filter_str .= " AND fkLibrary = ".goodInt($req['library']);
+				}
 
 				$ret = Conn::queryArrays("
 					SELECT
 						pkExpressionPrimary AS id, strExpression AS expression,
 						prim.intSetSize, prim.intLayer, prim.strFullBareString,
-						enumCategory, enumDeleted, sublang.strExample AS example
+						enumCategory, enumDeleted, sublang.strExample AS example,
+						prim.fkLibrary
 					FROM expression_primary prim
 					LEFT JOIN expression_data sublang
 						ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
@@ -421,6 +425,40 @@ function handle_request($action, $req) {
 			$request_ret = $res;
 			
 			break;
+
+		case 'getUserLibraries':
+			$ret = NULL;
+			if ($_SESSION['user']) {
+				$ret = Conn::queryArrays("
+					SELECT
+						pkLibrary, strName
+					FROM libraries
+					WHERE fkUser = ".goodInt($_SESSION['user']['pkUser'])."
+				");
+			} else {
+				$ret = array(
+					'result' => 'error',
+					'resultCode' => 1,
+					'error' => 'User must be logged in to use this route.'
+				);
+			}
+
+			$request_ret = $ret;
+
+			break;
+
+		case 'getAllLibraries':
+			$request_ret = Conn::queryArrays("
+				SELECT
+					pkLibrary, fkUser, strName
+				FROM libraries
+				LEFT JOIN users ON libraries.fkUser = users.pkUser
+				WHERE
+					users.enumDeleted = 'no'
+					OR libraries.fkUser IS NULL
+			");
+
+			break;
 		
 		case 'login':
 			$asserts_ret = assert_arr(array('loginEmail', 'loginPassword'), $req);
@@ -516,12 +554,9 @@ function wrap_request($action, $req, $callback = NULL) {
 
 header('Content-type: application/json; charset=utf-8;');
 
-//smart_session($_REQUEST);
 session_start();
 
 echo wrap_request($_REQUEST['a'], $_REQUEST, array_key_exists('callback', $_REQUEST) ? $_REQUEST['callback'] : NULL);
-
-//set_session_data($_SESSION['auth_token'], $_SESSION);
 
 Conn::closeStaticHandle();
 
