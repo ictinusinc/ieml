@@ -112,10 +112,11 @@ function handle_request($action, $req) {
 			break;
 			
 		case 'searchDictionary':
-			$asserts_ret = assert_arr(array('search', 'lang'), $req);
+			$asserts_ret = assert_arr(array('search', 'lang', 'library'), $req);
 			
 			if (TRUE === $asserts_ret) {
 				$filter_str = '';
+				$join_str = '';
 				
 				if (array_key_exists('search', $req) && strlen($req['search']) > 0) {
 					$filter_str .= " AND (strExpression LIKE '%".goodString($req['search'])."%' OR sublang.strExample LIKE '%".goodString($req['search'])."%') ";
@@ -129,25 +130,34 @@ function handle_request($action, $req) {
 				if (array_key_exists('keys', $req) && strlen($req['keys']) > 0 && $req['keys'] == 'keys') {
 					$filter_str .= " AND enumCategory = 'Y' ";
 				}
-				if (array_key_exists('library', $req) && strlen($req['library']) > 0) {
-					$filter_str .= " AND fkLibrary = ".goodInt($req['library']);
-				}
 
 				$ret = Conn::queryArrays("
 					SELECT
 						pkExpressionPrimary AS id, strExpression AS expression,
 						prim.intSetSize, prim.intLayer, prim.strFullBareString,
 						enumCategory, enumDeleted, sublang.strExample AS example,
-						prim.fkLibrary
+						(
+							SELECT GROUP_CONCAT(fkLibrary SEPARATOR ',')
+							FROM library_to_expression_primary
+							WHERE fkExpressionPrimary = pkExpressionPrimary
+							GROUP BY fkExpressionPrimary
+						) AS fkLibrary
 					FROM expression_primary prim
-					LEFT JOIN expression_data sublang
+					JOIN expression_data sublang
 						ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
+					JOIN library_to_expression_primary ltoep
+						ON prim.pkExpressionPrimary = ltoep.fkExpressionPrimary
 					WHERE prim.enumDeleted = 'N'
-					AND   strLanguageISO6391 = '".goodString($req['lang'])."'
+					AND ltoep.fkLibrary = ".goodInt($req['library'])."
+					AND strLanguageISO6391 = '".goodString($req['lang'])."'
 					".$filter_str."
 					ORDER BY expression");
 
 				usort($ret, 'expression_sort_cmp');
+
+				for ($i = 0; $i < count($ret); $i++) {
+					$ret[$i]['fkLibrary'] = explode(',', $ret[$i]['fkLibrary']);
+				}
 				
 				$request_ret = $ret;
 			} else {
@@ -255,7 +265,7 @@ function handle_request($action, $req) {
 			break;
 			
 		case 'newDictionary':
-			$asserts_ret = assert_arr(array('exp', 'lang', 'enumCategory', 'example', 'descriptor', 'enumShowEmpties'), $req);
+			$asserts_ret = assert_arr(array('exp', 'lang', 'library', 'enumCategory', 'example', 'descriptor', 'enumShowEmpties'), $req);
 			
 			if (TRUE === $asserts_ret) {
 				$lang = strtolower($req['lang']);
@@ -292,6 +302,12 @@ function handle_request($action, $req) {
 							(fkExpressionPrimary, strExample, strDescriptor, strLanguageISO6391)
 						VALUES
 							(".goodInt($ret['id']).", '".goodString($req['example'])."', '".goodString($req['descriptor'])."', '".goodString($lang)."')");
+
+					//TODO: handle error if unable to add to library
+					handle_request('addExpressionToLibrary', array(
+						'id' => $ret['id'],
+						'library' => $req['library']
+					));
 					
 					if ($req['enumCategory'] == 'Y') {
 						ensure_table_for_key($ret);
@@ -431,8 +447,8 @@ function handle_request($action, $req) {
 			if ($_SESSION['user']) {
 				$ret = Conn::queryArrays("
 					SELECT
-						pkLibrary, strName
-					FROM libraries
+						pkLibrary, fkUser, strName
+					FROM library
 					WHERE fkUser = ".goodInt($_SESSION['user']['pkUser'])."
 				");
 			} else {
@@ -451,11 +467,11 @@ function handle_request($action, $req) {
 			$request_ret = Conn::queryArrays("
 				SELECT
 					pkLibrary, fkUser, strName
-				FROM libraries
-				LEFT JOIN users ON libraries.fkUser = users.pkUser
+				FROM library
+				LEFT JOIN users ON library.fkUser = users.pkUser
 				WHERE
 					users.enumDeleted = 'no'
-					OR libraries.fkUser IS NULL
+					OR library.fkUser IS NULL
 			");
 
 			break;
@@ -502,7 +518,27 @@ function handle_request($action, $req) {
 			}
 
 			break;
+		
+		case 'addExpressionToLibrary':
+			$asserts_ret = assert_arr(array('id', 'library'), $req);
 			
+			if (TRUE === $asserts_ret) {
+				Conn::query("
+					INSERT INTO library_to_expression_primary
+						(fkLibrary, fkExpressionPrimary)
+					VALUES
+						(" . goodInt($req['library']) . ", " . goodInt($req['id']) . ")
+					");
+				
+				$request_ret = array(
+					'result' => 'success',
+					'resultCode' => 0
+				);
+			} else {
+				$request_ret = assert_format($asserts_ret);
+			}
+			break;
+
 		default:
 			$request_ret = array('result' => 'error', 'error' => 'No such identifier: '.$ajax);
 			

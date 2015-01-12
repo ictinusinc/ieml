@@ -1,26 +1,122 @@
+(function($) {
+	'use strict';
+	
+	$.fn.extend({
+		'resetCondition': function() {
+			var pthis = this.get(0);
+			pthis.deleteCount = 0;
+		},
+		'conditionalDelete': function(delete_limit, on_delete) {
+			var pthis = this.get(0);
+			if (typeof pthis.deleteCount == 'undefined') {
+				pthis.deleteCount = 0;
+			}
+
+			if (this.parent().hasClass('editor-proper')) {
+				++pthis.deleteCount;
+
+				if (pthis.deleteCount >= delete_limit) {
+					this.remove();
+					on_delete();
+				}
+			}
+		}
+	});
+})(jQuery);
+
 (function(window, $) {
 	'use strict';
 	
 	var api_offset = '/api/';
 	
-	function IEMLApp() {}
+	var IEMLApp = {};
 	
 	IEMLApp.user = null;
 	IEMLApp.userLibraries = null;
-	IEMLApp.load_url = null;
+	IEMLApp.library = '1';
 	IEMLApp.lang = 'EN';
-	IEMLApp.lexicon = '1';
-	IEMLApp.lastGeneralSearch = null;
+	IEMLApp.sortableGroup = 'table';
+	IEMLApp.draggedObject = null;
+	IEMLApp.sortableOptions = {
+		'onStart': function(evt) {
+			$('.editor-garbage').removeClass('hidden');
+			IEMLApp.draggedObject = evt.item;
+			$(IEMLApp.draggedObject).resetCondition();
+		},
+		'onEnd': function(evt) {
+			$('.editor-garbage').addClass('hidden');
+			$(IEMLApp.draggedObject).conditionalDelete(2, function() {
+				IEMLApp.onSort($('.editor-proper'));
+			});
+		}
+	};
+
+	IEMLApp.onSort = function($this) {
+		var $children = $this.children();
+		var only_script = $children.map(function(i, el) {
+				return !!$(el).data('is-script');
+			}).toArray().reduce(function(a, b) {
+				return a && b;
+			}, true);
+
+		var ieml_expression = '';
+
+		if (!only_script) {
+			$this.removeClass('only-script');
+
+			ieml_expression = $children.map(
+				function(i, el) {
+					var is_script = !!$(el).data('is-script');
+					var el_val = $(el).data('script-val');
+				
+					return (is_script ? '(' : '') + el_val + (is_script ? ')' : '');
+				}).toArray().join(' ');
+		} else {
+			$this.addClass('only-script');
+
+			ieml_expression = $children.map(
+				function(i, el) {
+					return (i === 0 ? '' : ' /') + $(el).data('script-val');
+				}).toArray().join(' ');
+		}
+
+		IEMLApp.submit({
+			'a': 'validateExpression',
+			'expression': IEMLApp.construct_script($children, only_script)
+		});
+	};
+
+	IEMLApp.construct_script = function(elements, only_script) {
+		var ieml_expression = '';
+
+		if (only_script) {
+			ieml_expression = elements.map(
+				function(i, el) {
+					return (i === 0 ? '' : ' /') + $(el).data('script-val');
+				}).toArray().join(' ');
+		} else {
+			ieml_expression = elements.map(
+				function(i, el) {
+					var is_script = !!$(el).data('is-script');
+					var el_val = $(el).data('script-val');
+				
+					return (is_script ? '(' : '') + el_val + (is_script ? ')' : '');
+				}).toArray().join(' ');
+		}
+
+		return ieml_expression;
+	};
 
 	IEMLApp.match_url_settings = function(url) {
 		var opt_map = {
 			'class': '(verb|noun|auxiliary)',
 			'key': '(keys)',
 			'layer': 'layer-([0-6])',
-			'lexicon': 'library-([1-9][0-9]*)',
+			'library': 'library-([1-9][0-9]*)',
 			'lang': '(en|fr)',
 			'mode': '(search|view|users|login)'
-		}, ret = {};
+		};
+		var ret = {};
 
 		for (var i in opt_map) {
 			var mat = url.match(new RegExp('\/'+opt_map[i]+'\/?', 'i'));
@@ -40,8 +136,8 @@
 		if (settings.class) {
 			$('#search-form #search-class-select').val(settings.class);
 		}
-		if (settings.lexicon) {
-			$('#search-form #search-spec-select').val(settings.lexicon);
+		if (settings.library) {
+			$('#search-form #search-library-select').val(settings.library);
 		}
 		if (settings.lang) {
 			$('#search-form #search-lang-select').val(settings.lang);
@@ -63,10 +159,10 @@
 			star_index = path.indexOf('*'),
 			settings = IEMLApp.match_url_settings(path.substr(0, star_index > -1 ? star_index : path.length));
 
-		if (settings.lexicon) {
-			IEMLApp.lexicon = settings.lexicon;
+		if (settings.library) {
+			IEMLApp.library = settings.library;
 
-			$('#search-spec-select').val(IEMLApp.lexicon);
+			$('#search-library-select').val(IEMLApp.library);
 		}
 
 		if (settings.lang) {
@@ -83,7 +179,7 @@
 			
 			IEMLApp.submit({
 				'a': 'searchDictionary',
-				'lexicon': IEMLApp.lexicon,
+				'library': IEMLApp.library,
 				'lang': IEMLApp.lang,
 				'layer': settings.layer,
 				'class': settings.class,
@@ -92,9 +188,9 @@
 			});
 		} else if (settings.mode == 'view') {
 			if (isNaN(parseInt(path_last, 10))) {
-				IEMLApp.submit({ 'a': 'expression', 'lexicon': IEMLApp.lexicon, 'lang': IEMLApp.lang, 'exp': path_last });
+				IEMLApp.submit({ 'a': 'expression', 'library': IEMLApp.library, 'lang': IEMLApp.lang, 'exp': path_last });
 			} else {
-				IEMLApp.submit({ 'a': 'expression', 'lexicon': IEMLApp.lexicon, 'lang': IEMLApp.lang, 'id': path_last });
+				IEMLApp.submit({ 'a': 'expression', 'library': IEMLApp.library, 'lang': IEMLApp.lang, 'id': path_last });
 			}
 		} else {
 			switch_to_list();
@@ -128,7 +224,7 @@
 			if (req.a == 'viewUsers') {
 				IEMLApp.receiveUserList(resp);
 			} else if (req.a == 'searchDictionary') {
-				IEMLApp.receiveSearch(resp);
+				IEMLApp.receiveSearch(resp, req);
 			} else if (req.a == 'expression') {
 				IEMLApp.receiveExpression(resp);
 			} else {
@@ -238,7 +334,7 @@
 							'" value="' + responseData[i].pkLibrary + '">' + responseData[i].strName + '</option>';
 					}
 
-					$('#search-spec-select').html(libHtml);
+					$('#search-library-select').html(libHtml);
 				});
 			} else if (rvars.a == 'searchDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
@@ -246,17 +342,17 @@
 
 					state_call(IEMLApp.cons_state(rvars, responseData), '',
 						cons_url([
-							rvars_url.lang, rvars_url.lexicon, 'search',
+							rvars_url.lang, 'library-' + rvars_url.library, 'search',
 							rvars_url.layer, rvars_url.class, rvars_url.keys, rvars_url.search
 						])
 					);
 					
-					IEMLApp.receiveSearch(responseData);
+					IEMLApp.receiveSearch(responseData, rvars);
 				});
 			} else if (rvars.a == 'expression') {
 				$.getJSON(url, rvars, function(responseData) {
 					state_call(IEMLApp.cons_state(rvars, responseData), '',
-						cons_url([rvars.lang, rvars.lexicon, 'view', (rvars.id ? rvars.id : rvars.exp)]
+						cons_url([rvars.lang, 'library-' + rvars.library, 'view', (rvars.id ? rvars.id : rvars.exp)]
 					));
 					
 					IEMLApp.receiveExpression(responseData);
@@ -273,7 +369,11 @@
 					}
 				});
 			} else if (rvars.a == 'logout') {
-				$.getJSON(url, rvars, init_anon_user);
+				$.getJSON(url, rvars, function() {
+					init_anon_user();
+
+					IEMLApp.init_from_state(History.getState(), null);
+				});
 			} else if (rvars.a == 'viewUsers') {
 				$.getJSON(url, rvars, function(responseData) {
 					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([IEMLApp.lang, 'users']));
@@ -289,7 +389,7 @@
 			} else if (rvars.a == 'editDictionary' || rvars.a == 'newDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
 					if ($('#desc-result-id').val() === '') {
-						state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars.lang, rvars.lexicon, 'view', responseData.expression]));
+						state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars.lang, 'library-' + rvars.library, 'view', responseData.expression]));
 						
 						$('#desc-result-id').val(responseData.id);
 					}
@@ -305,22 +405,32 @@
 					$('#iemlConfirmModal').modal('hide');
 				});
 			} else if (rvars.a == 'validateExpression') {
-				$.getJSON(url, rvars, function(responseData) {
-					if (responseData.result == 'success') {
-						var parser_out = responseData.parser_output;
+				if (rvars.expression.length === 0) {
+					$('.ieml-validation-result').addClass('hidden');
+				} else {
+					$.getJSON(url, rvars, function(responseData) {
+						if (responseData.result == 'success') {
+							var parser_out = responseData.parser_output;
 
-						if (parser_out.resultCode === 0) {
-							$('.ieml-validation-result .result-success-icon, .ieml-validation-result .result-success').removeClass('hidden');
-							$('.ieml-validation-result .result-error-icon, .ieml-validation-result .result-error').addClass('hidden');
+							$('.ieml-validation-result').removeClass('hidden');
+
+							if (parser_out.resultCode === 0) {
+								$('.ieml-validation-result .result-success-icon, .ieml-validation-result .result-success').removeClass('hidden');
+								$('.ieml-validation-result .result-error-icon, .ieml-validation-result .result-error').addClass('hidden');
+							} else {
+								$('.ieml-validation-result .result-error-icon, .ieml-validation-result .result-error').removeClass('hidden');
+								$('.ieml-validation-result .result-success-icon, .ieml-validation-result .result-success').addClass('hidden');
+
+								$('.ieml-validation-result .result-error').html(parser_out.error);
+							}
 						} else {
-							$('.ieml-validation-result .result-error-icon, .ieml-validation-result .result-error').removeClass('hidden');
-							$('.ieml-validation-result .result-success-icon, .ieml-validation-result .result-success').addClass('hidden');
-
-							$('.ieml-validation-result .result-error').html(parser_out.error);
+							$('.ieml-validation-result').addClass('hidden');
 						}
-					} else {
-						$('.ieml-validation-result').addClass('hidden');
-					}
+					});
+				}
+			} else if (rvars.a == 'addExpressionToLibrary') {
+				$.getJSON(url, rvars, function(responseData) {
+
 				});
 			} else {
 				return false;
@@ -332,20 +442,42 @@
 		return false;
 	};
 	
-	IEMLApp.receiveSearch = function (respObj) {
+	IEMLApp.receiveSearch = function (respObj, reqObj) {
 		if (respObj && respObj.length > 0) {
 			var tstr = '';
 			
 			for (var j in respObj) {
 				tstr += formatResultRow(respObj[j]);
 			}
-			
+
 			$('#listview tbody').html(tstr);
+
+			Array.prototype.forEach.call(document.querySelectorAll('#listview tr td:nth-child(2)'), function(el) {
+				Sortable.create(el, $.extend({
+					'group': { 
+						'name': IEMLApp.sortableGroup,
+						'pull': 'clone',
+						'put': false
+					}
+				}, IEMLApp.sortableOptions));
+			});
 		} else {
 			$('#listview tbody').empty();
 		}
 		
 		switch_to_list();
+
+		if (reqObj) {
+			var selected_option = IEMLApp.userLibraries.filter(function(el) {
+				return el.pkLibrary == reqObj.library;
+			})[0];
+
+			IEMLApp.library = reqObj.library;
+
+			if (IEMLApp.user && selected_option && selected_option.fkUser == IEMLApp.user.pkUser) {
+				enable_editor();
+			}
+		}
 	};
 	
 	IEMLApp.receiveExpression = function (responseData) {
@@ -390,6 +522,9 @@
 	}
 	
 	function reset_views() {
+		$('.list-view-wrap').removeClass('editor-in');
+		$('.ieml-validation-result').addClass('hidden');
+
 		$('.edit-buttons-wrap').addClass('hidden');
 		$('#back-to-list-view').addClass('hidden');
 		
@@ -419,6 +554,10 @@
 		$('#record-view-container, .circuit-container').removeClass('hidden');
 	}
 	
+	function enable_editor() {
+		$('.list-view-wrap').addClass('editor-in');
+	}
+
 	function switch_to_list() {
 		reset_views();
 		$('#filter-results-wrap').removeClass('hidden');
@@ -695,20 +834,26 @@
 			'data-layer="'+(obj.intLayer >= 0 ? obj.intLayer : '-1') + '"' +
 			'data-result-id="' + obj.id + '">' +
 			'<td>' + obj.expression + '</td>' +
-			'<td>' + (obj.example ? obj.example : '') + '</td>' +
+			'<td><div class="draggable" data-script-val="' + obj.expression + '" data-is-script="true">' + (obj.example ? obj.example : '') + '</div></td>' +
 			'<td>' +
 				'<a href="/ajax.php?id=' + obj.id + '&a=searchDictionary"' +
 					'data-exp="' + obj.expression + '"' +
 					'data-id="' + obj.id + '"' +
 					'class="btn btn-default editExp"><span class="glyphicon glyphicon-pencil"></span></a>' +
-				(IEMLApp.user && IEMLApp.user.pkUser != obj.fkLibrary ?
+				(IEMLApp.user ?
 					'<div class="btn-group">' +
 						'<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">' +
 							'<span class="glyphicon glyphicon-plus">&nbsp;</span><span class="caret"></span>' +
 						'</button>' +
 						'<ul class="dropdown-menu" role="menu">' +
 							array_map(IEMLApp.userLibraries, function(i, lib) {
-								return '<li><a href="javascript:void(0);" data-lib-id="' + lib.pkLibrary + '">' + lib.strName + '</a></li>';
+								if (array_indexOf(obj.fkLibrary, lib.pkLibrary) != -1) {
+									return '';
+								}
+
+								return '<li><a href="javascript:void(0);" class="addExpressionToLibrary"' + 
+								'data-exp-id="' + obj.id + '"' +
+								'data-lib-id="' + lib.pkLibrary + '">' + lib.strName + '</a></li>';
 							}) +
 						'</ul>' +
 					'</div>'
@@ -718,7 +863,13 @@
 	}
 	
 	function formatUserRow(user) {
-		return '<tr><td>'+user.strEmail+'</td><td>'+user.enumType+'</td><td>' + LightDate.date('Y-m-d H:i:s', LightDate.date_timezone_adjust(user.tsDateCreated*1000)) + '</td><td><!--a href="/ajax.php?a=editUser&pkUser='+user.pkUser+'" class="editUser btn btn-default">Edit</a--><a href="/ajax.php?a=delUser&pkUser=' + user.pkUser+'" class="delUser btn btn-default">Delete</a></td></tr>';
+		return '<tr>' +
+			'<td>'+user.strEmail+'</td>' +
+			'<td>'+user.enumType+'</td>' +
+			'<td>' + LightDate.date('Y-m-d H:i:s', LightDate.date_timezone_adjust(user.tsDateCreated*1000)) + '</td>' +
+			'<td><!--a href="/ajax.php?a=editUser&pkUser='+user.pkUser+'" class="editUser btn btn-default">Edit</a-->' +
+			'<a href="/ajax.php?a=delUser&pkUser=' + user.pkUser+'" class="delUser btn btn-default">Delete</a></td>' +
+		'</tr>';
 	}
 	
 	function showConfirmDialog(text, callback, etc) {
@@ -789,19 +940,16 @@
 		
 		$(document).on('submit', '#search-form', function() {
 			var form_data = form_arr_to_map($(this).serializeArray());
+			if ($('[name="filter-results"][value="keys"]').is(':checked')) {
+				form_data.keys = 'keys';
+			}
 			IEMLApp.submit(form_data);
 			
 			return false;
 		}).on('change', '#search-form select', function() {
 			$('#search-form').trigger('submit');
-		}).on('change', '#search-spec-select', function() {
-			var $this = $(this);
-			var selected_option = $this.children('option[value="' + $this.val() + '"]');
-			if (IEMLApp.user && selected_option.data('owned-by') == IEMLApp.user.pkUser) {
-				$('.list-view-wrap').addClass('editor-in');
-			} else {
-				$('.list-view-wrap').removeClass('editor-in');
-			}
+		}).on('change', '#search-library-select', function() {
+			$('#search-form').trigger('submit');
 		}).on('change', '#iemlEnumShowTable', function() {
 			var info = IEMLApp.lastRetrievedData;
 			
@@ -830,7 +978,7 @@
 			IEMLApp.submit({
 				'a': 'expression',
 				'lang': IEMLApp.lang,
-				'lexicon': IEMLApp.lexicon,
+				'library': IEMLApp.library,
 				'exp': $this.data('exp'),
 				'id': $this.data('id')
 			});
@@ -845,28 +993,7 @@
 			
 			return false;
 		}).on('change', '#filter-results-wrap [name="filter-results"]', function() {
-			var $this = $(this);
-
-			$('#search-form [name="keys"]').val($this.val());
-
-			if ($this.val() != 'keys')
-			{
-				var state_data = History.getState().data;
-				if (state_data.req.keys == 'keys')
-				{
-					$('#search-form').trigger('submit');
-					return;
-				}
-			}
-			
-			if ($this.val() == 'keys')
-			{
-				$('#listview tbody [data-key="false"]').addClass('hidden');
-			}
-			else
-			{
-				$('#listview tbody [data-key="false"]').removeClass('hidden');
-			}
+			$('#search-form').trigger('submit');
 		}).on('click', '#add-ieml-record', function() {
 			IEMLApp.lastRetrievedData = {'expression':'', 'example':'', 'enumCategory':'N', 'enumShowEmpties': 'N'};
 			fillForm(IEMLApp.lastRetrievedData);
@@ -901,6 +1028,7 @@
 			reqVars.example = $('#ieml-ex-result').text();
 			reqVars.descriptor = $('#ieml-desc-result').text();
 			reqVars.lang = $('#search-lang-select').val();
+			reqVars.library = $('#search-library-select').val();
 			
 			reqVars.iemlEnumComplConcOff = $('#iemlEnumComplConcOff').is(':checked') ? $('#iemlEnumComplConcOff').val() : 'N';
 			
@@ -970,7 +1098,12 @@
 			
 			$('#iemlAddUserModal').modal('hide');
 			
-			IEMLApp.submit({ 'a' : formData.a, 'username' : formData.addUserModalUsername, 'pass' : formData.addUserModalPass, 'enumType' : formData.addUserModalType });
+			IEMLApp.submit({
+				'a' : formData.a,
+				'username' : formData.addUserModalUsername,
+				'pass' : formData.addUserModalPass,
+				'enumType' : formData.addUserModalType
+			});
 			
 			return false;
 		}).on('click', '.delUser', function() {
@@ -1006,21 +1139,58 @@
 			IEMLApp.submit(formData);
 			
 			return false;
-		}).on('shown', 'a[data-toggle="tab"]', function(e) {
-			//var cur_state = History.getState(), state_call = obj_size(cur_state.data) == 0 ? IEMLApp.replaceState : IEMLApp.pushState;
-			//state_call(cur_state, '', $(e.target).attr('href'));
-			
-			//$(window).trigger('hashchange');
+		}).on('click', '.addExpressionToLibrary', function() {
+			IEMLApp.submit({
+				'a': 'addExpressionToLibrary',
+				'library': $(this).data('lib-id'),
+				'id': $(this).data('exp-id')
+			});
+		}).on('dragenter', '.editor-garbage', function() {
+			$(this).addClass('dragenter');
+		}).on('dragleave', '.editor-garbage', function() {
+			$(this).removeClass('dragenter');
+		}).on('drop', '.editor-garbage', function(evt) {
+			$(this).removeClass('dragenter');
+			$(IEMLApp.draggedObject).conditionalDelete(2, function() {
+				IEMLApp.onSort($('.editor-proper'));
+			});
+		}).on('click', '.editor-save', function() {
+			var $editor = $('.editor-proper');
+			var reqVars = {
+				'a': 'newDictionary',
+				'descriptor': '',
+				'enumCategory': 'N',
+				'enumShowEmpties': 'N',
+				'exp': IEMLApp.construct_script($editor.children(), $editor.hasClass('only-script')),
+				'lang': $('#search-lang-select').val(),
+				'library': $('#search-library-select').val(),
+				'example': $('.editor-example-input').val()
+			};
+
+			IEMLApp.submit(reqVars);
+		}).on('.editor-cancel', function() {
+
 		});
-
-
-		IEMLApp.load_url = window.location;
 		
 		if (window.location.pathname.length == 1) {
-			//IEMLApp.pushState(IEMLApp.cons_state({'a': 'searchDictionary'}, []), '', cons_url([IEMLApp.lang, IEMLApp.lexicon, 'all']));
 			$('#filter-results-keys').click();
 			$('#search-form').submit();
 		}
+
+		Sortable.create(document.querySelector('.editor-proper'), $.extend({
+			'group': IEMLApp.sortableGroup,
+			'onSort': function(evt) {
+				IEMLApp.onSort($(evt.target));
+			}
+		}, IEMLApp.sortableOptions));
+		
+		Sortable.create(document.querySelector('.editor-head .draggable-list'), $.extend({
+			'group': {
+				'name': IEMLApp.sortableGroup,
+				'pull': 'clone',
+				'put': false
+			}
+		}, IEMLApp.sortableOptions));
 
 		IEMLApp.user = _SESSION.user;
 		if (IEMLApp.user)
@@ -1034,9 +1204,5 @@
 		IEMLApp.submit({'a': 'getAllLibraries'});
 		
 		IEMLApp.init_from_url(window.location);
-	});
-	
-	$(window).on('hashchange', function(ev) {
-		//TODO: keep track of/restore tab state on navigation, through hash info in url
 	});
 })(window, jQuery);

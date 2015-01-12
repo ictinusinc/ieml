@@ -4,10 +4,14 @@ Options +FollowSymlinks
 RewriteEngine on
 RewriteBase /
 
-RewriteRule ^api/?(.*)$ /ajax.php$1 [NC,S=2]
-#NC: No Case (case insensitive), S=2: skip next 2 rules
+RewriteRule ^api/?(.*)$ /ajax.php$1 [NC,L]
+#NC: No Case (case insensitive), L: Last rule
 
 RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([0-9a-zA-Z]{1,6})$ shorten.php?url=$1 [L]
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . /index.php [L]

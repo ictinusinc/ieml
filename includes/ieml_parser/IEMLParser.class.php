@@ -211,7 +211,7 @@ class IEMLParser {
 				}
 				
 				if ($highest_layer < 0 || $highest_layer >= count(IEMLParser::$LAYER_STRINGS)) {
-					throw new ParseException('Layer mismatch', 4, array($source, strlen($string)));
+					throw new ParseException('Layer mismatch', 4, array($source_character, strlen($string)));
 				} else if ($this->hasTopLevelAddition($string, $highest_layer)) {
 					//determine additive relations
 					$additive_relations = $this->getAdditiveRelations($string, $highest_layer, $source_character);

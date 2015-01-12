@@ -1,0 +1,5 @@
+-'add' button beside edit button 
+-create new lib button
+-personal lib needs different view than dictionary not owned by user
+	-list and editor beside each other
+-trash can in buttom right of editor, can drag stuff to delete

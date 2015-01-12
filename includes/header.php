@@ -19,7 +19,6 @@ header('Content-Type: text/html; charset=utf-8;');
 	<!-- Stylesheets -->
 	<!-- bootstrap-2.0.1.css -->
 	<link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
-	<!-- <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css"> -->
 	<!-- style.css -->
 	<link rel="stylesheet" type="text/css" href="<?php echo WEBAPPROOT.'/includes/css/style.css'; ?>" />
 </head>
@@ -47,7 +46,7 @@ header('Content-Type: text/html; charset=utf-8;');
 					<div class="col-sm-3">
 						<div class="row">
 							<div class="col-sm-6">
-								<select id="search-spec-select" name="library" class="form-control input-sm"></select>
+								<select id="search-library-select" name="library" class="form-control input-sm"></select>
 							</div>
 							<div class="col-sm-6">
 								<select id="search-lang-select" name="lang" class="form-control input-sm">
@@ -91,7 +90,10 @@ header('Content-Type: text/html; charset=utf-8;');
 			<div class="container">
 				<div class="row">
 					<div class="col-sm-12">
-						<div class="pull-left" id="add-ieml-record-wrap"><button type="button" class="btn btn-default" id="add-ieml-record"><span class="glyphicon glyphicon-plus">&nbsp;</span><span data-lang-switch="add_record"><?php echo trans_phrase('add_record', $lang); ?></span></button></div>
+						<div class="pull-left" id="add-ieml-record-wrap"><button type="button" class="btn btn-default" id="add-ieml-record">
+							<span class="glyphicon glyphicon-plus"></span>
+							<span data-lang-switch="add_record"><?= trans_phrase('add_record', $lang) ?></span>
+						</button></div>
 						<div class="pull-left" id="ieml-view-users-wrap"><button type="button" class="btn btn-default" id="ieml-view-users" data-lang-switch="view_users"><?php echo trans_phrase('view_users', $lang); ?></button></div>
 						
 						<div class="pull-right">

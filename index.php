@@ -20,7 +20,10 @@ require_once(APPROOT.'/includes/header.php');
 				</div>
 
 				<div class="col-md-3">
-					<button type="button" id="addUser" class="btn btn-default pull-right" data-lang-switch="add_user"><?php echo trans_phrase('add_user', $lang); ?></button>
+					<button type="button" id="addUser" class="btn btn-default pull-right">
+						<span class="glyphicon glyphicon-plus"></span>
+						<span data-lang-switch="add_user"><?= trans_phrase('add_user', $lang) ?></span>
+					</button>
 				</div>
 			</div>
 
@@ -39,9 +42,22 @@ require_once(APPROOT.'/includes/header.php');
 
 		<div id="list-view-container" class="hidden">
 			<div class="list-view-wrap">
-					
+
 					<div class="editor-drawer">
 						<div class="row">
+							<div class="col-md-12">
+								<span class="pull-left ieml-validation-result hidden">
+									<div class="result-success-icon hidden"><span class="glyphicon glyphicon-ok"></span></div>
+									<div class="result-error-icon hidden"><span class="glyphicon glyphicon-remove">&nbsp;</span></div>
+								</span>
+							</div>
+							<div class="col-md-12">
+								<span class="pull-left ieml-validation-result hidden">
+									<span class="result-success"></span>
+									<span class="result-error"></span>
+								</span>
+							</div>
+
 							<div class="col-md-12">
 								<div class="editor">
 									<div class="editor-head">
@@ -49,17 +65,17 @@ require_once(APPROOT.'/includes/header.php');
 											<div class="col-md-4">
 												<span class="content-type">Preposition (phrase)</span>
 											</div>
-											<div class="col-md-6">
-												<button type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
-												<button type="button" class="btn btn-default"><span class="glyphicon glyphicon-remove"></span></button>
-												<button type="button" class="btn btn-default"><strong>(...)</strong></button>
-												<button type="button" class="btn btn-default"><strong>E</strong></button>
+											<div class="col-md-6 draggable-list">
+												<div class="draggable" data-script-val="+"><span class="glyphicon glyphicon-plus"></span></div>
+												<div class="draggable" data-script-val="*"><span class="glyphicon glyphicon-remove"></span></div>
+												<div class="draggable" data-script-val="E"><strong>E</strong></div>
+												<div class="draggable" data-script-val="("><strong><!-- ( --> &#40;</strong></div>
+												<div class="draggable" data-script-val=")"><strong><!-- ) --> &#41;</strong></div>
 											</div>
 										</div>
 									</div>
-									<div class="editor-proper">
-										
-									</div>
+									<div class="editor-proper"></div>
+									<div class="editor-garbage hidden"><span class="glyphicon glyphicon-trash"></span></div>
 								</div>
 							</div>
 						</div>
@@ -73,7 +89,7 @@ require_once(APPROOT.'/includes/header.php');
 									</div>
 									<div class="row">
 										<div class="col-md-12">
-											<input type="text" class="form-control" />
+											<input type="text" class="form-control editor-example-input" />
 										</div>
 									</div>
 									<div class="row">
@@ -81,8 +97,8 @@ require_once(APPROOT.'/includes/header.php');
 											<a href="//ieml.org/3i4uhr" class="btn btn-link">ieml.org/3i4uhr</a>
 										</div>
 										<div class="col-md-4 col-md-offset-5">
-											<button type="button" class="btn btn-default">Cancel</button>
-											<button type="button" class="btn btn-default">Save</button>
+											<button type="button" class="btn btn-default editor-cancel" data-lang-switch="cancel"><?= trans_phrase('cancel', $lang); ?></button>
+											<button type="button" class="btn btn-default editor-save" data-lang-switch="save"><?= trans_phrase('save', $lang); ?></button>
 										</div>
 									</div>
 								</div>
@@ -94,9 +110,9 @@ require_once(APPROOT.'/includes/header.php');
 					<table id="listview" class="table table-striped table-bordered table-condensed">
 						<thead>
 							<tr>
-								<th data-lang-switch="list_tab_exp_col"><?php echo trans_phrase('list_tab_exp_col', $lang); ?></th>
+								<th data-lang-switch="list_tab_exp_col"><?= trans_phrase('list_tab_exp_col', $lang); ?></th>
 
-								<th data-lang-switch="list_tab_example_col"><?php echo trans_phrase('list_tab_example_col', $lang); ?></th>
+								<th data-lang-switch="list_tab_example_col"><?= trans_phrase('list_tab_example_col', $lang); ?></th>
 
 								<th>&nbsp;</th>
 							</tr>
@@ -120,8 +136,8 @@ require_once(APPROOT.'/includes/header.php');
 					</div>
 					<div class="col-md-3">
 						<span class="pull-left ieml-validation-result hidden">
-							<div class="result-success-icon hidden"><i class="glyphicon glyphicon-ok"></i></div>
-							<div class="result-error-icon hidden"><i class="glyphicon glyphicon-remove">&nbsp;</i></div>
+							<div class="result-success-icon hidden"><span class="glyphicon glyphicon-ok"></span></div>
+							<div class="result-error-icon hidden"><span class="glyphicon glyphicon-remove">&nbsp;</span></div>
 						</span>
 					</div>
 					<div class="col-md-3 pull-right">
@@ -298,63 +314,69 @@ require_once(APPROOT.'/includes/header.php');
 		</div>
 	</div>
 
-	<div class="modal" id="iemlAddUserModal" aria-hidden="true">
-		<div class="modal-header">
-			<a class="close" data-dismiss="modal">x</a>
+	<div class="modal fade" id="iemlAddUserModal" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				
+				<div class="modal-header">
+					<a class="close" data-dismiss="modal">&times;</a>
 
-			<h3 data-lang-switch="add_user"><?php echo trans_phrase('add_user', $lang); ?></h3>
-		</div>
-
-		<div class="modal-body">
-			<form class="form-horizontal" id="iemlUser" method="post" action="/api/">
-				<input type="hidden" name="a" value="addUser">
-
-				<div class="control-group">
-					<label class="control-label" for="addUserModalUsername" data-lang-switch="user"><?php echo trans_phrase('user', $lang); ?></label>
-
-					<div class="controls">
-						<input type="text" id="addUserModalUsername" name="addUserModalUsername" placeholder="username">
-					</div>
+					<h3 data-lang-switch="add_user"><?php echo trans_phrase('add_user', $lang); ?></h3>
 				</div>
 
-				<div class="control-group">
-					<label class="control-label" for="addUserModalType" data-lang-switch="user_tab_type_col"><?php echo trans_phrase('user_tab_type_col', $lang); ?></label>
+				<div class="modal-body">
+					<form class="form-horizontal" id="iemlUser" method="post" action="/api/">
+						<input type="hidden" name="a" value="addUser">
 
-					<div class="controls">
-						<select id="addUserModalType" name="addUserModalType">
-							<option value="user">
-								User
-							</option>
+						<div class="control-group">
+							<label class="control-label" for="addUserModalUsername" data-lang-switch="user"><?php echo trans_phrase('user', $lang); ?></label>
 
-							<option value="admin">
-								Admin
-							</option>
-						</select>
-					</div>
+							<div class="controls">
+								<input type="text" class="form-control" id="addUserModalUsername" name="addUserModalUsername" />
+							</div>
+						</div>
+
+						<div class="control-group">
+							<label class="control-label" for="addUserModalType" data-lang-switch="user_tab_type_col"><?php echo trans_phrase('user_tab_type_col', $lang); ?></label>
+
+							<div class="controls">
+								<select id="addUserModalType" name="addUserModalType">
+									<option value="user">User</option>
+									<option value="admin">Admin</option>
+								</select>
+							</div>
+						</div>
+
+						<div class="control-group">
+							<label class="control-label" for="addUserModalUsername" data-lang-switch="password"><?php echo trans_phrase('password', $lang); ?></label>
+
+							<div class="controls">
+								<input type="password" class="form-control" id="addUserModalPass" name="addUserModalPass" />
+							</div>
+						</div>
+
+						<div class="control-group">
+							<label class="control-label" for="addUserModalUsername" data-lang-switch="conf_pass"><?php echo trans_phrase('conf_pass', $lang); ?></label>
+
+							<div class="controls">
+								<input type="password" class="form-control" id="addUserModalConfPass" name="addUserModalConfPass" />
+							</div>
+						</div>
+					</form>
 				</div>
 
-				<div class="control-group">
-					<label class="control-label" for="addUserModalUsername" data-lang-switch="password"><?php echo trans_phrase('password', $lang); ?></label>
-
-					<div class="controls">
-						<input type="password" id="addUserModalPass" name="addUserModalPass" placeholder="password">
-					</div>
+				<div class="modal-footer">
+					<button type="button" id="iemlAddUserModalAdd" class="btn btn-primary" data-lang-switch="add">
+						<?php echo trans_phrase('add', $lang); ?>
+					</button>
+					<button type="button" data-dismiss="modal" class="btn btn-default" data-lang-switch="cancel">
+						<?php echo trans_phrase('cancel', $lang); ?>
+					</button>
 				</div>
 
-				<div class="control-group">
-					<label class="control-label" for="addUserModalUsername" data-lang-switch="conf_pass"><?php echo trans_phrase('conf_pass', $lang); ?></label>
-
-					<div class="controls">
-						<input type="password" id="addUserModalConfPass" name="addUserModalConfPass" placeholder="confirm password">
-					</div>
-				</div>
-			</form>
-		</div>
-
-		<div class="modal-footer">
-			<button type="button" id="iemlAddUserModalAdd" class="btn btn-primary" data-lang-switch="add"><?php echo trans_phrase('add', $lang); ?></button><button type="button" data-dismiss="modal" class="btn btn-default" data-lang-switch="cancel"><?php echo trans_phrase('cancel', $lang); ?></button>
-		</div>
-	</div>
+			</div><!-- /.modal-content -->
+		</div><!-- /.modal-dialog -->
+	</div><!-- /.modal.fade -->
 
 	<div id="confirmCancelModal" class="modal" aria-hidden="true" data-backdrop="static">
 		<div class="modal-body no-bot-margin">

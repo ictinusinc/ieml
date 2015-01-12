@@ -48,6 +48,45 @@
 
 /* Editor ----- */
 
+.draggable {
+	display: inline-block;
+	padding: 5px 10px;
+	background-color: #DDD;
+	text-align: center;
+	cursor: move;
+	min-width: 30px;
+}
+
+.editor-proper > .draggable {
+	margin-bottom: 10px;
+	margin-right: 10px;
+}
+
+.editor-proper > .draggable:last-child {
+	margin-right: 0;
+}
+
+.editor-proper.only-script > *::after {
+	content: " /";
+}
+
+.editor-proper.only-script > *:last-child::after {
+	content: none;
+}
+
+.editor-garbage {
+	position: absolute;
+	right: 10px;
+	bottom: 10px;
+	padding: 25px;
+	border: 1px solid #000;
+	background-color: #FFF;
+}
+
+.editor-garbage.dragenter {
+	background-color: #DDD;
+}
+
 .list-view-wrap .editor-drawer {
 	display: none;
 	visibility: hidden;
@@ -77,11 +116,13 @@
 }
 
 .editor {
+	position: relative;
 	border: 1px solid #BBB;
 }
 
 .editor-proper {
 	height: 500px;
+	padding: 10px;
 }
 
 .editor-head {
@@ -267,7 +308,6 @@ table.relation .cell_wrap span.cell_expression {
 .ieml-validation-result .result-success, .ieml-validation-result .result-error {
 	display: block;
 	font-family: monospace;
-	white-space: pre;
 }
 
 
