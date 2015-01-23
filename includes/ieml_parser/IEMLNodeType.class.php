@@ -12,37 +12,26 @@ class IEMLNodeType {
 		$CATEGORY = 7;
 	
 	public static function toString($type) {
-		$ret = NULL;
-		
 		switch ($type) {
 			case IEMLNodeType::$ROOT:
-				$ret = 'ROOT';
-				break;
+				return 'ROOT';
 			case IEMLNodeType::$ADD:
-				$ret = 'ADD';
-				break;
+				return 'ADD';
 			case IEMLNodeType::$LAYER:
-				$ret = 'LAYER';
-				break;
+				return 'LAYER';
 			case IEMLNodeType::$MUL:
-				$ret = 'MUL';
-				break;
+				return 'MUL';
 			case IEMLNodeType::$ATOM:
-				$ret = 'ATOM';
-				break;
+				return 'ATOM';
 			case IEMLNodeType::$VOWEL:
-				$ret = 'VOWEL';
-				break;
+				return 'VOWEL';
 			case IEMLNodeType::$PAREN:
-				$ret = 'PAREN';
+				return 'PAREN';
 			case IEMLNodeType::$CATEGORY:
-				$ret = 'CATEGORY';
-				break;
+				return 'CATEGORY';
 			default:
 				throw new Exception('No such type: "'.$type.'"');
 		}
-		
-		return $ret;
 	}
 }
 

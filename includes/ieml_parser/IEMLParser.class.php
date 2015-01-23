@@ -131,11 +131,11 @@ class IEMLParser {
 	public function parseString($string) {
 		try {
 			$AST = $this->iniParse($string);
-			$order = $AST->checkOrder();
+			// $order = $AST->checkOrder();
 
-			if (!$order[0]) {
-				throw new ParseException('Script is not properly ordered', 8, $order[1]);
-			}
+			// if (!$order[0]) {
+			// 	throw new ParseException('Script is not properly ordered', 8, $order[1]);
+			// }
 
 			return ParserResult::fromAST($AST);
 		} catch (ParseException $e) {

@@ -7,7 +7,7 @@ class IEMLASTNode {
 		'O' => '2', 'M' => '3', 'F' => '5', 'I' => '6'
 	);
 
-	private $str, $type, $children, $source;
+	private $str, $type, $children;
 
 	public static function genEmptyNode($layer) {
 		$ret = NULL;
@@ -33,11 +33,10 @@ class IEMLASTNode {
 		return $ret;
 	}
 	
-	public function __construct($str, $type, array $children = array(), $source = NULL) {
+	public function __construct($str, $type, array $children = array()) {
 		$this->str = $str;
 		$this->type = $type;
 		$this->children = $children;
-		$this->source = $source;
 	}
 
 	public function bareStr() {
@@ -78,16 +77,6 @@ class IEMLASTNode {
 		}
 	}
 	
-	public function source($source = NULL) {
-		if (isset($source)) {
-			$this->source = $source;
-			
-			return $this;
-		} else {
-			return $this->source;
-		}
-	}
-	
 	public function push(IEMLASTNode $child) {
 		if (isset($child)) {
 			$this->children[] = $child;
@@ -121,7 +110,6 @@ class IEMLASTNode {
 		
 		$out .= str_repeat('    ', $level+1).'str: "'.$this->str.'"'."\n";
 		$out .= str_repeat('    ', $level+1).'type: '.IEMLNodeType::toString($this->type)."\n";
-		$out .= str_repeat('    ', $level+1).'at: '.(isset($this->source) ? $this->source : 'NONE')."\n";
 		$out .= str_repeat('    ', $level+1).'children:';
 		if ($this->childCount() > 0) {
 			$out .= ' '.$this->childCount().' ';
@@ -303,7 +291,7 @@ class IEMLASTNode {
 		if ($this->type() !== IEMLNodeType::$ATOM || $this->type() !== IEMLNodeType::$VOWEL) {
 			for ($i=0; $i<$this->childCount(); $i++) {
 				$sub = $this->child($i)->checkOrder();
-				if ($sub[0] === FALSE) {
+				if ($sub === FALSE) {
 					return $sub;
 				}
 			}
@@ -311,13 +299,13 @@ class IEMLASTNode {
 			if ($this->type() == IEMLNodeType::$ADD) {
 				for ($i=0; $i<$this->childCount()-1; $i++) {
 					if (IEMLParser::fullLexicoCompare($this->child($i)->str(), $this->child($i+1)->str()) > 0) {
-						return array(FALSE, array($this->child($i)->source(), strlen($this->child($i)->str())));
+						return FALSE;
 					}
 				}
 			}
 		}
 
-		return array(TRUE, -1);
+		return TRUE;
 	}
 
 }
