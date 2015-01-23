@@ -7,7 +7,7 @@ class URLShortener
 	const ALLOWED_CHARS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 	const DB_TABLE_NAME = 'short_url';
 
-	private function short_url_from_id($id, $chars = URLShortener::ALLOWED_CHARS)
+	public static function short_url_from_id($id, $chars = URLShortener::ALLOWED_CHARS)
 	{
 		$charslen = strlen($chars);
 		$out = '';
@@ -20,7 +20,7 @@ class URLShortener
 		return $chars[$id] . $out;
 	}
 
-	private function id_from_short_url($string, $chars = URLShortener::ALLOWED_CHARS)
+	public static function id_from_short_url($string, $chars = URLShortener::ALLOWED_CHARS)
 	{
 		$charslen = strlen($chars);
 		$stringlen = strlen($string) - 1;
@@ -33,7 +33,7 @@ class URLShortener
 		return $out;
 	}
 
-	public function shorten_url($long_url)
+	public static function shorten_url($long_url)
 	{
 		$existing_entry = Conn::queryArray('
 			SELECT id, short_url 
@@ -63,7 +63,7 @@ class URLShortener
 		return $short_url;
 	}
 
-	public function lengthen_url($short_url)
+	public static function lengthen_url($short_url)
 	{
 		$long_url = NULL;
 
