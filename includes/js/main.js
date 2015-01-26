@@ -52,59 +52,37 @@
 	};
 
 	IEMLApp.onSort = function($this) {
+		//TODO: do realtime checking on editor script
 		var $children = $this.children();
-		var only_script = $children.map(function(i, el) {
-				return !!$(el).data('is-script');
-			}).toArray().reduce(function(a, b) {
-				return a && b;
+		var only_script = $children.toArray().reduce(function(acc, el) {
+				return acc && !!$(el).data('is-script');
 			}, true);
 
-		var ieml_expression = '';
-
-		if (!only_script) {
-			$this.removeClass('only-script');
-
-			ieml_expression = $children.map(
-				function(i, el) {
-					var is_script = !!$(el).data('is-script');
-					var el_val = $(el).data('script-val');
-				
-					return (is_script ? '(' : '') + el_val + (is_script ? ')' : '');
-				}).toArray().join(' ');
-		} else {
+		if (only_script) {
 			$this.addClass('only-script');
-
-			ieml_expression = $children.map(
-				function(i, el) {
-					return (i === 0 ? '' : ' /') + $(el).data('script-val');
-				}).toArray().join(' ');
+		} else {
+			$this.removeClass('only-script');
 		}
 
-		IEMLApp.submit({
-			'a': 'validateExpression',
-			'expression': IEMLApp.construct_script($children, only_script)
-		});
+		// IEMLApp.submit({
+		// 	'a': 'validateExpression',
+		// 	'expression': IEMLApp.construct_editor_array($children)
+		// });
 	};
 
-	IEMLApp.construct_script = function(elements, only_script) {
-		var ieml_expression = '';
+	IEMLApp.construct_editor_array = function(elements) {
+		var only_script = elements.get().reduce(function(acc, el) {
+				return acc && !!$(el).data('is-script');
+			}, true);
 
-		if (only_script) {
-			ieml_expression = elements.map(
-				function(i, el) {
-					return (i === 0 ? '' : ' /') + $(el).data('script-val');
-				}).toArray().join(' ');
-		} else {
-			ieml_expression = elements.map(
-				function(i, el) {
-					var is_script = !!$(el).data('is-script');
-					var el_val = $(el).data('script-val');
-				
-					return (is_script ? '(' : '') + el_val + (is_script ? ')' : '');
-				}).toArray().join(' ');
-		}
+		//TODO: fix this so it works with category concats
+		return elements.get()
+			.reduce(function(acc, el, i) {
+				if (i > 0 && only_script) { acc.push('/'); }
+				acc.push( $(el).data('script-val') );
 
-		return ieml_expression;
+				return acc;
+			}, []);
 	};
 
 	IEMLApp.match_url_settings = function(url) {
@@ -396,6 +374,12 @@
 					
 					IEMLApp.receiveExpression(responseData);
 				});
+			} else if (rvars.a == 'newVisualExpression') {
+				$.getJSON(url, rvars, function(responseData) {
+					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars.lang, 'library-' + rvars.library, 'view', responseData.expression]));
+					
+					IEMLApp.recieveVisualExpression(responseData);
+				});
 			} else if (rvars.a == 'deleteDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
 					History.back(); //@TODO: find a more elegant solution
@@ -484,6 +468,10 @@
 		IEMLApp.lastRetrievedData = responseData;
 		
 		fillForm(responseData);
+	};
+
+	IEMLApp.recieveVisualExpression = function(responseData) {
+		//responseData.id
 	};
 	
 	IEMLApp.receiveUserList = function (responseData) {
@@ -1157,11 +1145,8 @@
 		}).on('click', '.editor-save', function() {
 			var $editor = $('.editor-proper');
 			var reqVars = {
-				'a': 'newDictionary',
-				'descriptor': '',
-				'enumCategory': 'N',
-				'enumShowEmpties': 'N',
-				'exp': IEMLApp.construct_script($editor.children(), $editor.hasClass('only-script')),
+				'a': 'newVisualExpression',
+				'editor_array': IEMLApp.construct_editor_array($editor.children()),
 				'lang': $('#search-lang-select').val(),
 				'library': $('#search-library-select').val(),
 				'example': $('.editor-example-input').val()

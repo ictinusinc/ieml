@@ -69,8 +69,6 @@ require_once(APPROOT.'/includes/header.php');
 												<div class="draggable" data-script-val="+"><span class="glyphicon glyphicon-plus"></span></div>
 												<div class="draggable" data-script-val="*"><span class="glyphicon glyphicon-remove"></span></div>
 												<div class="draggable" data-script-val="E"><strong>E</strong></div>
-												<div class="draggable" data-script-val="("><strong><!-- ( --> &#40;</strong></div>
-												<div class="draggable" data-script-val=")"><strong><!-- ) --> &#41;</strong></div>
 											</div>
 										</div>
 									</div>
@@ -94,7 +92,7 @@ require_once(APPROOT.'/includes/header.php');
 									</div>
 									<div class="row">
 										<div class="col-md-3">
-											<a href="//ieml.org/3i4uhr" class="btn btn-link">ieml.org/3i4uhr</a>
+											<a href="//ieml.org/3i4uhr" class="btn btn-link editor-short">ieml.org/3i4uhr</a>
 										</div>
 										<div class="col-md-4 col-md-offset-5">
 											<button type="button" class="btn btn-default editor-cancel" data-lang-switch="cancel"><?= trans_phrase('cancel', $lang); ?></button>

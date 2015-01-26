@@ -53,8 +53,9 @@ function handle_request($action, $req) {
 				$lang = strtolower($req['lang']);
 				
 				if (isset($req['id']) || isset($req['exp'])) {
+					$goodID = goodInt($req['id']);
+
 					if (isset($req['id'])) {
-						$goodID = goodInt($req['id']);
 						$ret = Conn::queryArray("
 							SELECT
 								prim.pkExpressionPrimary as id, prim.strExpression as expression,
@@ -115,51 +116,7 @@ function handle_request($action, $req) {
 			$asserts_ret = assert_arr(array('search', 'lang', 'library'), $req);
 			
 			if (TRUE === $asserts_ret) {
-				$filter_str = '';
-				$join_str = '';
-				
-				if (array_key_exists('search', $req) && strlen($req['search']) > 0) {
-					$filter_str .= " AND (strExpression LIKE '%".goodString($req['search'])."%' OR sublang.strExample LIKE '%".goodString($req['search'])."%') ";
-				}
-				if (array_key_exists('layer', $req) && strlen($req['layer']) > 0) {
-					$filter_str .= " AND intLayer = ".goodInt($req['layer'])." ";
-				}
-				if (array_key_exists('class', $req) && strlen($req['class']) > 0) {
-					$filter_str .= " AND enumClass = '".goodString($req['class'])."' ";
-				}
-				if (array_key_exists('keys', $req) && strlen($req['keys']) > 0 && $req['keys'] == 'keys') {
-					$filter_str .= " AND enumCategory = 'Y' ";
-				}
-
-				$ret = Conn::queryArrays("
-					SELECT
-						pkExpressionPrimary AS id, strExpression AS expression,
-						prim.intSetSize, prim.intLayer, prim.strFullBareString,
-						enumCategory, enumDeleted, sublang.strExample AS example,
-						(
-							SELECT GROUP_CONCAT(fkLibrary SEPARATOR ',')
-							FROM library_to_expression_primary
-							WHERE fkExpressionPrimary = pkExpressionPrimary
-							GROUP BY fkExpressionPrimary
-						) AS fkLibrary
-					FROM expression_primary prim
-					JOIN expression_data sublang
-						ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
-					JOIN library_to_expression_primary ltoep
-						ON prim.pkExpressionPrimary = ltoep.fkExpressionPrimary
-					WHERE prim.enumDeleted = 'N'
-					AND ltoep.fkLibrary = ".goodInt($req['library'])."
-					AND strLanguageISO6391 = '".goodString($req['lang'])."'
-					".$filter_str."
-					ORDER BY expression");
-
-				usort($ret, 'expression_sort_cmp');
-
-				for ($i = 0; $i < count($ret); $i++) {
-					$ret[$i]['fkLibrary'] = explode(',', $ret[$i]['fkLibrary']);
-				}
-				
-				$request_ret = $ret;
+				require_once(__DIR__ . '/ajax/searchDictionary.php');
 			} else {
 				$request_ret = assert_format($asserts_ret);
 			}
@@ -184,80 +141,7 @@ function handle_request($action, $req) {
 			$asserts_ret = assert_arr(array('enumCategory', 'exp', 'example', 'descriptor', 'lang', 'id', 'enumShowEmpties', 'iemlEnumComplConcOff', 'iemlEnumSubstanceOff'), $req);
 			
 			if (TRUE === $asserts_ret) {
-				$lang = strtolower($req['lang']);
-
-				$parse_res = IEMLParser::AST_or_FAIL($req['exp']);
-
-				if ($parse_res['resultCode'] == 0) {
-					$oldState = Conn::queryArray("
-						SELECT
-							pkExpressionPrimary AS id, strExpression as expression, enumCategory
-						FROM expression_primary
-						WHERE pkExpressionPrimary = ".goodInt($req['id']));
-					$oldExample = Conn::queryArrays("
-						SELECT pkExpressionData
-						FROM expression_data
-						WHERE strLanguageISO6391 = '".goodString($lang)."'
-						AND fkExpressionPrimary = ".goodInt($req['id']));
-					
-					$ret = array(
-						'id' => $req['id'],
-						'expression' => $req['exp'],
-						'enumCategory' => $req['enumCategory'],
-						'example' => $req['example'],
-						'descriptor' => $req['descriptor'],
-						'enumCompConc' => $req['iemlEnumComplConcOff'],
-						'strEtymSwitch' => $req['iemlEnumSubstanceOff'].$req['iemlEnumAttributeOff'].$req['iemlEnumModeOff'],
-						'enumShowEmpties' => $req['enumShowEmpties'],
-						'tables' => array()
-					);
-					
-					if (count($oldExample) > 0) {
-						Conn::query("
-							UPDATE expression_data
-							SET
-								strExample = '".goodString($req['example'])."',
-								strDescriptor = '".goodString($req['descriptor'])."'
-							WHERE fkExpressionPrimary = ".goodInt($req['id'])."
-							AND   strLanguageISO6391 = '".goodString($lang)."' LIMIT 1");
-					} else {
-						Conn::query("
-							INSERT INTO expression_data
-								(fkExpressionPrimary, strExample, strDescriptor, strLanguageISO6391)
-							VALUES
-								(".goodInt($req['id']).", '".goodString($req['example'])."', '".goodString($req['descriptor'])."', '".goodString($lang)."')");
-					}
-					
-					Conn::query("
-						UPDATE expression_primary
-						SET
-							enumCategory = '".goodString($req['enumCategory'])."',
-							strExpression = '".goodString($req['exp'])."',
-							intSetSize = ".$parse_res['AST']->getSize().",
-							intLayer = ".$parse_res['AST']->getLayer().",
-							strFullBareString = '".goodString($parse_res['AST']->fullExpand()->bareStr())."',
-							enumClass = '".goodString(IEMLParser::getClass($req['exp']))."',
-							enumShowEmpties = '".goodString($req['enumShowEmpties'])."',
-							enumCompConc = '".invert_bool($req['iemlEnumComplConcOff'], 'Y', 'N')."',
-							strEtymSwitch = '".invert_bool($req['iemlEnumSubstanceOff'], 'Y', 'N')
-											.invert_bool($req['iemlEnumAttributeOff'], 'Y', 'N')
-											.invert_bool($req['iemlEnumModeOff'], 'Y', 'N')."'
-						WHERE pkExpressionPrimary = ".goodInt($req['id']));
-				
-					if ($ret['enumCategory'] == 'Y' && $oldState['enumCategory'] == 'N') {
-						ensure_table_for_key($ret);
-					}
-					
-					$ret = getTableForElement($ret, goodInt($ret['id']), $req);
-				} else {
-					$ret = array(
-						'result' => 'error',
-						'resultCode' => 1,
-						'error' => '"'.$req['exp'].'" is not a valid IEML string'
-					);
-				}
-				
-				$request_ret = $ret;
+				require_once(__DIR__ . '/ajax/editDictionary.php');
 			} else {
 				$request_ret = assert_format($asserts_ret);
 			}
@@ -268,61 +152,19 @@ function handle_request($action, $req) {
 			$asserts_ret = assert_arr(array('exp', 'lang', 'library', 'enumCategory', 'example', 'descriptor', 'enumShowEmpties'), $req);
 			
 			if (TRUE === $asserts_ret) {
-				$lang = strtolower($req['lang']);
-
-				$parse_res = IEMLParser::AST_or_FAIL($req['exp']);
-
-				if ($parse_res['resultCode'] == 0) {
-					$set_size = $parse_res['AST']->getSize();
-					$layer = $parse_res['AST']->getLayer();
-					$bare_str = $parse_res['AST']->fullExpand()->bareStr();
-					$class = IEMLParser::getClass($req['exp']);
-
-					Conn::query("
-						INSERT INTO expression_primary
-							(strExpression, enumCategory, intSetSize, intLayer, strFullBareString, enumClass)
-						VALUES
-							('".goodString($req['exp'])."', '".goodString($req['enumCategory'])."', ".$set_size.", ".$layer.", '".goodString($bare_str)."', '".goodString($class)."')");
-							
-					$ret = array(
-						'id' => Conn::getId(),
-						'expression' => $req['exp'],
-						'enumCategory' => $req['enumCategory'],
-						'example' => $req['example'],
-						'descriptor' => $req['descriptor'],
-						'enumShowEmpties' => $req['enumShowEmpties'],
-						'intSetSize' => $set_size,
-						'intLayer' => $layer,
-						'strFullBareString' => $bare_str,
-						'enumClass' => $class
-					);
-
-					Conn::query("
-						INSERT INTO expression_data
-							(fkExpressionPrimary, strExample, strDescriptor, strLanguageISO6391)
-						VALUES
-							(".goodInt($ret['id']).", '".goodString($req['example'])."', '".goodString($req['descriptor'])."', '".goodString($lang)."')");
-
-					//TODO: handle error if unable to add to library
-					handle_request('addExpressionToLibrary', array(
-						'id' => $ret['id'],
-						'library' => $req['library']
-					));
-					
-					if ($req['enumCategory'] == 'Y') {
-						ensure_table_for_key($ret);
-					}
-					
-					$ret = getTableForElement($ret, goodInt($ret['id']), $req);
-					
-					$request_ret = $ret;
-				} else {
-					$ret = array(
-						'result' => 'error',
-						'resultCode' => 1,
-						'error' => '"'.$req['exp'].'" is not a valid IEML string'
-					);
-				}
+				require_once(__DIR__ . '/ajax/newDictionary.php');
+			} else {
+				$request_ret = assert_format($asserts_ret);
+			}
+			
+			break;
+			
+		case 'newVisualExpression':
+			$asserts_ret = assert_arr(array('editor_array', 'lang', 'library', 'example'), $req);
+			
+			if (TRUE === $asserts_ret) {
+				//NOTE: this terrible language construct is used because if complex program control in the file
+				$request_ret = require(__DIR__ . '/ajax/newVisualExpression.php');
 			} else {
 				$request_ret = assert_format($asserts_ret);
 			}
@@ -520,15 +362,32 @@ function handle_request($action, $req) {
 			break;
 		
 		case 'addExpressionToLibrary':
-			$asserts_ret = assert_arr(array('id', 'library'), $req);
+			$asserts_ret = assert_arr(array('library'), $req);
 			
 			if (TRUE === $asserts_ret) {
-				Conn::query("
-					INSERT INTO library_to_expression_primary
-						(fkLibrary, fkExpressionPrimary)
-					VALUES
-						(" . goodInt($req['library']) . ", " . goodInt($req['id']) . ")
+				if (!isset($req['id']) && !isset($req['rel_id'])) {
+					$request_ret = array(
+						'result' => 'error',
+						'resultCode' => 1,
+						'error' => "Neither 'id' nor 'rel_id' were specified."
+					);
+				}
+
+				if (isset($req['id'])) {
+					Conn::query("
+						INSERT INTO library_to_expression
+							(fkLibrary, fkExpressionPrimary)
+						VALUES
+							(" . goodInt($req['library']) . ", " . goodInt($req['id']) . ")
 					");
+				} else {
+					Conn::query("
+						INSERT INTO library_to_expression
+							(fkLibrary, fkExpressionPrimary)
+						VALUES
+							(" . goodInt($req['library']) . ", " . goodInt($req['rel_id']) . ")
+					");
+				}
 				
 				$request_ret = array(
 					'result' => 'success',
