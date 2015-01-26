@@ -485,7 +485,7 @@
 	IEMLApp.recieveVisualExpression = function(responseData) {
 		var $link = $('.editor-short');
 
-		$link.attr('href', '//' + responseData.shortUrl);
+		$link.attr('href', '//' + window.location.host + '/' + responseData.shortUrl);
 		$link.html(window.location.host + '/' + responseData.shortUrl);
 
 		$('.editor-drawer [name="rel-id"]').val(responseData.rel_id);
