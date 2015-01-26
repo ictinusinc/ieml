@@ -134,10 +134,23 @@ Conn::query('
 	INSERT INTO relational_expression
 		(vchExpression, vchExample, enumCompositionType, intLayer)
 	VALUES
-		(\'' . goodString($str_expression) . '\', \'' . goodString($req['example']) . '\', \'' . $composition_type . '\', ' . (is_null($int_layer) ? 'NULL' : '\'' . $int_layer . '\'') .
-'');
+		(\'' . goodString($str_expression) . '\',
+			\'' . goodString($req['example']) . '\',
+			\'' . $composition_type . '\',
+			' . (is_null($int_layer) ? 'NULL' : '\'' . $int_layer . '\'') . 
+		')'
+);
 
 $expression_id = Conn::getId();
+
+$short_url = URLShortener::shorten_url('rel-view/' . $expression_id);
+
+//update expression with short url
+Conn::query('
+	UPDATE relational_expression
+	SET vchShortUrl = \'' . goodString($short_url) . '\'
+	WHERE pkRelationalExpression = ' . $expression_id
+);
 
 //run through array once more to insert elements into DB
 foreach ($insertables as $i => $to_insert) {
@@ -158,5 +171,6 @@ return array(
 	'rel_id' => $expression_id,
 	'expression' => $str_expression,
 	'example' => $req['example'],
-	'layer' => $int_layer
+	'layer' => $int_layer,
+	'shortUrl' => $short_url
 );

@@ -1,12 +1,13 @@
 <?php
 
 require_once('includes/config.php');
-require_once(APPROOT.'/includes/ieml_parser/DebugLog.class.php');
-require_once(APPROOT.'/includes/functions.php');
-require_once(APPROOT.'/includes/table_related/table_functions.php');
-require_once(APPROOT.'/includes/common_functions.php');
-require_once(APPROOT.'/includes/ieml_parser/IEMLParser.class.php');
-require_once(APPROOT.'/includes/ieml_parser/IEMLScriptGen.class.php');
+require_once(APPROOT . '/includes/ieml_parser/DebugLog.class.php');
+require_once(APPROOT . '/includes/functions.php');
+require_once(APPROOT . '/includes/table_related/table_functions.php');
+require_once(APPROOT . '/includes/common_functions.php');
+require_once(APPROOT . '/includes/ieml_parser/IEMLParser.class.php');
+require_once(APPROOT . '/includes/ieml_parser/IEMLScriptGen.class.php');
+require_once(APPROOT . '/includes/URLShortener.class.php');
 
 //point debug output to nowhere
 Devlog::output_stream(NULL);
@@ -46,6 +47,27 @@ function handle_request($action, $req) {
 	$request_ret = NULL;
 	
 	switch ($action) {
+		case 'relationalExpression':
+			$asserts_ret = assert_arr(array('id'), $req);
+			
+			if (TRUE === $asserts_ret) {
+				$ret = Conn::queryArray("
+					SELECT
+						pkRelationalExpression AS id, vchExpression AS expression,
+						NULL AS intSetSize, relexp.intLayer, NULL AS strFullBareString,
+						NULL AS enumCategory, relexp.enumDeleted, relexp.vchExample AS example,
+						relexp.vchShortUrl AS shortUrl
+					FROM relational_expression relexp
+					JOIN library_to_expression ltoep
+						ON relexp.pkRelationalExpression = ltoep.fkRelationalExpression
+					WHERE relexp.pkRelationalExpression = " . goodInt($req['id']));
+
+				$request_ret = $ret;
+			} else {
+				$request_ret = assert_format($asserts_ret);
+			}
+			break;
+
 		case 'expression':
 			$asserts_ret = assert_arr(array('lang'), $req);
 			
@@ -383,7 +405,7 @@ function handle_request($action, $req) {
 				} else {
 					Conn::query("
 						INSERT INTO library_to_expression
-							(fkLibrary, fkExpressionPrimary)
+							(fkLibrary, fkRelationalExpression)
 						VALUES
 							(" . goodInt($req['library']) . ", " . goodInt($req['rel_id']) . ")
 					");

@@ -6,6 +6,17 @@ class URLShortener
 {
 	const ALLOWED_CHARS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 	const DB_TABLE_NAME = 'short_url';
+	const DB_CREATE_TABLE = '
+		CREATE TABLE DB_TABLE_NAME (
+			id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+			long_url VARCHAR(255) NOT NULL,
+			short_url VARCHAR(6) NULL DEFAULT NULL,
+			hits BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
+			created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+			PRIMARY KEY (id)
+		) DEFAULT CHARSET=utf8;
+	';
 
 	public static function short_url_from_id($id, $chars = URLShortener::ALLOWED_CHARS)
 	{
@@ -53,7 +64,7 @@ class URLShortener
 				. ' (long_url) VALUES'
 				. ' (\'' . goodString($long_url) . '\')');
 			$id = Conn::getId();
-			$short_url = $this->short_url_from_id($id);
+			$short_url = URLShortener::short_url_from_id($id);
 			Conn::query('UPDATE ' . URLShortener::DB_TABLE_NAME . ' SET '
 				. ' short_url = \'' . goodString($short_url) . '\''
 				. ' WHERE id = ' . $id);

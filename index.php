@@ -92,9 +92,10 @@ require_once(APPROOT.'/includes/header.php');
 									</div>
 									<div class="row">
 										<div class="col-md-3">
-											<a href="//ieml.org/3i4uhr" class="btn btn-link editor-short">ieml.org/3i4uhr</a>
+											<a href="" class="btn btn-link editor-short"></a>
 										</div>
 										<div class="col-md-4 col-md-offset-5">
+											<input type="hidden" name="rel-id" />
 											<button type="button" class="btn btn-default editor-cancel" data-lang-switch="cancel"><?= trans_phrase('cancel', $lang); ?></button>
 											<button type="button" class="btn btn-default editor-save" data-lang-switch="save"><?= trans_phrase('save', $lang); ?></button>
 										</div>

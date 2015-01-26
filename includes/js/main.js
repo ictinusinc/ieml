@@ -92,7 +92,7 @@
 			'layer': 'layer-([0-6])',
 			'library': 'library-([1-9][0-9]*)',
 			'lang': '(en|fr)',
-			'mode': '(search|view|users|login)'
+			'mode': '(search|view|users|login|rel-view)'
 		};
 		var ret = {};
 
@@ -170,6 +170,8 @@
 			} else {
 				IEMLApp.submit({ 'a': 'expression', 'library': IEMLApp.library, 'lang': IEMLApp.lang, 'id': path_last });
 			}
+		} else if ($settings.mode == 'rel-view') {
+			IEMLApp.submit({ 'a': 'expression', 'library': IEMLApp.library, 'lang': IEMLApp.lang, 'id': path_last });
 		} else {
 			switch_to_list();
 		}
@@ -313,6 +315,7 @@
 					}
 
 					$('#search-library-select').html(libHtml);
+					$('#search-library-select').val(IEMLApp.library);
 				});
 			} else if (rvars.a == 'searchDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
@@ -376,7 +379,17 @@
 				});
 			} else if (rvars.a == 'newVisualExpression') {
 				$.getJSON(url, rvars, function(responseData) {
-					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars.lang, 'library-' + rvars.library, 'view', responseData.expression]));
+
+					//trigger list reload
+					$('#search-form').trigger('submit');
+					
+					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars.lang, 'library-' + rvars.library, 'rel-view', responseData.rel_id]));
+					
+					IEMLApp.recieveVisualExpression(responseData);
+				});
+			} else if (rvars.a == 'relationalExpression') {
+				$.getJSON(url, rvars, function(responseData) {
+					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars.lang, 'library-' + rvars.library, 'rel-view', responseData.rel_id]));
 					
 					IEMLApp.recieveVisualExpression(responseData);
 				});
@@ -414,7 +427,6 @@
 				}
 			} else if (rvars.a == 'addExpressionToLibrary') {
 				$.getJSON(url, rvars, function(responseData) {
-
 				});
 			} else {
 				return false;
@@ -471,7 +483,12 @@
 	};
 
 	IEMLApp.recieveVisualExpression = function(responseData) {
-		//responseData.id
+		var $link = $('.editor-short');
+
+		$link.attr('href', '//' + responseData.shortUrl);
+		$link.html(window.location.host + '/' + responseData.shortUrl);
+
+		$('.editor-drawer [name="rel-id"]').val(responseData.rel_id);
 	};
 	
 	IEMLApp.receiveUserList = function (responseData) {
@@ -824,10 +841,10 @@
 			'<td>' + obj.expression + '</td>' +
 			'<td><div class="draggable" data-script-val="' + obj.expression + '" data-is-script="true">' + (obj.example ? obj.example : '') + '</div></td>' +
 			'<td>' +
-				'<a href="/ajax.php?id=' + obj.id + '&a=searchDictionary"' +
+				'<a href="javascript:void(0)"' +
 					'data-exp="' + obj.expression + '"' +
 					'data-id="' + obj.id + '"' +
-					'class="btn btn-default editExp"><span class="glyphicon glyphicon-pencil"></span></a>' +
+					'class="btn btn-default ' + (obj.enumExpressionType == 'relational' ? 'editRelExp' : 'editExp') + '"><span class="glyphicon glyphicon-pencil"></span></a>' +
 				(IEMLApp.user ?
 					'<div class="btn-group">' +
 						'<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">' +
@@ -968,6 +985,15 @@
 				'lang': IEMLApp.lang,
 				'library': IEMLApp.library,
 				'exp': $this.data('exp'),
+				'id': $this.data('id')
+			});
+			
+			return false;
+		}).on('click', '.editRelExp', function() {
+			var $this = $(this);
+			
+			IEMLApp.submit({
+				'a': 'relationalExpression',
 				'id': $this.data('id')
 			});
 			
