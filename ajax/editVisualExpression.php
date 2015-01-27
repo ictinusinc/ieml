@@ -1,6 +1,7 @@
 <?php
 
 $processed_result = process_editor_array($req['editor_array']);
+$expression_id = goodInt($req['rel_id']);
 
 if ($processed_result['result'] == 'error') {
 	return $processed_result;
@@ -8,25 +9,18 @@ if ($processed_result['result'] == 'error') {
 
 //insert into relational_expression table once we know it's cool
 Conn::query('
-	INSERT INTO relational_expression
-		(vchExpression, vchExample, enumCompositionType, intLayer)
-	VALUES
-		(\'' . goodString($processed_result['str_expression']) . '\',
-			\'' . goodString($req['example']) . '\',
-			\'' . $processed_result['composition_type'] . '\',
-			' . (is_null($int_layer) ? 'NULL' : '\'' . $processed_result['int_layer'] . '\'') . 
-		')'
+	UPDATE relational_expression
+	SET
+		vchExpression = \'' . goodString($processed_result['str_expression']) . '\' ,
+		vchExample = \'' . goodString($req['example']) . '\' ,
+		enumCompositionType = \'' . $processed_result['composition_type'] . '\' ,
+		intLayer = ' . (is_null($int_layer) ? 'NULL' : '\'' . $processed_result['int_layer'] . '\'') . '
+	WHERE pkRelationalExpression = ' . $expression_id
 );
 
-$expression_id = Conn::getId();
-
-$short_url = URLShortener::shorten_url('rel-view/' . $expression_id);
-
-//update expression with short url
 Conn::query('
-	UPDATE relational_expression
-	SET vchShortUrl = \'' . goodString($short_url) . '\'
-	WHERE pkRelationalExpression = ' . $expression_id
+	DELETE FROM relational_expression_tree
+	WHERE fkParentRelation = ' . $expression_id
 );
 
 //run through array once more to insert elements into DB
@@ -37,11 +31,6 @@ foreach ($processed_result['insertables'] as $i => $to_insert) {
 		insert_relation($expression_id, $to_insert['pkRelationalExpression'], $i);
 	}
 }
-
-handle_request('addExpressionToLibrary', array(
-	'rel_id' => $expression_id,
-	'library' => $req['library']
-));
 
 return array(
 	'result' => 'success',

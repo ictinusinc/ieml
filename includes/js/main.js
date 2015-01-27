@@ -52,7 +52,6 @@
 	};
 
 	IEMLApp.onSort = function($this) {
-		//TODO: do realtime checking on editor script
 		var $children = $this.children();
 		var only_script = $children.toArray().reduce(function(acc, el) {
 				return acc && !!$(el).data('is-script');
@@ -75,7 +74,6 @@
 				return acc && !!$(el).data('is-script');
 			}, true);
 
-		//TODO: fix this so it works with category concats
 		return elements.get()
 			.reduce(function(acc, el, i) {
 				if (i > 0 && only_script) { acc.push('/'); }
@@ -170,8 +168,8 @@
 			} else {
 				IEMLApp.submit({ 'a': 'expression', 'library': IEMLApp.library, 'lang': IEMLApp.lang, 'id': path_last });
 			}
-		} else if ($settings.mode == 'rel-view') {
-			IEMLApp.submit({ 'a': 'expression', 'library': IEMLApp.library, 'lang': IEMLApp.lang, 'id': path_last });
+		} else if (settings.mode == 'rel-view') {
+			IEMLApp.submit({ 'a': 'relationalExpression', 'library': IEMLApp.library, 'id': path_last });
 		} else {
 			switch_to_list();
 		}
@@ -377,8 +375,25 @@
 					
 					IEMLApp.receiveExpression(responseData);
 				});
+			} else if (rvars.a == 'editVisualExpression') {
+				$.getJSON(url, rvars, function(responseData) {
+					if (responseData.result == 'error') {
+						$('.ieml-validation-result, .result-error-icon').removeClass('hidden');
+						$('.result-error').html(responseData.error);
+						return;
+					} else {
+						$('.ieml-validation-result, .result-error-icon').addClass('hidden');
+					}
+				});
 			} else if (rvars.a == 'newVisualExpression') {
 				$.getJSON(url, rvars, function(responseData) {
+					if (responseData.result == 'error') {
+						$('.ieml-validation-result, .result-error-icon').removeClass('hidden');
+						$('.result-error').html(responseData.error);
+						return;
+					} else {
+						$('.ieml-validation-result, .result-error-icon').addClass('hidden');
+					}
 
 					//trigger list reload
 					$('#search-form').trigger('submit');
@@ -389,15 +404,28 @@
 				});
 			} else if (rvars.a == 'relationalExpression') {
 				$.getJSON(url, rvars, function(responseData) {
-					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars.lang, 'library-' + rvars.library, 'rel-view', responseData.rel_id]));
+					IEMLApp.library = responseData.fkLibrary[0];
+
+					$('#search-form #search-library-select').val(IEMLApp.library);
+
+					//TODO: rework this this so that a call to populate the search result list does not overwrite the URL
+					IEMLApp.submit({ 'a': 'searchDictionary', 'library': IEMLApp.library, 'lang': IEMLApp.lang, 'search': '' });
+
+					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars.lang, 'library-' + IEMLApp.library, 'rel-view', responseData.rel_id]));
 					
 					IEMLApp.recieveVisualExpression(responseData);
 				});
 			} else if (rvars.a == 'deleteDictionary') {
 				$.getJSON(url, rvars, function(responseData) {
-					History.back(); //@TODO: find a more elegant solution
+					History.back();
 					
-					$('[data-result-id="'+$('#desc-result-id').val()+'"]').remove();
+					$('[data-result-id="' + rvars.id + '"][data-expression-type="basic"]').remove();
+					
+					$('#iemlConfirmModal').modal('hide');
+				});
+			} else if (rvars.a == 'deleteVisualExpression') {
+				$.getJSON(url, rvars, function(responseData) {
+					$('[data-result-id="' + rvars.rel_id + '"][data-expression-type="relational"]').remove();
 					
 					$('#iemlConfirmModal').modal('hide');
 				});
@@ -463,7 +491,7 @@
 		
 		switch_to_list();
 
-		if (reqObj) {
+		if (reqObj && IEMLApp.userLibraries) {
 			var selected_option = IEMLApp.userLibraries.filter(function(el) {
 				return el.pkLibrary == reqObj.library;
 			})[0];
@@ -483,12 +511,10 @@
 	};
 
 	IEMLApp.recieveVisualExpression = function(responseData) {
-		var $link = $('.editor-short');
+		fillEditor(responseData);
 
-		$link.attr('href', '//' + window.location.host + '/' + responseData.shortUrl);
-		$link.html(window.location.host + '/' + responseData.shortUrl);
-
-		$('.editor-drawer [name="rel-id"]').val(responseData.rel_id);
+		switch_to_list();
+		enable_editor();
 	};
 	
 	IEMLApp.receiveUserList = function (responseData) {
@@ -705,6 +731,54 @@
 		
 		return ret;
 	}
+
+	function clearEditor() {
+		$('.editor-proper').empty();
+		$('.editor-example-input').val('');
+		$('.editor-drawer [name="rel-id"]').val(null);
+
+		$('.editor-short').attr('href', '').html('');
+	}
+
+	function fillEditor(info) {
+		clearEditor();
+
+		var plus_ = $('[data-script-val="+"]');
+		var times_ = $('[data-script-val="*"]');
+		var empty_ = $('[data-script-val="E"]');
+		var children = info.children;
+		var $editor = $('.editor-proper');
+		var $link = $('.editor-short');
+
+		$link.attr('href', '//' + window.location.host + '/' + info.shortUrl);
+		$link.html(window.location.host + '/' + info.shortUrl);
+
+		$('.editor-drawer [name="rel-id"]').val(info.rel_id);
+		$('.editor-example-input').val(info.example);
+
+		var i, $inplace_el, child;
+		for (i = 0; i < children.length; i++) {
+			child = children[i];
+
+			if (i > 0) {
+				if (info.enumCompositionType == '+') {
+					$editor.append(plus_.clone());
+				} else if (info.enumCompositionType == '*') {
+					$editor.append(times_.clone());
+				}
+			}
+
+			if (["E:", "E:.", "E:.-", "E:.-'", "E:.-',", "E:.-',_", "E:.-',_;"].indexOf(child.expression) > -1) {
+				$inplace_el = empty_.clone();
+			} else {
+				$inplace_el = $(formatDraggableScript(child));
+			}
+
+			$editor.append($inplace_el);
+		}
+
+		IEMLApp.onSort($('.editor-proper'));
+	}
 	
 	function fillForm(info) {
 		if ($('#ieml-desc-result-edit').hasClass('disabled')) {
@@ -835,27 +909,34 @@
 	}
 	
 	function formatResultRow(obj) {
-		return '<tr data-key="' + (obj.enumCategory == 'Y' ? 'true' : 'false') + '"' +
-			'data-layer="'+(obj.intLayer >= 0 ? obj.intLayer : '-1') + '"' +
-			'data-result-id="' + obj.id + '">' +
+		var relative_libraries = [];
+
+		if (IEMLApp.user && IEMLApp.userLibraries) {
+			for (var i = 0; i < IEMLApp.userLibraries.length; i++) {
+				if (obj.fkLibrary.indexOf(IEMLApp.userLibraries[i].pkLibrary) < 0) {
+					relative_libraries.push(IEMLApp.userLibraries[i]);
+				}
+			}
+		}
+
+		return '<tr data-key="' + (obj.enumCategory == 'Y' ? 'true' : 'false') + '" ' +
+			'data-layer="'+(obj.intLayer >= 0 ? obj.intLayer : '-1') + '" ' +
+			'data-result-id="' + obj.id + '" ' +
+			'data-expression-type="' + obj.enumExpressionType + '">' +
 			'<td>' + obj.expression + '</td>' +
-			'<td><div class="draggable" data-script-val="' + obj.expression + '" data-is-script="true">' + (obj.example ? obj.example : '') + '</div></td>' +
+			'<td>' + formatDraggableScript(obj) + '</td>' +
 			'<td>' +
 				'<a href="javascript:void(0)"' +
 					'data-exp="' + obj.expression + '"' +
 					'data-id="' + obj.id + '"' +
 					'class="btn btn-default ' + (obj.enumExpressionType == 'relational' ? 'editRelExp' : 'editExp') + '"><span class="glyphicon glyphicon-pencil"></span></a>' +
-				(IEMLApp.user ?
+				(relative_libraries.length > 0 ?
 					'<div class="btn-group">' +
 						'<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">' +
 							'<span class="glyphicon glyphicon-plus">&nbsp;</span><span class="caret"></span>' +
 						'</button>' +
 						'<ul class="dropdown-menu" role="menu">' +
-							array_map(IEMLApp.userLibraries, function(i, lib) {
-								if (array_indexOf(obj.fkLibrary, lib.pkLibrary) != -1) {
-									return '';
-								}
-
+							array_map(relative_libraries, function(i, lib) {
 								return '<li><a href="javascript:void(0);" class="addExpressionToLibrary"' + 
 								'data-exp-id="' + obj.id + '"' +
 								'data-lib-id="' + lib.pkLibrary + '">' + lib.strName + '</a></li>';
@@ -863,8 +944,15 @@
 						'</ul>' +
 					'</div>'
 				: '') +
+				'<a href="javascript:void(0)"' +
+					'data-id="' + obj.id + '"' +
+					'class="btn btn-danger ' + (obj.enumExpressionType == 'relational' ? 'delRelExp' : 'delExp') + '"><span class="glyphicon glyphicon-trash"></span></a>' +
 			'</td>' +
 			'</tr>';
+	}
+
+	function formatDraggableScript(obj) {
+		return '<div class="draggable" data-script-val="' + obj.expression + '" data-is-script="true">' + (obj.example ? obj.example : '') + '</div>';
 	}
 	
 	function formatUserRow(user) {
@@ -1170,17 +1258,28 @@
 			});
 		}).on('click', '.editor-save', function() {
 			var $editor = $('.editor-proper');
+			var existing_id = $('.editor-drawer input[name="rel-id"]').val();
 			var reqVars = {
-				'a': 'newVisualExpression',
 				'editor_array': IEMLApp.construct_editor_array($editor.children()),
 				'lang': $('#search-lang-select').val(),
 				'library': $('#search-library-select').val(),
 				'example': $('.editor-example-input').val()
 			};
 
-			IEMLApp.submit(reqVars);
-		}).on('.editor-cancel', function() {
+			if (existing_id) {
+				reqVars.a = 'editVisualExpression';
+				reqVars.rel_id = existing_id;
+			} else {
+				reqVars.a = 'newVisualExpression';
+			}
 
+			IEMLApp.submit(reqVars);
+		}).on('click', '.editor-cancel', function() {
+			clearEditor();
+		}).on('click', '.delRelExp', function() {
+			IEMLApp.submit({ 'a': 'deleteVisualExpression', 'rel_id': $(this).data('id') });
+		}).on('click', '.delExp', function() {
+			IEMLApp.submit({ 'a': 'deleteDictionary', 'rel_id': $(this).data('id') });
 		});
 		
 		if (window.location.pathname.length == 1) {

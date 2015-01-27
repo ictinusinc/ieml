@@ -46,7 +46,9 @@ header('Content-Type: text/html; charset=utf-8;');
 					<div class="col-sm-3">
 						<div class="row">
 							<div class="col-sm-6">
-								<select id="search-library-select" name="library" class="form-control input-sm"></select>
+								<select id="search-library-select" name="library" class="form-control input-sm">
+									<option value="1"></option>
+								</select>
 							</div>
 							<div class="col-sm-6">
 								<select id="search-lang-select" name="lang" class="form-control input-sm">

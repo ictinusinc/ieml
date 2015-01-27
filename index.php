@@ -47,13 +47,11 @@ require_once(APPROOT.'/includes/header.php');
 						<div class="row">
 							<div class="col-md-12">
 								<span class="pull-left ieml-validation-result hidden">
-									<div class="result-success-icon hidden"><span class="glyphicon glyphicon-ok"></span></div>
 									<div class="result-error-icon hidden"><span class="glyphicon glyphicon-remove">&nbsp;</span></div>
 								</span>
 							</div>
 							<div class="col-md-12">
 								<span class="pull-left ieml-validation-result hidden">
-									<span class="result-success"></span>
 									<span class="result-error"></span>
 								</span>
 							</div>

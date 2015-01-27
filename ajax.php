@@ -7,6 +7,7 @@ require_once(APPROOT . '/includes/table_related/table_functions.php');
 require_once(APPROOT . '/includes/common_functions.php');
 require_once(APPROOT . '/includes/ieml_parser/IEMLParser.class.php');
 require_once(APPROOT . '/includes/ieml_parser/IEMLScriptGen.class.php');
+require_once(APPROOT . '/includes/visual_editor_functions.php');
 require_once(APPROOT . '/includes/URLShortener.class.php');
 
 //point debug output to nowhere
@@ -51,16 +52,54 @@ function handle_request($action, $req) {
 			$asserts_ret = assert_arr(array('id'), $req);
 			
 			if (TRUE === $asserts_ret) {
+				$goodID = goodInt($req['id']);
 				$ret = Conn::queryArray("
 					SELECT
-						pkRelationalExpression AS id, vchExpression AS expression,
-						NULL AS intSetSize, relexp.intLayer, NULL AS strFullBareString,
-						NULL AS enumCategory, relexp.enumDeleted, relexp.vchExample AS example,
-						relexp.vchShortUrl AS shortUrl
+						pkRelationalExpression AS rel_id, vchExpression AS expression,
+						enumCompositionType, relexp.intLayer, relexp.enumDeleted,
+						relexp.vchExample AS example, relexp.vchShortUrl AS shortUrl,
+						(
+							SELECT GROUP_CONCAT(fkLibrary SEPARATOR ',')
+							FROM library_to_expression
+							WHERE fkRelationalExpression = pkRelationalExpression
+							GROUP BY fkRelationalExpression
+						) AS fkLibrary
 					FROM relational_expression relexp
 					JOIN library_to_expression ltoep
 						ON relexp.pkRelationalExpression = ltoep.fkRelationalExpression
-					WHERE relexp.pkRelationalExpression = " . goodInt($req['id']));
+					WHERE relexp.pkRelationalExpression = " . $goodID);
+
+				$ret['fkLibrary'] = explode(',', $ret['fkLibrary']);
+
+				$children_query = Conn::queryArrays("
+					SELECT fkRelationalExpression, fkExpressionPrimary
+					FROM relational_expression_tree
+					WHERE fkParentRelation = " . $goodID . "
+					ORDER BY intOrder
+				");
+				$ret['children'] = array();
+
+				for ($i = 0; $i < count($children_query); $i++) {
+					$child = NULL;
+
+					if ($children_query[$i]['fkRelationalExpression']) {
+						$child = Conn::queryArray("
+							SELECT vchExpression as expression, vchExample as example
+							FROM relational_expression
+							WHERE pkRelationalExpression = " . $children_query[$i]['fkRelationalExpression'] . "
+						");
+					} else {
+						$child = Conn::queryArray("
+							SELECT strExpression as expression, sublang.strExample AS example
+							FROM expression_primary prim
+							LEFT JOIN expression_data sublang
+								ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
+							WHERE pkExpressionPrimary = " . $children_query[$i]['fkExpressionPrimary'] . "
+						");
+					}
+
+					$ret['children'][] = $child;
+				}
 
 				$request_ret = $ret;
 			} else {
@@ -87,7 +126,7 @@ function handle_request($action, $req) {
 								t_key.enumShowEmpties, t_key.enumCompConc, t_key.strEtymSwitch
 							FROM expression_primary prim
 							LEFT JOIN expression_data sublang
-							ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
+								ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
 							LEFT JOIN table_2d_ref t2dref ON prim.pkExpressionPrimary = t2dref.fkExpressionPrimary
 							LEFT JOIN table_2d_id t2did ON t2dref.fkTable2D = t2did.pkTable2D
 							LEFT JOIN expression_primary t_key ON t2did.fkExpression = t_key.pkExpressionPrimary
@@ -159,6 +198,19 @@ function handle_request($action, $req) {
 			
 			break;
 			
+		case 'deleteVisualExpression':
+			$asserts_ret = assert_arr(array('rel_id'), $req);
+
+			if (TRUE === $asserts_ret) {
+				Conn::query("UPDATE relational_expression SET enumDeleted = 'Y' WHERE pkRelationalExpression = ".goodInt($req['rel_id']));
+				
+				$request_ret = array('result' => 'success');
+			} else {
+				$request_ret = assert_format($asserts_ret);
+			}
+			
+			break;
+			
 		case 'editDictionary':
 			$asserts_ret = assert_arr(array('enumCategory', 'exp', 'example', 'descriptor', 'lang', 'id', 'enumShowEmpties', 'iemlEnumComplConcOff', 'iemlEnumSubstanceOff'), $req);
 			
@@ -187,6 +239,18 @@ function handle_request($action, $req) {
 			if (TRUE === $asserts_ret) {
 				//NOTE: this terrible language construct is used because if complex program control in the file
 				$request_ret = require(__DIR__ . '/ajax/newVisualExpression.php');
+			} else {
+				$request_ret = assert_format($asserts_ret);
+			}
+			
+			break;
+			
+		case 'editVisualExpression':
+			$asserts_ret = assert_arr(array('editor_array', 'lang', 'library', 'example'), $req);
+			
+			if (TRUE === $asserts_ret) {
+				//NOTE: this terrible language construct is used because if complex program control in the file
+				$request_ret = require(__DIR__ . '/ajax/editVisualExpression.php');
 			} else {
 				$request_ret = assert_format($asserts_ret);
 			}
@@ -421,7 +485,7 @@ function handle_request($action, $req) {
 			break;
 
 		default:
-			$request_ret = array('result' => 'error', 'error' => 'No such identifier: '.$ajax);
+			$request_ret = array('result' => 'error', 'error' => 'No such identifier: ' . $action);
 			
 			break;
 	}
