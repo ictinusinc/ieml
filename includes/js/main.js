@@ -384,6 +384,8 @@
 					} else {
 						$('.ieml-validation-result, .result-error-icon').addClass('hidden');
 					}
+					
+					IEMLApp.recieveVisualExpression(responseData);
 				});
 			} else if (rvars.a == 'newVisualExpression') {
 				$.getJSON(url, rvars, function(responseData) {
@@ -451,6 +453,17 @@
 				}
 			} else if (rvars.a == 'addExpressionToLibrary') {
 				$.getJSON(url, rvars, function(responseData) {
+					//remove link that added this expression to library
+					if (responseData.result != 'error') {
+						var $link = $('.addExpressionToLibrary[data-exp-id="' + rvars.id + '"][data-lib-id="' + rvars.library + '"]');
+						var $list = $link.parents('ul').eq();
+
+						$link.parent('li').remove();
+
+						if ($list.children().length === 0) {
+							$list.parents('.btn-group').eq(0).remove();
+						}
+					}
 				});
 			} else {
 				return false;
@@ -752,25 +765,27 @@
 		$('.editor-drawer [name="rel-id"]').val(info.rel_id);
 		$('.editor-example-input').val(info.example);
 
-		var i, $inplace_el, child;
-		for (i = 0; i < children.length; i++) {
-			child = children[i];
+		if (children) {
+			var i, $inplace_el, child;
+			for (i = 0; i < children.length; i++) {
+				child = children[i];
 
-			if (i > 0) {
-				if (info.enumCompositionType == '+') {
-					$editor.append(plus_.clone());
-				} else if (info.enumCompositionType == '*') {
-					$editor.append(times_.clone());
+				if (i > 0) {
+					if (info.enumCompositionType == '+') {
+						$editor.append(plus_.clone());
+					} else if (info.enumCompositionType == '*') {
+						$editor.append(times_.clone());
+					}
 				}
-			}
 
-			if (["E:", "E:.", "E:.-", "E:.-'", "E:.-',", "E:.-',_", "E:.-',_;"].indexOf(child.expression) > -1) {
-				$inplace_el = empty_.clone();
-			} else {
-				$inplace_el = $(formatDraggableScript(child));
-			}
+				if (["E:", "E:.", "E:.-", "E:.-'", "E:.-',", "E:.-',_", "E:.-',_;"].indexOf(child.expression) > -1) {
+					$inplace_el = empty_.clone();
+				} else {
+					$inplace_el = $(formatDraggableScript(child));
+				}
 
-			$editor.append($inplace_el);
+				$editor.append($inplace_el);
+			}
 		}
 
 		IEMLApp.onSort($('.editor-proper'));
@@ -922,10 +937,10 @@
 			'<td>' + obj.expression + '</td>' +
 			'<td>' + formatDraggableScript(obj) + '</td>' +
 			'<td>' +
-				'<a href="javascript:void(0)"' +
+				'<button type="button"' +
 					'data-exp="' + obj.expression + '"' +
 					'data-id="' + obj.id + '"' +
-					'class="btn btn-default ' + (obj.enumExpressionType == 'relational' ? 'editRelExp' : 'editExp') + '"><span class="glyphicon glyphicon-pencil"></span></a>' +
+					'class="btn btn-default ' + (obj.enumExpressionType == 'relational' ? 'editRelExp' : 'editExp') + '"><span class="glyphicon glyphicon-pencil"></span></button>' +
 				(relative_libraries.length > 0 ?
 					'<div class="btn-group">' +
 						'<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">' +
@@ -940,9 +955,9 @@
 						'</ul>' +
 					'</div>'
 				: '') +
-				'<a href="javascript:void(0)"' +
+				'<button type="button"' +
 					'data-id="' + obj.id + '"' +
-					'class="btn btn-danger ' + (obj.enumExpressionType == 'relational' ? 'delRelExp' : 'delExp') + '"><span class="glyphicon glyphicon-trash"></span></a>' +
+					'class="btn btn-default ' + (obj.enumExpressionType == 'relational' ? 'delRelExp' : 'delExp') + '"><span class="glyphicon glyphicon-trash"></span></button>' +
 			'</td>' +
 			'</tr>';
 	}
@@ -955,9 +970,11 @@
 		return '<tr>' +
 			'<td>'+user.strEmail+'</td>' +
 			'<td>'+user.enumType+'</td>' +
-			'<td>' + LightDate.date('Y-m-d H:i:s', LightDate.date_timezone_adjust(user.tsDateCreated*1000)) + '</td>' +
-			'<td><!--a href="/ajax.php?a=editUser&pkUser='+user.pkUser+'" class="editUser btn btn-default">Edit</a-->' +
-			'<a href="/ajax.php?a=delUser&pkUser=' + user.pkUser+'" class="delUser btn btn-default">Delete</a></td>' +
+			'<td>' + LightDate.date('Y-m-d H:i:s', LightDate.date_timezone_adjust(user.tsDateCreated * 1000)) + '</td>' +
+			'<td>' + 
+				//<!--a href="/ajax.php?a=editUser&pkUser='+user.pkUser+'" class="editUser btn btn-default">Edit</a-->' +
+				'<button type="button" href="javascript:void(0)" class="delUser btn btn-default" data-id="' + user.pkUser + '">Delete</button>' +
+			'</td>' +
 		'</tr>';
 	}
 	
@@ -1180,10 +1197,6 @@
 			$this.parents('div').eq(0).addClass('relation-sel-cell'); //TODO highlight line properly
 			
 			return false;
-		}).on('click', '#iemlConfirmModal #iemlConfirmYesModal', function() {
-			IEMLApp.submit({'a':'deleteDictionary', 'id':$('#desc-result-id').val()});
-			
-			return false;
 		}).on('click', '#ieml-view-users', function() {
 			IEMLApp.submit({'a': 'viewUsers', 'deleted': 'no'});
 			
@@ -1207,7 +1220,7 @@
 			return false;
 		}).on('click', '.delUser', function() {
 			var $this = $(this);
-			
+
 			showConfirmDialog('Are you sure?', function() {
 				IEMLApp.submit({ 'a': 'delUser', 'pkUser': $this.data('id') });
 			});
