@@ -14,7 +14,7 @@ Conn::query('
 		(\'' . goodString($processed_result['str_expression']) . '\',
 			\'' . goodString($req['example']) . '\',
 			\'' . $processed_result['composition_type'] . '\',
-			' . (is_null($int_layer) ? 'NULL' : '\'' . $processed_result['int_layer'] . '\'') . 
+			' . (is_null($processed_result['int_layer']) ? 'NULL' : '\'' . $processed_result['int_layer'] . '\'') . 
 		')'
 );
 
@@ -43,11 +43,6 @@ handle_request('addExpressionToLibrary', array(
 	'library' => $req['library']
 ));
 
-return array(
-	'result' => 'success',
-	'rel_id' => $expression_id,
-	'expression' => $processed_result['str_expression'],
-	'example' => $req['example'],
-	'layer' => $processed_result['int_layer'],
-	'shortUrl' => $short_url
-);
+return handle_request('relationalExpression', array(
+	'id' => $expression_id
+));

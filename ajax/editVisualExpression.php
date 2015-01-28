@@ -14,7 +14,7 @@ Conn::query('
 		vchExpression = \'' . goodString($processed_result['str_expression']) . '\' ,
 		vchExample = \'' . goodString($req['example']) . '\' ,
 		enumCompositionType = \'' . $processed_result['composition_type'] . '\' ,
-		intLayer = ' . (is_null($int_layer) ? 'NULL' : '\'' . $processed_result['int_layer'] . '\'') . '
+		intLayer = ' . (is_null($processed_result['int_layer']) ? 'NULL' : '\'' . $processed_result['int_layer'] . '\'') . '
 	WHERE pkRelationalExpression = ' . $expression_id
 );
 
@@ -32,11 +32,6 @@ foreach ($processed_result['insertables'] as $i => $to_insert) {
 	}
 }
 
-return array(
-	'result' => 'success',
-	'rel_id' => $expression_id,
-	'expression' => $processed_result['str_expression'],
-	'example' => $req['example'],
-	'layer' => $processed_result['int_layer'],
-	'shortUrl' => $short_url
-);
+return handle_request('relationalExpression', array(
+	'id' => $expression_id
+));
