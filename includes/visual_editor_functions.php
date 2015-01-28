@@ -130,10 +130,10 @@ function process_editor_array($editor_array) {
 		$str_expression .= IEMLParser::$LAYER_STRINGS[$int_layer];
 	}
 
-	return [
+	return array(
 		'insertables' => $insertables,
 		'str_expression' => $str_expression,
 		'composition_type' => $composition_type,
 		'int_layer' => $int_layer
-	];
+	);
 }
