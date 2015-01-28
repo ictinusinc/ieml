@@ -582,5 +582,3 @@ function fetch_etymology_from_AST($AST, $level = 0) {
 	
 	return $ret;
 }
-
-?>

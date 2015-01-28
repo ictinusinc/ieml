@@ -134,5 +134,3 @@ class IEMLScriptGen {
 		return $instance->generate();
 	}
 }
-
-?>

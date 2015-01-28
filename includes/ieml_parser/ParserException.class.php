@@ -47,5 +47,3 @@ class ParseException extends Exception {
 		return $out;
 	}
 }
-
-?>

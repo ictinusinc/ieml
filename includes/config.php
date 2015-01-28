@@ -28,5 +28,3 @@ define('WEBAPPROOT', WEBROOT . OFFROOT);
 define('SESSIONTABLE', 'sessions');
 
 $lang = ((array_key_exists('lang', $_REQUEST) && strtolower($_REQUEST['lang']) == 'fr') ? 'FR' : 'EN');
-
-?>

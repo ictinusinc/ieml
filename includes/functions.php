@@ -349,5 +349,3 @@ class Conn{
         return mysql_insert_id(Conn::$staticHandle);
     }
 }
-
-?>

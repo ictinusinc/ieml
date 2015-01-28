@@ -98,5 +98,3 @@ class URLShortener
 		return $long_url;
 	}
 }
-
-?>

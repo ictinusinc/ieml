@@ -43,6 +43,4 @@ for ($i=0; $i<count($expr); $i++) {
 
 }
 
-echo 'Done! ^_^'
-
-?>
+echo 'Done! ^_^';

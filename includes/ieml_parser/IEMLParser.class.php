@@ -486,5 +486,3 @@ class IEMLParser {
 		return isset(IEMLParser::$VOWELS_EXPAND[$string]);
 	}
 }
-
-?>

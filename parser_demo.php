@@ -78,5 +78,3 @@ if (array_key_exists('eval', $_REQUEST) && $_REQUEST['eval']) {
 </body><?php
 	
 }
-
-?>

@@ -758,5 +758,3 @@ function gen_etymology($exp) {
 	
 	return $ret;
 }
-
-?>

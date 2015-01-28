@@ -316,5 +316,3 @@ function IEML_get_num_parts_in_lev($AST) {
 	
 	return $out;
 }
-
-?>

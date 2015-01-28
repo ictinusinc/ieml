@@ -262,5 +262,3 @@ function get_etymology($query_exp, $lang) {
 
 	return $etymology;
 }
-
-?>

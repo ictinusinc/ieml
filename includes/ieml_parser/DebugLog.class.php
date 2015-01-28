@@ -69,5 +69,3 @@ class Devlog {
 		Devlog::Log(Devlog::$INFO, $msg, Devlog::cons_stack());
 	}
 }
-
-?>

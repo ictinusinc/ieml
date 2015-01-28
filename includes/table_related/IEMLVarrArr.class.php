@@ -234,5 +234,3 @@ class IEMLVarrArr {
 		return $out;
 	}
 }
-
-?>
