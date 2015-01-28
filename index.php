@@ -291,23 +291,9 @@ require_once(APPROOT.'/includes/header.php');
 				</div>
 
 				<div class="tab-pane" id="graph">
-					...
+					&hellip;
 				</div>
 			</div>
-		</div>
-	</div>
-
-	<div class="modal" id="iemlConfirmModal" aria-hidden="true">
-		<div class="modal-header">
-			<a class="close" data-dismiss="modal">x</a>
-
-			<h3>Add Record</h3>
-		</div>
-
-		<div class="modal-body"></div>
-
-		<div class="modal-footer">
-			<button type="button" id="iemlConfirmYesModal" class="btn btn-default" data-lang-switch="yes"><?php echo trans_phrase('yes', $lang); ?></button><button type="button" id="iemlConfirmCancelModal" data-dismiss="modal" class="btn btn-default" data-lang-switch="cancel"><?php echo trans_phrase('cancel', $lang); ?></button>
 		</div>
 	</div>
 
@@ -376,12 +362,16 @@ require_once(APPROOT.'/includes/header.php');
 	</div><!-- /.modal.fade -->
 
 	<div id="confirmCancelModal" class="modal" aria-hidden="true" data-backdrop="static">
-		<div class="modal-body no-bot-margin">
-			<a class="close" data-dismiss="modal" id="workPrintModalX">x</a><span id="confirmCancelModalText"></span>
-		</div>
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-body no-bot-margin">
+					<a class="close" data-dismiss="modal" id="workPrintModalX">x</a><span id="confirmCancelModalText"></span>
+				</div>
 
-		<div class="modal-footer">
-			<button type="button" id="confirmCancelModalYes" class="btn btn-primary" data-dismiss="modal" data-lang-switch="yes"><?php echo trans_phrase('yes', $lang); ?></button><button type="button" class="btn btn-default" data-dismiss="modal" data-lang-switch="no"><?php echo trans_phrase('no', $lang); ?></button>
+				<div class="modal-footer">
+					<button type="button" id="confirmCancelModalYes" class="btn btn-primary" data-dismiss="modal" data-lang-switch="yes"><?php echo trans_phrase('yes', $lang); ?></button><button type="button" class="btn btn-default" data-dismiss="modal" data-lang-switch="no"><?php echo trans_phrase('no', $lang); ?></button>
+				</div>
+			</div>
 		</div>
 	</div><!--/confirmCancelModal-->
 	<?php

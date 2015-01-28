@@ -420,14 +420,10 @@
 					History.back();
 					
 					$('[data-result-id="' + rvars.id + '"][data-expression-type="basic"]').remove();
-					
-					$('#iemlConfirmModal').modal('hide');
 				});
 			} else if (rvars.a == 'deleteVisualExpression') {
 				$.getJSON(url, rvars, function(responseData) {
 					$('[data-result-id="' + rvars.rel_id + '"][data-expression-type="relational"]').remove();
-					
-					$('#iemlConfirmModal').modal('hide');
 				});
 			} else if (rvars.a == 'validateExpression') {
 				if (rvars.expression.length === 0) {
@@ -1153,8 +1149,9 @@
 			return false;
 		}).on('click', '#ieml-desc-result-delete', function() {
 			if ($('#desc-result-id').val() !== '') {
-				$('#iemlConfirmModal .modal-body').html('<div><span>Are you sure you want to delete "' + $('#ieml-result input').eq(0).val() + '"?<br /></span></div>');
-				$('#iemlConfirmModal').modal('show');
+				showConfirmDialog('Are you sure you want to delete ' + $('#ieml-result input').eq(0).val() + '?', function() {
+					IEMLApp.submit({'a':'deleteDictionary', 'id':$('#desc-result-id').val()});
+				});
 			}
 		
 			return false;
@@ -1212,11 +1209,7 @@
 			var $this = $(this);
 			
 			showConfirmDialog('Are you sure?', function() {
-				var jurl = $this.attr('href');
-				
-				$.post(jurl, function(resp) {
-					$this.closest('tr').remove();
-				});
+				IEMLApp.submit({ 'a': 'delUser', 'pkUser': $this.data('id') });
 			});
 			
 			return false;
@@ -1277,9 +1270,17 @@
 		}).on('click', '.editor-cancel', function() {
 			clearEditor();
 		}).on('click', '.delRelExp', function() {
-			IEMLApp.submit({ 'a': 'deleteVisualExpression', 'rel_id': $(this).data('id') });
+			var $this = $(this);
+
+			showConfirmDialog('Are you sure?', function() {
+				IEMLApp.submit({ 'a': 'deleteVisualExpression', 'rel_id': $this.data('id') });
+			});
 		}).on('click', '.delExp', function() {
-			IEMLApp.submit({ 'a': 'deleteDictionary', 'rel_id': $(this).data('id') });
+			var $this = $(this);
+
+			showConfirmDialog('Are you sure?', function() {
+				IEMLApp.submit({ 'a': 'deleteDictionary', 'id': $this.data('id') });
+			});
 		});
 		
 		if (window.location.pathname.length == 1) {
