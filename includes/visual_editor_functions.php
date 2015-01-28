@@ -105,6 +105,34 @@ function process_editor_array($editor_array) {
 		}
 	}
 
+	if ($composition_type == '*') {
+		if (count($insertables) > 3) {
+			//check for max of 3 parts of a multiplication expression
+			return array(
+				'result' => 'error',
+				'error' => 'Unable to save multiplication expression with more than 3 parts.'
+			);
+		} else if (count($insertables) > 1) {
+			//check for dangling empty at the end of the expression
+			$last_item = $insertables[count($insertables) - 1];
+
+			if (in_array($last_item['strExpression'], array( "E:", "E:.", "E:.-", "E:.-'", "E:.-',", "E:.-',_", "E:.-',_;" ))) {
+				return array(
+					'result' => 'error',
+					'error' => 'Illegal to have dangling "Empty" at the end of the expression.'
+				);
+			}
+		}
+	}
+
+	if (count($insertables) == 0) {
+		//check for pointless expression
+		return array(
+			'result' => 'error',
+			'error' => 'Unable to save empty expression.'
+		);
+	}
+
 	//run through insertables, to compose expression as string and check for errors
 	$str_expression = '';
 	foreach ($insertables as $i => $to_insert) {
