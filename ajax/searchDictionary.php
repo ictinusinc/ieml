@@ -5,8 +5,10 @@ $relational_filter = '';
 $join_str = '';
 
 if (array_key_exists('search', $req) && strlen($req['search']) > 0) {
-	$basic_filter .= " AND (strExpression LIKE '%".goodString($req['search'])."%' OR sublang.strExample LIKE '%".goodString($req['search'])."%') ";
-	$relational_filter .= " AND vchExpression LIKE '%".goodString($req['search'])."%' ";
+	$goodSearch = goodString($req['search']);
+
+	$basic_filter .= " AND (strExpression LIKE '%" . $goodSearch . "%' OR sublang.strExample LIKE '%" . $goodSearch . "%') ";
+	$relational_filter .= " AND (vchExpression LIKE '%" . $goodSearch . "%' OR vchExample LIKE '%" . $goodSearch . "%') ";
 }
 if (array_key_exists('layer', $req) && strlen($req['layer']) > 0) {
 	$basic_filter .= " AND intLayer = ".goodInt($req['layer'])." ";
