@@ -30,10 +30,12 @@ function process_editor_array($editor_array) {
 	$composition_type = NULL;
 	$int_highest_layer = NULL;
 	$int_layer = NULL;
+	$operator_count = 0;
 	$insertables = array();
 	foreach ($editor_array as $el) {
 		if ($el == '+' || $el == '*' || $el == '/') {
 			$composition_type = $el;
+			$operator_count++;
 		} else if ($el != 'E' && $composition_type != '/') {
 			$script_lookup = Conn::queryArray('SELECT * FROM expression_primary WHERE strExpression = \'' . goodString($el) . '\'');
 
@@ -130,6 +132,12 @@ function process_editor_array($editor_array) {
 		return array(
 			'result' => 'error',
 			'error' => 'Unable to save empty expression.'
+		);
+	} else if (count($insertables) != $operator_count + 1) {
+		//check for an expression with an invalid number of expressions
+		return array(
+			'result' => 'error',
+			'error' => 'Unable to save expression with an invalid number of operators.'
 		);
 	}
 

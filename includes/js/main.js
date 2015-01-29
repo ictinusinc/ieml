@@ -205,6 +205,8 @@
 				IEMLApp.receiveSearch(resp, req);
 			} else if (req.a == 'expression') {
 				IEMLApp.receiveExpression(resp);
+			} else if (req.a == 'relationalExpression') {
+				IEMLApp.recieveVisualExpression(resp);
 			} else {
 				return false;
 			}
@@ -384,7 +386,9 @@
 					} else {
 						$('.ieml-validation-result, .result-error-icon').addClass('hidden');
 					}
-					
+
+					$('[data-result-id="' + responseData.rel_id + '"][data-expression-type="relational"]').get(0).outerHTML = formatResultRow(responseData);
+
 					IEMLApp.recieveVisualExpression(responseData);
 				});
 			} else if (rvars.a == 'newVisualExpression') {
@@ -409,9 +413,6 @@
 					IEMLApp.library = responseData.fkLibrary[0];
 
 					$('#search-form #search-library-select').val(IEMLApp.library);
-
-					//TODO: rework this this so that a call to populate the search result list does not overwrite the URL
-					IEMLApp.submit({ 'a': 'searchDictionary', 'library': IEMLApp.library, 'lang': IEMLApp.lang, 'search': '' });
 
 					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars.lang, 'library-' + IEMLApp.library, 'rel-view', responseData.rel_id]));
 					
