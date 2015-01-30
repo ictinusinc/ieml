@@ -956,9 +956,10 @@
 						'</ul>' +
 					'</div>'
 				: '') +
-				'<button type="button"' +
+				(obj.enumExpressionType == 'relational' ? '<button type="button"' +
 					'data-id="' + obj.id + '"' +
-					'class="btn btn-default ' + (obj.enumExpressionType == 'relational' ? 'delRelExp' : 'delExp') + '"><span class="glyphicon glyphicon-trash"></span></button>' +
+					'class="btn btn-default delRelExp"><span class="glyphicon glyphicon-trash"></span></button>'
+				: '') +
 			'</td>' +
 			'</tr>';
 	}
@@ -1288,12 +1289,6 @@
 
 			showConfirmDialog('Are you sure?', function() {
 				IEMLApp.submit({ 'a': 'deleteVisualExpression', 'rel_id': $this.data('id') });
-			});
-		}).on('click', '.delExp', function() {
-			var $this = $(this);
-
-			showConfirmDialog('Are you sure?', function() {
-				IEMLApp.submit({ 'a': 'deleteDictionary', 'id': $this.data('id') });
 			});
 		});
 		
