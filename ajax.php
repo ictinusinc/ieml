@@ -57,7 +57,7 @@ function handle_request($action, $req) {
 					SELECT
 						pkRelationalExpression AS rel_id, vchExpression AS expression,
 						enumCompositionType, relexp.intLayer, relexp.enumDeleted,
-						relexp.vchExample AS example, relexp.vchShortUrl AS shortUrl,
+						relexp.vchExample AS example, short_url.short_url AS shortUrl,
 						(
 							SELECT GROUP_CONCAT(fkLibrary SEPARATOR ',')
 							FROM library_to_expression
@@ -67,6 +67,7 @@ function handle_request($action, $req) {
 					FROM relational_expression relexp
 					JOIN library_to_expression ltoep
 						ON relexp.pkRelationalExpression = ltoep.fkRelationalExpression
+					JOIN short_url ON relexp.fkShortUrl = short_url.id
 					WHERE relexp.pkRelationalExpression = " . $goodID);
 
 				$ret['fkLibrary'] = explode(',', $ret['fkLibrary']);

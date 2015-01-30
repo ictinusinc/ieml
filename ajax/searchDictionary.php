@@ -34,8 +34,7 @@ $ret = Conn::queryArrays("
 				FROM library_to_expression
 				WHERE fkExpressionPrimary = pkExpressionPrimary
 				GROUP BY fkExpressionPrimary
-			) AS fkLibrary, 'basic' AS enumExpressionType,
-			NULL as shortUrl
+			) AS fkLibrary, 'basic' AS enumExpressionType
 		FROM expression_primary prim
 		JOIN expression_data sublang
 			ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
@@ -56,8 +55,7 @@ $ret = Conn::queryArrays("
 				FROM library_to_expression
 				WHERE fkRelationalExpression = pkRelationalExpression
 				GROUP BY fkRelationalExpression
-			) AS fkLibrary, 'relational' AS enumExpressionType,
-			relexp.vchShortUrl AS shortUrl
+			) AS fkLibrary, 'relational' AS enumExpressionType
 		FROM relational_expression relexp
 		JOIN library_to_expression ltoep
 			ON relexp.pkRelationalExpression = ltoep.fkRelationalExpression

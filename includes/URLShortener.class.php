@@ -4,11 +4,11 @@ require_once(__DIR__ . '/functions.php');
 
 class URLShortener
 {
-	const ALLOWED_CHARS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	const ALLOWED_CHARS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&!';
 	const DB_TABLE_NAME = 'short_url';
 	const DB_CREATE_TABLE = '
 		CREATE TABLE DB_TABLE_NAME (
-			id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+			id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
 			long_url VARCHAR(255) NOT NULL,
 			short_url VARCHAR(6) NULL DEFAULT NULL,
 			hits BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
@@ -18,7 +18,7 @@ class URLShortener
 		) DEFAULT CHARSET=utf8;
 	';
 
-	public static function short_url_from_id($id, $chars = URLShortener::ALLOWED_CHARS)
+	private static function char_encode($id, $chars = URLShortener::ALLOWED_CHARS)
 	{
 		$charslen = strlen($chars);
 		$out = '';
@@ -27,21 +27,23 @@ class URLShortener
 			$out = $chars[$id % $charslen] . $out;
 			$id = (int)($id / $charslen);
 		}
-
 		return $chars[$id] . $out;
 	}
 
-	public static function id_from_short_url($string, $chars = URLShortener::ALLOWED_CHARS)
-	{
-		$charslen = strlen($chars);
-		$stringlen = strlen($string) - 1;
-		$string = str_split($string);
-		$out = strpos($chars, array_pop($string));
-		foreach($string as $i => $char)
-		{
-			$out += strpos($chars, $char) * pow($charslen, $stringlen - $i);
+	private static function num_as_str($num) {
+		$str = '';
+		
+		while ($num > 0) {
+			$str .= chr($num & 0xFF);
+			$num = $num >> 8;
 		}
-		return $out;
+
+		return $str;
+	}
+
+	public static function short_url_from_id($id)
+	{
+		return self::char_encode( (int)sprintf( '%u', crc32( self::num_as_str($id) ) ) );
 	}
 
 	public static function shorten_url($long_url)
@@ -90,7 +92,7 @@ class URLShortener
 
 			Conn::query('LOCK TABLES ' . URLShortener::DB_TABLE_NAME . ' WRITE');
 			Conn::query('UPDATE ' . URLShortener::DB_TABLE_NAME
-				. ' SET ' . ' hits = hits + 1'
+				. ' SET hits = hits + 1'
 				. ' WHERE id = ' . $existing_entry['id']);
 			Conn::query('UNLOCK TABLES');
 		}
