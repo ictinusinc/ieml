@@ -10,7 +10,7 @@ RewriteRule ^api/?(.*)$ /ajax.php$1 [NC,L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^([0-9a-zA-Z]{1,6})$ url_redirect.php?url=$1 [L]
+RewriteRule ^([0-9a-zA-Z&!]{1,6})$ url_redirect.php?url=$1 [L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
