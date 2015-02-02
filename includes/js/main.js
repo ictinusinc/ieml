@@ -760,8 +760,10 @@
 		var $editor = $('.editor-proper');
 		var $link = $('.editor-short');
 
-		$link.attr('href', '//' + window.location.host + '/' + info.shortUrl);
-		$link.html(window.location.host + '/' + info.shortUrl);
+		var short_url_domain = 'ieml.org';
+
+		$link.attr('href', '//' + short_url_domain + '/' + info.shortUrl);
+		$link.html(short_url_domain + '/' + info.shortUrl);
 
 		$('.editor-drawer [name="rel-id"]').val(info.rel_id);
 		$('.editor-example-input').val(info.example);

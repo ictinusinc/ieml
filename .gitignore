@@ -1,2 +1,6 @@
 access_log.log
 _test_*
+
+.htaccess
+
+url_redirect.php

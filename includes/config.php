@@ -15,9 +15,9 @@ if (array_key_exists('DOCUMENT_ROOT', $_SERVER) && $_SERVER['DOCUMENT_ROOT']) {
 }
 
 if (array_key_exists('HTTP_HOST',$_SERVER)) {
-	define('WEBROOT', 'http://'.$_SERVER['HTTP_HOST']);
+	define('WEBROOT', $_SERVER['REQUEST_SCHEME'] . '://'.$_SERVER['HTTP_HOST']);
 } else {
-	define('WEBROOT', 'http://rentals.beaconlite.ca');
+	define('WEBROOT', $_SERVER['REQUEST_SCHEME'] . '://localhost');
 }
 
 define('OFFROOT', ''); //in case the app needs to be in a subdirectory
