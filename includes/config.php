@@ -14,10 +14,12 @@ if (array_key_exists('DOCUMENT_ROOT', $_SERVER) && $_SERVER['DOCUMENT_ROOT']) {
 	define('DOCROOT', dirname(__FILE__).'/..');
 }
 
+define('RSCHEME', @$_SERVER['REQUEST_SCHEME'] ?: 'http');
+
 if (array_key_exists('HTTP_HOST',$_SERVER)) {
-	define('WEBROOT', $_SERVER['REQUEST_SCHEME'] . '://'.$_SERVER['HTTP_HOST']);
+	define('WEBROOT', RSCHEME . '://'.$_SERVER['HTTP_HOST']);
 } else {
-	define('WEBROOT', $_SERVER['REQUEST_SCHEME'] . '://localhost');
+	define('WEBROOT', RSCHEME . '://localhost');
 }
 
 define('OFFROOT', ''); //in case the app needs to be in a subdirectory
