@@ -20,12 +20,12 @@ Conn::query('
 
 $expression_id = Conn::getId();
 
-$short_url = URLShortener::shorten_url('rel-view/' . $expression_id);
+$short_url_id = URLShortener::shorten_url_get_id('rel-view/' . $expression_id);
 
 //update expression with short url
 Conn::query('
 	UPDATE relational_expression
-	SET vchShortUrl = \'' . goodString($short_url) . '\'
+	SET fkShortUrl = \'' . $short_url_id . '\'
 	WHERE pkRelationalExpression = ' . $expression_id
 );
 

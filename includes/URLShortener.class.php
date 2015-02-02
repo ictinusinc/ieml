@@ -46,7 +46,7 @@ class URLShortener
 		return self::char_encode( (int)sprintf( '%u', crc32( self::num_as_str($id) ) ) );
 	}
 
-	public static function shorten_url($long_url)
+	public static function shorten_url_internal_($long_url)
 	{
 		$existing_entry = Conn::queryArray('
 			SELECT id, short_url 
@@ -54,10 +54,12 @@ class URLShortener
 			WHERE long_url = \'' . goodString($long_url) . '\'
 		');
 		$short_url = NULL;
+		$id = NULL;
 
 		if ($existing_entry)
 		{
 			$short_url = $existing_entry['short_url'];
+			$id = $existing_entry['id'];
 		}
 		else
 		{
@@ -73,7 +75,21 @@ class URLShortener
 			Conn::query('UNLOCK TABLES');
 		}
 
-		return $short_url;
+		return array($short_url, $id);
+	}
+
+	public static function shorten_url_get_id($long_url)
+	{
+		$short = self::shorten_url_internal_($long_url);
+
+		return $short[1];
+	}
+
+	public static function shorten_url($long_url)
+	{
+		$short = self::shorten_url_internal_($long_url);
+
+		return $short[0];
 	}
 
 	public static function lengthen_url($short_url)
