@@ -118,10 +118,15 @@
 		if (settings.lang) {
 			$('#search-form #search-lang-select').val(settings.lang);
 		}
+		var $filter;
 		if (settings.key && settings.key == 'keys') {
-			$('#filter-results-keys').click();
+			$filter = $('#filter-results-keys');
+			$filter.get().checked = true;
+			$filter.parent().addClass('active');
 		} else {
-			$('#filter-results-button').click();
+			$filter = $('#filter-results-button');
+			$filter.get().checked = true;
+			$filter.parent().addClass('active');
 		}
 
 		if (settings.search) {
