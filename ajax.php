@@ -484,6 +484,25 @@ function handle_request($action, $req) {
 				$request_ret = assert_format($asserts_ret);
 			}
 			break;
+		
+		case 'deleteExpressionFromLibrary':
+			$asserts_ret = assert_arr(array('library', 'id'), $req);
+			
+			if (TRUE === $asserts_ret) {
+				Conn::query('
+					DELETE FROM library_to_expression
+					WHERE fkLibrary = ' . goodInt($req['library']) . '
+					AND fkExpressionPrimary = ' . goodInt($req['id']) . '
+				');
+				
+				$request_ret = array(
+					'result' => 'success',
+					'resultCode' => 0
+				);
+			} else {
+				$request_ret = assert_format($asserts_ret);
+			}
+			break;
 
 		default:
 			$request_ret = array('result' => 'error', 'error' => 'No such identifier: ' . $action);

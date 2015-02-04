@@ -428,6 +428,10 @@
 				$.getJSON(url, rvars, function(responseData) {
 					$('[data-result-id="' + rvars.rel_id + '"][data-expression-type="relational"]').remove();
 				});
+			} else if (rvars.a == 'deleteExpressionFromLibrary') {
+				$.getJSON(url, rvars, function(responseData) {
+					$('[data-result-id="' + rvars.id + '"][data-expression-type="basic"]').remove();
+				});
 			} else if (rvars.a == 'validateExpression') {
 				if (rvars.expression.length === 0) {
 					$('.ieml-validation-result').addClass('hidden');
@@ -501,7 +505,7 @@
 		
 		switch_to_list();
 
-		if (reqObj && IEMLApp.userLibraries) {
+		if (reqObj && IEMLApp.userLibraries && reqObj.library) {
 			var selected_option = IEMLApp.userLibraries.filter(function(el) {
 				return el.pkLibrary == reqObj.library;
 			})[0];
@@ -925,6 +929,12 @@
 	function formatResultRow(obj) {
 		var relative_libraries = [];
 
+		console.log(IEMLApp.userLibraries, IEMLApp.library);
+
+		var current_lib_in_user_libs = IEMLApp.userLibraries.filter(function(el) { 
+			return el.pkLibrary == IEMLApp.library;
+		}).length > 0;
+
 		if (IEMLApp.user && IEMLApp.userLibraries) {
 			for (var i = 0; i < IEMLApp.userLibraries.length; i++) {
 				if (obj.fkLibrary.indexOf(IEMLApp.userLibraries[i].pkLibrary) < 0) {
@@ -961,6 +971,10 @@
 				(obj.enumExpressionType == 'relational' ? '<button type="button"' +
 					'data-id="' + obj.id + '"' +
 					'class="btn btn-default delRelExp"><span class="glyphicon glyphicon-trash"></span></button>'
+				: '') +
+				(obj.enumExpressionType == 'basic' && current_lib_in_user_libs ? '<button type="button"' +
+					'data-id="' + obj.id + '"' +
+					'class="btn btn-default removeExpFromList"><span class="glyphicon glyphicon-remove"></span></button>'
 				: '') +
 			'</td>' +
 			'</tr>';
@@ -1291,6 +1305,16 @@
 
 			showConfirmDialog('Are you sure?', function() {
 				IEMLApp.submit({ 'a': 'deleteVisualExpression', 'rel_id': $this.data('id') });
+			});
+		}).on('click', '.removeExpFromList', function() {
+			var $this = $(this);
+
+			showConfirmDialog('Are you sure?', function() {
+				IEMLApp.submit({
+					'a': 'deleteExpressionFromLibrary',
+					'library': IEMLApp.library,
+					'id': $this.data('id')
+				});
 			});
 		});
 		
