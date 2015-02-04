@@ -759,7 +759,7 @@
 
 		var plus_ = $('[data-script-val="+"]');
 		var times_ = $('[data-script-val="*"]');
-		var empty_ = $('[data-script-val="E"]');
+		var empty_ = $('[data-script-val="E:"]');
 		var children = info.children;
 		var $editor = $('.editor-proper');
 		var $link = $('.editor-short');
@@ -928,8 +928,6 @@
 	
 	function formatResultRow(obj) {
 		var relative_libraries = [];
-
-		console.log(IEMLApp.userLibraries, IEMLApp.library);
 
 		var current_lib_in_user_libs = IEMLApp.userLibraries.filter(function(el) { 
 			return el.pkLibrary == IEMLApp.library;

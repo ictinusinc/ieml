@@ -18,6 +18,16 @@ function insert_primary($parent, $id, $order) {
 	');
 }
 
+function promo_str_to_layer($expr, $from_layer, $to_layer) {
+	$LAYER_MARKERS = array(':', '.', '-', "'", ',', '_', ';');
+
+	for ($i = $from_layer + 1; $i <= $to_layer && $i < count($LAYER_MARKERS); $i++) {
+		$expr .= $LAYER_MARKERS[$i];
+	}
+
+	return $expr;
+}
+
 function process_editor_array($editor_array) {
 	if (count($editor_array) == 0) {
 		return array(
@@ -118,7 +128,7 @@ function process_editor_array($editor_array) {
 			//check for dangling empty at the end of the expression
 			$last_item = $insertables[count($insertables) - 1];
 
-			if (in_array($last_item['strExpression'], array( "E:", "E:.", "E:.-", "E:.-'", "E:.-',", "E:.-',_", "E:.-',_;" ))) {
+			if ($last_item['strExpression'] == 'E:') {
 				return array(
 					'result' => 'error',
 					'error' => 'Illegal to have dangling "Empty" at the end of the expression.'
@@ -143,12 +153,11 @@ function process_editor_array($editor_array) {
 
 	//run through insertables, to compose expression as string and check for errors
 	$str_expression = '';
-	foreach ($insertables as $i => $to_insert) {
-		if ($composition_type != '/' && $to_insert['intLayer'] != $int_highest_layer) {
-			return array(
-				'result' => 'error',
-				'error' => 'Unable to compose expressions with subexpressions of different layers.'
-			);
+	foreach ($insertables as $i => &$to_insert) {
+		if (($composition_type == '*' || $composition_type == '+')
+			&& $to_insert['intLayer'] != $int_highest_layer) {
+			$to_insert['strExpression'] = promo_str_to_layer($to_insert['strExpression'],
+				$to_insert['intLayer'], $int_highest_layer);
 		}
 
 		if ($i > 0 && ($composition_type == '+' || $composition_type == '/')) {

@@ -66,7 +66,7 @@ require_once(APPROOT.'/includes/header.php');
 											<div class="col-md-6 draggable-list">
 												<div class="draggable" data-script-val="+"><span class="glyphicon glyphicon-plus"></span></div>
 												<div class="draggable" data-script-val="*"><span class="glyphicon glyphicon-remove"></span></div>
-												<div class="draggable" data-script-val="E"><strong>E</strong></div>
+												<div class="draggable" data-script-val="E:" data-is-script="true"><strong>E</strong></div>
 											</div>
 										</div>
 									</div>
