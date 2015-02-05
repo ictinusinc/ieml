@@ -103,7 +103,7 @@ function process_editor_array($editor_array) {
 			if ($script_lookup) {
 				$parser_result = IEMLParser::AST_or_FAIL($script_lookup['strExpression']);
 
-				//Surround additive expressionw tih parens. if necessary
+				//Surround additive expression with parens. if necessary
 				if ($parser_result['resultCode'] == 0 
 					&& $parser_result['AST']->child(0)->type() == IEMLNodeType::$ADD) {
 					$script_lookup['strExpression'] = '(' . $script_lookup['strExpression'] . ')';

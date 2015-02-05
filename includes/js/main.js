@@ -934,9 +934,9 @@
 	function formatResultRow(obj) {
 		var relative_libraries = [];
 
-		var current_lib_in_user_libs = IEMLApp.userLibraries.filter(function(el) { 
+		var current_lib_in_user_libs = IEMLApp.userLibraries ? IEMLApp.userLibraries.filter(function(el) { 
 			return el.pkLibrary == IEMLApp.library;
-		}).length > 0;
+		}).length > 0 : false;
 
 		if (IEMLApp.user && IEMLApp.userLibraries) {
 			for (var i = 0; i < IEMLApp.userLibraries.length; i++) {
