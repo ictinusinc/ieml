@@ -1,5 +1,7 @@
 <?php
 
+require_once(APPROOT.'/includes/ieml_parser/IEMLParser.class.php');
+
 function insert_relation($parent, $rel_id, $order) {
 	Conn::queryArrays('
 		INSERT INTO relational_expression_tree
@@ -46,7 +48,7 @@ function process_editor_array($editor_array) {
 		if ($el == '+' || $el == '*' || $el == '/') {
 			$composition_type = $el;
 			$operator_count++;
-		} else if ($el != 'E' && $composition_type != '/') {
+		} else if ($composition_type != '/') {
 			$script_lookup = Conn::queryArray('SELECT * FROM expression_primary WHERE strExpression = \'' . goodString($el) . '\'');
 
 			if ($script_lookup) {
@@ -95,24 +97,25 @@ function process_editor_array($editor_array) {
 	}
 
 	foreach ($editor_array as $el) {
-		if ($el == 'E') {
-			if ($int_highest_layer == 0) {
-				$insertables[] = Conn::queryArray('SELECT * FROM expression_primary WHERE pkExpressionPrimary = 10');
-			} else {
-				$insertables[] = Conn::queryArray('SELECT *, vchExpression as strExpression FROM relational_expression WHERE pkRelationalExpression = ' . $int_highest_layer);
-			}
-		} else if (!($el == '+' || $el == '*' || $el == '/')) {
+		if (!($el == '+' || $el == '*' || $el == '/')) {
 			$script_lookup = Conn::queryArray('SELECT * FROM expression_primary WHERE strExpression = \'' . goodString($el) . '\'');
 
 			if ($script_lookup) {
+				$parser_result = IEMLParser::AST_or_FAIL($script_lookup['strExpression']);
+
+				//Surround additive expressionw tih parens. if necessary
+				if ($parser_result['resultCode'] == 0 
+					&& $parser_result['AST']->child(0)->type() == IEMLNodeType::$ADD) {
+					$script_lookup['strExpression'] = '(' . $script_lookup['strExpression'] . ')';
+				}
+
 				$insertables[] = $script_lookup;
-				continue;
-			}
+			} else {
+				$relational_lookup = Conn::queryArray('SELECT *, vchExpression as strExpression FROM relational_expression WHERE vchExpression = \'' . goodString($el) . '\'');
 
-			$relational_lookup = Conn::queryArray('SELECT *, vchExpression as strExpression FROM relational_expression WHERE vchExpression = \'' . goodString($el) . '\'');
-
-			if ($relational_lookup) {
-				$insertables[] = $relational_lookup;
+				if ($relational_lookup) {
+					$insertables[] = $relational_lookup;
+				}
 			}
 		}
 	}
