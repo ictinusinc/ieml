@@ -432,7 +432,6 @@ function handle_request($action, $req) {
 
 		case 'validateExpression':
 			require_once(APPROOT.'/includes/ieml_parser/IEMLParser.class.php');
-			require_once(APPROOT.'/includes/ieml_parser/IEMLScriptGen.class.php');
 
 			$asserts_ret = assert_arr(array('expression'), $req);
 			
