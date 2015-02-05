@@ -52,12 +52,12 @@ function process_editor_array($editor_array) {
 			$script_lookup = Conn::queryArray('SELECT * FROM expression_primary WHERE strExpression = \'' . goodString($el) . '\'');
 
 			if ($script_lookup) {
-				$int_highest_layer = $script_lookup['intLayer'];
+				$int_highest_layer = max($int_highest_layer, $script_lookup['intLayer']);
 			} else {
 				$relational_lookup = Conn::queryArray('SELECT * FROM relational_expression WHERE vchExpression = \'' . goodString($el) . '\'');
 
 				if ($relational_lookup) {
-					$int_highest_layer = $relational_lookup['intLayer'];
+					$int_highest_layer = max($int_highest_layer, $relational_lookup['intLayer']);
 				} else {
 					return array(
 						'result' => 'error',
