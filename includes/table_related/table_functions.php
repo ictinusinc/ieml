@@ -536,20 +536,28 @@ function reconstruct_table_info($top, $head, $body_query) {
 
 
 
-function get_exp_position_in_table($exp, &$tab_info) {
-	for ($i=0; $i<count($tab_info['headers']); $i++) {
-		for ($j=0; $j<count($tab_info['headers'][$i]); $j++) {
-			for ($k=0; $k<count($tab_info['headers'][$i][$j]); $k++) {
-				if ($tab_info['headers'][$i][$j][$k][0]['expression'] == $exp) {
+function get_exp_position_in_table($exp, &$tab_info)
+{
+	for ($i=0; $i<count($tab_info['headers']); $i++)
+	{
+		for ($j=0; $j<count($tab_info['headers'][$i]); $j++)
+		{
+			for ($k=0; $k<count($tab_info['headers'][$i][$j]); $k++)
+			{
+				if ($tab_info['headers'][$i][$j][$k][0]['expression'] == $exp)
+				{
 					return $tab_info['headers'][$i][$j][$k][0];
 				}
 			}
 		}
 	}
 	
-	for ($i=0; $i<count($tab_info['body']); $i++) {
-		for ($j=0; $j<count($tab_info['body'][$i]); $j++) {
-			if ($tab_info['body'][$i][$j]['expression'] == $exp) {
+	for ($i=0; $i<count($tab_info['body']); $i++)
+	{
+		for ($j=0; $j<count($tab_info['body'][$i]); $j++)
+		{
+			if ($tab_info['body'][$i][$j]['expression'] == $exp)
+			{
 				return $tab_info['body'][$i][$j];
 			}
 		}
