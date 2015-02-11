@@ -1,6 +1,6 @@
 <?php
 
-class IEMLVarrArr {
+class IEMLVarArr {
 	private $arr, $post;
 	
 	public static $IEML_toVary = array(
@@ -100,8 +100,8 @@ class IEMLVarrArr {
 		return $str;
 	}
 	
-	public static function instanceFromVarrArr($cvinst) {
-		$instance = new IEMLVarrArr();
+	public static function instanceFromVarArr($cvinst) {
+		$instance = new IEMLVarArr();
 		
 		for ($i=0; $i<$cvinst->length(); $i++) {
 			$instance->pushCompleteElement($cvinst->getCompleteElement($i));
@@ -139,14 +139,14 @@ class IEMLVarrArr {
 	}
 	
 	public static function instanceFromAST($AST, $exp) {
-		$instance = new IEMLVarrArr();
+		$instance = new IEMLVarArr();
 		$instance->fromAST($AST, $exp);
 		
 		return $instance;
 	}
 	
 	public function generateHeaderVariations() {
-		return $this->__generateHeaderVariations(0, $this->lastIndex(), new IEMLVarrArr());
+		return $this->__generateHeaderVariations(0, $this->lastIndex(), new IEMLVarArr());
 	}
 	
 	private function __generateHeaderVariations($cur, $last, $pre) {
@@ -154,7 +154,7 @@ class IEMLVarrArr {
 		
 		if ($cur <= $last) {
 			for ($i=0; $i<=$last-$cur+1; $i++) {
-				$pre_arr = IEMLVarrArr::instanceFromVarrArr($pre);
+				$pre_arr = IEMLVarArr::instanceFromVarArr($pre);
 				
 				for ($j=0; $j<$i; $j++) {
 					$j_arr = $this->arrayFor($cur+$j);
@@ -188,11 +188,11 @@ class IEMLVarrArr {
 			$sub_post = $this->toPrettyString($cur+1, $last);
 			$cur_arr = $this->arrayFor($cur);
 			
-			if (array_key_exists($cur_arr[1], IEMLVarrArr::$IEML_toVary)) {
-				$sub_heads = IEMLVarrArr::$IEML_toVary[$cur_arr[1]];
+			if (array_key_exists($cur_arr[1], IEMLVarArr::$IEML_toVary)) {
+				$sub_heads = IEMLVarArr::$IEML_toVary[$cur_arr[1]];
 				
 				for ($i=0; $i<count($sub_heads); $i++) {
-					$temp_sub_cvarr = IEMLVarrArr::instanceFromVarArr($this);
+					$temp_sub_cvarr = IEMLVarArr::instanceFromVarArr($this);
 					$temp_sub_cvarr->setArrayFor($cur, $sub_heads[$i]);
 	
 					$sub = $temp_sub_cvarr->IEML_vary_header($temp_sub_cvarr, $cur, $last, $pre, $post);

@@ -1,6 +1,6 @@
 <?php
 
-require_once('IEMLVarrArr.class.php');
+require_once('IEMLVarArr.class.php');
 
 function IEML_gen_var($AST) {
 	$out = array();
@@ -171,7 +171,7 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 	    	$out = array();
 			
 	    	for ($i=0; $i<$tpv_len; $i++) {
-	    		$cvinst = IEMLVarrArr::instanceFromAST($tally_part_varied[$i], $exp);
+	    		$cvinst = IEMLVarArr::instanceFromAST($tally_part_varied[$i], $exp);
 	    		//echo '$cvinst: '.pre_dump($cvinst);
 	    		$variations = $cvinst->generateHeaderVariations();
 	    		//echo '$variations: '.pre_dump($variations);
