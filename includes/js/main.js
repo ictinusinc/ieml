@@ -281,16 +281,18 @@
 	};
 
 	IEMLApp.form_data_make_url_safe = function(obj) {
-		if (obj.layer && obj.layer.substr(0, 5) != 'layer') {
-			obj.layer = 'layer-'+obj.layer;
+		var escaped = $.extend({}, obj);
+
+		if (escaped.layer && escaped.layer.substr(0, 5) != 'layer') {
+			escaped.layer = 'layer-'+escaped.layer;
 		}
-		if (obj.search && obj.search.substr(0, 1) != '*') {
-			obj.search = '*'+obj.search;
+		if (escaped.search && escaped.search.substr(0, 1) != '*') {
+			escaped.search = '*'+escaped.search;
 		} else {
-			obj.search = '*';
+			escaped.search = '*';
 		}
 
-		return obj;
+		return escaped;
 	};
 	
 	IEMLApp.submit = function (rvars, url, prev_state) {
