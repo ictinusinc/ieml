@@ -112,27 +112,41 @@ function format_table_for($table_head_query, $query_exp, $top, $options) {
 	$ret = array();
 	$lang = strtolower($options['lang']);
 	
+	//fetch metadata about table elements
 	$table_body_query = Conn::queryArrays("
 		SELECT
 			ref.fkExpressionPrimary AS id, ref.intPosInTable, ref.enumElementType, ref.enumHeaderType, ref.intSpan,
 			ref.intHeaderLevel, ref.pkTable2DRef AS refID, ref.enumEnabled, ref.strCellExpression as expression
 		FROM table_2d_ref ref
 		WHERE fkTable2D = ".$table_head_query['pkTable2D']."");
-		
+	
+	//fetch expression data about elements in the table
 	$exp_query = Conn::queryArrays("
 		SELECT
-			pkExpressionPrimary as id, prim.strExpression as expression,
-			sublang.strExample AS example
+			pkExpressionPrimary as id, prim.strExpression as expression
 		FROM expression_primary prim
-		LEFT JOIN
-			(
-				SELECT fkExpressionPrimary, strExample
-				FROM expression_data
-				WHERE strLanguageISO6391 = '".goodString($lang)."'
-			) sublang
-			ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
-		WHERE enumDeleted = 'N'
+		WHERE prim.enumDeleted = 'N'
 		AND   prim.strExpression IN (".implode(',', array_map(function($a) { return "'".goodString($a['expression'])."'"; }, $table_body_query)).")");
+
+	//fetch examples for expressions
+	foreach ($exp_query as &$expression) {
+		$example_query = Conn::queryArrays('
+			SELECT strExample as example, strLanguageISO6391
+			FROM expression_data
+			WHERE fkExpressionPrimary = ' . $expression['id'] . '
+		');
+
+		foreach ($example_query as $example) {
+			if (strcasecmp($example['strLanguageISO6391'], $lang) == 0) {
+				$expression['example'] = $example['example'];
+				break;
+			}
+		}
+
+		if (!isset($expression['example'])) {
+			$expression['example'] = '';
+		}
+	}
 	
 	$table_info = reconstruct_table_info($top, $table_head_query, $table_body_query);
 	$table_info['post_raw_table'] = json_decode($table_head_query['jsonTableLogic'], TRUE);

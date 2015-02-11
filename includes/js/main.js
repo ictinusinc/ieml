@@ -89,7 +89,7 @@
 			'key': '(keys)',
 			'layer': 'layer-([0-6])',
 			'library': 'library-([1-9][0-9]*)',
-			'lang': '(en|fr)',
+			'lang': '(EN|FR)',
 			'mode': '(search|view|users|login|rel-view)'
 		};
 		var ret = {};
@@ -116,18 +116,17 @@
 			$('#search-form #search-library-select').val(settings.library);
 		}
 		if (settings.lang) {
-			$('#search-form #search-lang-select').val(settings.lang);
+			$('#search-form #search-lang-select').val(settings.lang.toUpperCase());
 		}
+
 		var $filter;
 		if (settings.key && settings.key == 'keys') {
 			$filter = $('#filter-results-keys');
-			$filter.get().checked = true;
-			$filter.parent().addClass('active');
 		} else {
 			$filter = $('#filter-results-button');
-			$filter.get().checked = true;
-			$filter.parent().addClass('active');
 		}
+		$filter.get().checked = true;
+		$filter.parent().addClass('active');
 
 		if (settings.search) {
 			$('#search-form #search').val(settings.search);
@@ -235,7 +234,7 @@
 
 		if (cur_state && cur_state.req && cur_state.req.lang != new_lang) {
 			cur_state.req.lang = new_lang;
-			
+
 			IEMLApp.submit(cur_state.req);
 			
 			IEMLApp.set_lang(new_lang);
@@ -844,7 +843,7 @@
 			var str = '', render_callback = function(el) {
 				var out = '';
 				
-				if (el.example) {
+				if (null !== el.example) {
 					out += '<div class="' + (el.enumEnabled == 'N' ? 'hidden ' : '') + 'cell_wrap' + '">' + '<a href="/ajax.php?id=' + el.id + '&a=searchDictionary" data-exp="' + el.expression + '" data-id="' + el.id + '" class="editExp">' + '<span class="cell_expression">' + el.expression + '</span><span class="cell_example">' + el.example + '</span></a>' + '</div>';
 				} else {
 					out += '<div><a href="javascript:void(0);" class="createEmptyExp">' + el.expression + '</a></div>';
@@ -1075,9 +1074,7 @@
 			IEMLApp.submit(form_data);
 			
 			return false;
-		}).on('change', '#search-form select', function() {
-			$('#search-form').trigger('submit');
-		}).on('change', '#search-library-select', function() {
+		}).on('change', '#search-library-select, #search-class-select, #search-library-select', function() {
 			$('#search-form').trigger('submit');
 		}).on('change', '#iemlEnumShowTable', function() {
 			var info = IEMLApp.lastRetrievedData;
