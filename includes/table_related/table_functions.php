@@ -722,7 +722,7 @@ function gen_exp_relations($exp, $top, &$table) {
 
 			//echo '$ret: '.pre_print($ret);
 		} else {
-			throw new Exception('Couldn\'t find element "'.$exp['expression'].'" in table.');
+			// throw new Exception('Couldn\'t find element "'.$exp['expression'].'" in table.');
 		}
 	}
 	
