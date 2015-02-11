@@ -1213,6 +1213,7 @@
 			readToWrite();
 			
 			$('#desc-result-id').val('');
+			$('#ieml-ex-result input').val('');
 			
 			$('.relation-sel-cell').removeClass('relation-sel-cell');
 			$this.parents('div').eq(0).addClass('relation-sel-cell'); //TODO highlight line properly
