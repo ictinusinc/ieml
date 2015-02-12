@@ -687,51 +687,53 @@
 	function format_relations(info) {
 		var rel = info.relations, contained_html = '', containing_html = '', concurrent_html = '', complementary_html = '', etymology_html = '';
 		
-		if (rel.contained.length > 0) {
-			for (var i=0; i<rel.contained.length; i++) {
-				contained_html += '<li>'+format_single_relation(rel.contained[i])+'</li>';
-				
-				var concurrent_rel = rel.concurrent[rel.contained[i].exp[0]];
-				if (concurrent_rel.length > 0) {
-					concurrent_html += '<div class="concurring-relation col-md-6"><span class="concurring-relation-text"><strong>In relation to "' + format_single_relation(rel.contained[i]) + '"</strong></span><ul class="unstyled relation-list">';
+		if (rel) {
+			if (rel.contained && rel.contained.length > 0) {
+				for (var i=0; i<rel.contained.length; i++) {
+					contained_html += '<li>'+format_single_relation(rel.contained[i])+'</li>';
+					
+					var concurrent_rel = rel.concurrent[rel.contained[i].exp[0]];
+					if (concurrent_rel.length > 0) {
+						concurrent_html += '<div class="concurring-relation col-md-6"><span class="concurring-relation-text"><strong>In relation to "' + format_single_relation(rel.contained[i]) + '"</strong></span><ul class="unstyled relation-list">';
 
-					for (var j=0; j<concurrent_rel.length; j++) {
-						concurrent_html += '<li>'+format_single_relation(concurrent_rel[j])+'</li>';
+						for (var j=0; j<concurrent_rel.length; j++) {
+							concurrent_html += '<li>'+format_single_relation(concurrent_rel[j])+'</li>';
+						}
+						concurrent_html += '</ul></div>';
 					}
-					concurrent_html += '</ul></div>';
+				}
+
+				if (contained_html.length > 0) {
+					contained_html = '<ul class="unstyled relation-list">' + contained_html + '</ul>';
+				} else {
+					contained_html = 'Nothing.';
 				}
 			}
-		}
-
-		if (contained_html.length > 0) {
-			contained_html = '<ul class="unstyled relation-list">' + contained_html + '</ul>';
-		} else {
-			contained_html = 'Nothing.';
-		}
-		
-		if (rel.containing.length > 0) {
-			containing_html += '<ul class="unstyled relation-list">';
-			for (var k=0; k<rel.containing.length; k++) {
-				containing_html += '<li>'+format_single_relation(rel.containing[k])+'</li>';
+			
+			if (rel.containing && rel.containing.length > 0) {
+				containing_html += '<ul class="unstyled relation-list">';
+				for (var k=0; k<rel.containing.length; k++) {
+					containing_html += '<li>'+format_single_relation(rel.containing[k])+'</li>';
+				}
+				containing_html += '</ul>';
+			} else {
+				containing_html = 'Nothing.';
 			}
-			containing_html += '</ul>';
-		} else {
-			containing_html = 'Nothing.';
+			
+			if (concurrent_html.length > 0) {
+				concurrent_html = '<div class="row">' + concurrent_html + '</div>';
+			} else {
+				concurrent_html = 'Nothing.';
+			}
+			
+			complementary_html = '<p>';
+			if (rel.complementary && rel.complementary.exp) {
+				complementary_html += format_single_relation(rel.complementary);
+			} else {
+				complementary_html += 'None.';
+			}
+			complementary_html += '</p>';
 		}
-		
-		if (concurrent_html.length > 0) {
-			concurrent_html = '<div class="row">' + concurrent_html + '</div>';
-		} else {
-			concurrent_html = 'Nothing.';
-		}
-		
-		complementary_html = '<p>';
-		if (rel.complementary && rel.complementary.exp) {
-			complementary_html += format_single_relation(rel.complementary);
-		} else {
-			complementary_html += 'None.';
-		}
-		complementary_html += '</p>';
 		
 		return {'contained': contained_html, 'containing': containing_html, 'concurrent': concurrent_html, 'complementary': complementary_html};
 	}
@@ -763,9 +765,9 @@
 	function fillEditor(info) {
 		clearEditor();
 
-		var plus_ = $('[data-script-val="+"]');
-		var times_ = $('[data-script-val="*"]');
-		var empty_ = $('[data-script-val="E:"]');
+		var plus_ = $('[data-script-val="+"]').eq(0);
+		var times_ = $('[data-script-val="*"]').eq(0);
+		var empty_ = $('[data-script-val="E:"]').eq(0);
 		var children = info.children;
 		var $editor = $('.editor-proper');
 		var $link = $('.editor-short');

@@ -114,60 +114,45 @@ function handle_request($action, $req) {
 			if (TRUE === $asserts_ret) {
 				$lang = strtolower($req['lang']);
 				
-				if (isset($req['id']) || isset($req['exp'])) {
+				if (!empty($req['id'])) {
 					$goodID = goodInt($req['id']);
+				} else if (!empty($req['exp'])) {
+					$clean_expression = goodString($req['exp']);
 
-					if (isset($req['id'])) {
-						$ret = Conn::queryArray("
-							SELECT
-								prim.pkExpressionPrimary as id, prim.strExpression as expression,
-								prim.intSetSize, prim.intLayer, prim.strFullBareString,
-								prim.enumClass, prim.enumCategory, sublang.strExample AS example,
-								strDescriptor AS descriptor,
-								t_key.enumShowEmpties, t_key.enumCompConc, t_key.strEtymSwitch
-							FROM expression_primary prim
-							LEFT JOIN expression_data sublang
-								ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
-							LEFT JOIN table_2d_ref t2dref ON prim.pkExpressionPrimary = t2dref.fkExpressionPrimary
-							LEFT JOIN table_2d_id t2did ON t2dref.fkTable2D = t2did.pkTable2D
-							LEFT JOIN expression_primary t_key ON t2did.fkExpression = t_key.pkExpressionPrimary
-							WHERE strLanguageISO6391 = '".goodString($lang)."'
-							AND   prim.pkExpressionPrimary = ".$goodID);
-					} else if (isset($req['exp'])) {
-						$ret = Conn::queryArray("
-							SELECT
-								prim.pkExpressionPrimary as id, prim.strExpression as expression,
-								prim.intSetSize, prim.intLayer, prim.strFullBareString,
-								prim.enumClass, prim.enumCategory, sublang.strExample AS example,
-								strDescriptor AS descriptor,
-								t_key.enumShowEmpties, t_key.enumCompConc, t_key.strEtymSwitch
-							FROM expression_primary prim
-							LEFT JOIN expression_data sublang
-								ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
-							LEFT JOIN table_2d_ref t2dref ON prim.pkExpressionPrimary = t2dref.fkExpressionPrimary
-							LEFT JOIN table_2d_id t2did ON t2dref.fkTable2D = t2did.pkTable2D
-							LEFT JOIN expression_primary t_key ON t2did.fkExpression = t_key.pkExpressionPrimary
-							WHERE strLanguageISO6391 = '".goodString($lang)."'
-							AND   prim.strExpression = '".goodString($req['exp'])."'
-							AND   prim.enumDeleted = 'N'");
+					$id_query = Conn::queryArrays("
+						SELECT prim.pkExpressionPrimary as id
+						FROM expression_primary prim
+						WHERE prim.strExpression = '" . $clean_expression . "'
+						AND   prim.enumDeleted = 'N'");
+
+					if (count($id_query) > 0) {
+						$goodID = $id_query[0]['id'];
+					} else {
+						throw new Exception('Expression not found: "' . $clean_expression . '"');
 					}
-					
-					//if the query above failed because no example exists for current expression
-					if (!$ret) {
-						$ret = Conn::queryArray("
-							SELECT
-								prim.pkExpressionPrimary as id, prim.strExpression as expression,
-								prim.enumCategory, prim.enumShowEmpties, prim.enumCompConc, prim.strEtymSwitch
-							FROM expression_primary prim
-							WHERE pkExpressionPrimary = ".$goodID);
-					}
-					
-					$ret = getTableForElement($ret, $ret['id'], $req);
-					
-					$request_ret = $ret;
 				} else {
-					$request_ret = array('result' => 'error', 'error' => "Neither 'id' nor 'exp' are set.");
+					throw new Exception('Neither "exp" nor "id" are set.');
 				}
+
+				$ret = Conn::queryArray("
+					SELECT
+						prim.pkExpressionPrimary as id, prim.strExpression as expression,
+						prim.intSetSize, prim.intLayer, prim.strFullBareString,
+						prim.enumClass, prim.enumCategory,
+						t2did_key.enumShowEmpties, t2did_key.enumCompConc, t2did_key.strEtymSwitch
+					FROM expression_primary prim
+					LEFT JOIN table_2d_ref t2dref ON prim.pkExpressionPrimary = t2dref.fkExpressionPrimary
+					LEFT JOIN table_2d_id t2did ON t2dref.fkTable2D = t2did.pkTable2D
+					LEFT JOIN expression_primary t2did_key ON t2did.fkExpression = t2did_key.pkExpressionPrimary
+					WHERE prim.pkExpressionPrimary = " . $goodID);
+
+				$ret['example'] = fetch_example_for_expression_id($goodID, $lang);
+
+				$ret['descriptor'] = fetch_descriptor_for_expression_id($goodID, $lang);
+				
+				$ret = getTableForElement($ret, $ret['id'], $req);
+				
+				$request_ret = $ret;
 			} else {
 				$request_ret = assert_format($asserts_ret);
 			}

@@ -108,6 +108,38 @@ function getTableForElement($ret, $goodID, $options) {
 	return $ret;
 }
 
+function fetch_example_for_expression_id($id, $lang) {
+	$example_query = Conn::queryArrays('
+		SELECT strExample as example, strLanguageISO6391
+		FROM expression_data
+		WHERE fkExpressionPrimary = ' . $id . '
+	');
+
+	foreach ($example_query as $example) {
+		if (strcasecmp($example['strLanguageISO6391'], $lang) == 0) {
+			return $example['example'];
+		}
+	}
+
+	return '';
+}
+
+function fetch_descriptor_for_expression_id($id, $lang) {
+	$example_query = Conn::queryArrays('
+		SELECT strDescriptor as descriptor, strLanguageISO6391
+		FROM expression_data
+		WHERE fkExpressionPrimary = ' . $id . '
+	');
+
+	foreach ($example_query as $example) {
+		if (strcasecmp($example['strLanguageISO6391'], $lang) == 0) {
+			return $example['descriptor'];
+		}
+	}
+
+	return '';
+}
+
 function format_table_for($table_head_query, $query_exp, $top, $options) {
 	$ret = array();
 	$lang = strtolower($options['lang']);
@@ -130,22 +162,7 @@ function format_table_for($table_head_query, $query_exp, $top, $options) {
 
 	//fetch examples for expressions
 	foreach ($exp_query as &$expression) {
-		$example_query = Conn::queryArrays('
-			SELECT strExample as example, strLanguageISO6391
-			FROM expression_data
-			WHERE fkExpressionPrimary = ' . $expression['id'] . '
-		');
-
-		foreach ($example_query as $example) {
-			if (strcasecmp($example['strLanguageISO6391'], $lang) == 0) {
-				$expression['example'] = $example['example'];
-				break;
-			}
-		}
-
-		if (!isset($expression['example'])) {
-			$expression['example'] = '';
-		}
+		$expression['example'] = fetch_example_for_expression_id($expression['id'], $lang);
 	}
 	
 	$table_info = reconstruct_table_info($top, $table_head_query, $table_body_query);
@@ -238,20 +255,25 @@ function get_etymology($query_exp, $lang) {
 	$temp_etym = gen_etymology($query_exp['expression']);
 	
 	//fetch some examples from the DB so that the eymological parts display nicely
-	$etym_query = Conn::queryArrays("
-		SELECT
-			pkExpressionPrimary as id, prim.strExpression as expression,
-			sublang.strExample AS example
-		FROM expression_primary prim
-		LEFT JOIN
-			(
-				SELECT fkExpressionPrimary, strExample
-				FROM expression_data
-				WHERE strLanguageISO6391 = '".goodString($lang)."'
-			) sublang
-			ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
-		WHERE enumDeleted = 'N'
-		AND   prim.strExpression IN (".implode(',', array_map(function($a) { return "'".goodString($a)."'"; }, $temp_etym)).")");
+	$etym_query = array();
+	if (count($temp_etym) > 0) {
+		$etym_query = Conn::queryArrays("
+			SELECT
+				pkExpressionPrimary as id, prim.strExpression as expression,
+				sublang.strExample AS example
+			FROM expression_primary prim
+			LEFT JOIN
+				(
+					SELECT fkExpressionPrimary, strExample
+					FROM expression_data
+					WHERE strLanguageISO6391 = '".goodString($lang)."'
+				) sublang
+				ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
+			WHERE enumDeleted = 'N'
+			AND   prim.strExpression IN (".implode(',', array_map(function($a) { return "'".goodString($a)."'"; }, $temp_etym)).")");
+	} else {
+		throw new Exception('Unable to retrieve etymology for expression: "' . $query_exp['expression'] . '"');
+	}
 	
 	$flat_assoc = array();
 	for ($i=0; $i<count($etym_query); $i++) {
