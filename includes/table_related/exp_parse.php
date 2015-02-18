@@ -414,10 +414,10 @@ function identify_L0_astructs(&$AST) {
 	global $short_to_al;
 
 	if ($AST['internal']) {
-		if ($AST['value']['type'] == 'PLUS' && highest_LAYER_AST($AST) == 0) {
+		if ( in_array( $AST['value']['_original'], array_keys($short_to_al) ) ) {
 			$AST['type'] = 'L0PLUS';
 		}
-			
+		
 		for ($i=0; $i<count($AST['children']); $i++) {
 			$AST['children'][$i] = identify_L0_astructs($AST['children'][$i]);
 		}
