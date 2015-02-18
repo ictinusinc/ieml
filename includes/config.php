@@ -30,3 +30,14 @@ define('WEBAPPROOT', WEBROOT . OFFROOT);
 define('SESSIONTABLE', 'sessions');
 
 $lang = ((array_key_exists('lang', $_REQUEST) && strtolower($_REQUEST['lang']) == 'fr') ? 'FR' : 'EN');
+
+function pre_dump() {
+    ob_start();
+    echo '<pre>' . "\n"; call_user_func_array('var_dump', func_get_args()); echo '</pre>' . "\n";
+    return ob_get_clean();
+}
+
+function pre_dd() {
+	echo call_user_func_array('pre_dump', func_get_args());
+	die('DEAD! X_X' . "\n");
+}

@@ -153,9 +153,11 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 				$tpv_out_str = an array of arrays of the form ($pre, $post), with length count($tally_part_varied)
 			*/
 			list($tally_part_varied, $prime_tpv, $tpv_out_str) = IEML_tally_part_varied($AST, $exp, $pre, $post);
-			
+
 			$tpv_len = count($tally_part_varied);
 			
+			//if there's only one thing to vary at the current AST level
+			//but more than one parts at the current AST level, just return the single thing to vary
 			if ($tpv_len != $num_parts_in_lev && $tpv_len == 1) {
 				return IEML_gen_header($tally_part_varied[0], $exp, $pre.$tpv_out_str[0][0], $tpv_out_str[0][1].$post);
 			}
@@ -174,7 +176,7 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 				
 				$sub_heads[] = $temp_subs;
 			}
-			
+
 			if (count($sub_heads) == 2) {
 				for ($i=0; $i<count($sub_heads[0]); $i++) {
 					for ($j=0; $j<count($sub_heads[1]); $j++) {

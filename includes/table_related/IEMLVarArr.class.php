@@ -1,7 +1,8 @@
 <?php
 
 class IEMLVarArr {
-	private $arr, $post;
+	private $arr;
+	private $post;
 	
 	public static $IEML_toVary = array(
 	    'F:' => array(
