@@ -842,11 +842,20 @@
 		window.__req_info = info;
 		
 		if (info.tables) {
-			var str = '', render_callback = function(el) {
+			var str = '';
+			var render_callback = function(el) {
 				var out = '';
 				
-				if (null !== el.example) {
-					out += '<div class="' + (el.enumEnabled == 'N' ? 'hidden ' : '') + 'cell_wrap' + '">' + '<a href="/ajax.php?id=' + el.id + '&a=searchDictionary" data-exp="' + el.expression + '" data-id="' + el.id + '" class="editExp">' + '<span class="cell_expression">' + el.expression + '</span><span class="cell_example">' + el.example + '</span></a>' + '</div>';
+				if (el.id) {
+					out +=
+						'<div class="' + (el.enumEnabled == 'N' ? 'hidden ' : '') + 'cell_wrap' + '">' +
+							'<a href="/ajax.php?id=' + el.id + '&a=searchDictionary" data-exp="' + el.expression + '" data-id="' + el.id + '" class="editExp">' +
+								'<span class="cell_expression">' + el.expression + '</span>' +
+								(null !== el.example ?  '<span class="cell_example">' +
+									el.example +
+								'</span>' : '') +
+							'</a>' +
+						'</div>';
 				} else {
 					out += '<div><a href="javascript:void(0);" class="createEmptyExp">' + el.expression + '</a></div>';
 				}
