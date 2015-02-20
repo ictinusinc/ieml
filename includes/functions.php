@@ -323,7 +323,7 @@ class Conn{
     
     static function initiateStaticHandle() {
         Conn::$staticHandle = @mysql_connect(MYSQLSERVER, USERNAME, PASSWORD) or Conn::dbError();
-        //mysql_set_charset('utf8', Conn::$staticHandle); 
+        mysql_set_charset('latin1', Conn::$staticHandle); 
         @mysql_select_db(DATABASE, Conn::$staticHandle) or Conn::dbError();
     }
     
