@@ -20,7 +20,7 @@ header('Content-Type: text/html; charset=utf-8;');
 	<!-- bootstrap-2.0.1.css -->
 	<link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
 	<!-- style.css -->
-	<link rel="stylesheet" type="text/css" href="<?php echo WEBAPPROOT.'/includes/css/style.css'; ?>" />
+	<link rel="stylesheet" type="text/css" href="//<?php echo WEBAPPROOT.'/includes/css/style.css'; ?>" />
 </head>
 <body>
 	<div id="ajax"></div>

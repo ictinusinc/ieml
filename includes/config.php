@@ -17,9 +17,9 @@ if (array_key_exists('DOCUMENT_ROOT', $_SERVER) && $_SERVER['DOCUMENT_ROOT']) {
 define('RSCHEME', @$_SERVER['REQUEST_SCHEME'] ?: 'http');
 
 if (array_key_exists('HTTP_HOST',$_SERVER)) {
-	define('WEBROOT', RSCHEME . '://'.$_SERVER['HTTP_HOST']);
+	define('WEBROOT', $_SERVER['HTTP_HOST']);
 } else {
-	define('WEBROOT', RSCHEME . '://localhost');
+	define('WEBROOT', 'localhost');
 }
 
 define('OFFROOT', ''); //in case the app needs to be in a subdirectory
