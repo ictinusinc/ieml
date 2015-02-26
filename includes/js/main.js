@@ -20,6 +20,22 @@
 					on_delete();
 				}
 			}
+		},
+
+		'bhide': function() {
+			return this.addClass('hidden');
+		},
+
+		'bshow': function() {
+			return this.removeClass('hidden');
+		},
+
+		'btoggle': function() {
+			if (this.hasClass('hidden')) {
+				return this.bshow();
+			} else {
+				return this.bhide();
+			}
 		}
 	});
 })(jQuery);
@@ -31,6 +47,7 @@
 	
 	var IEMLApp = {};
 	
+	IEMLApp.ongoingRequestCount = 0;
 	IEMLApp.user = null;
 	IEMLApp.userLibraries = null;
 	IEMLApp.library = '1';
@@ -39,12 +56,12 @@
 	IEMLApp.draggedObject = null;
 	IEMLApp.sortableOptions = {
 		'onStart': function(evt) {
-			$('.editor-garbage').removeClass('hidden');
+			$('.editor-garbage').bshow();
 			IEMLApp.draggedObject = evt.item;
 			$(IEMLApp.draggedObject).resetCondition();
 		},
 		'onEnd': function(evt) {
-			$('.editor-garbage').addClass('hidden');
+			$('.editor-garbage').bhide();
 			$(IEMLApp.draggedObject).conditionalDelete(2, function() {
 				IEMLApp.onSort($('.editor-proper'));
 			});
@@ -293,26 +310,38 @@
 
 		return escaped;
 	};
+
+	IEMLApp.fetch = function(rvars, callback) {
+		IEMLApp.ongoingRequestCount++;
+
+		showLoadingIndicator();
+
+		$.getJSON(api_offset, rvars)
+			.done(function() {
+				callback.apply(null, arguments);
+
+				IEMLApp.ongoingRequestCount--;
+
+				if (IEMLApp.ongoingRequestCount === 0) {
+					hideLoadingIndicator();
+				}
+			});
+	};
 	
-	IEMLApp.submit = function (rvars, url, prev_state) {
-		if (!url || url.length <= 0) {
-			url = api_offset;
-		}
-		if (typeof prev_state == 'undefined') {
-			prev_state = History.getState();
-		}
+	IEMLApp.submit = function (rvars) {
+		var prev_state = History.getState();
 		
 		var state_call = obj_size(prev_state.data) === 0 ? IEMLApp.replaceState : IEMLApp.pushState;
 		
 		if (rvars) {
 			if (rvars.a == 'getUserLibraries') {
-				$.getJSON(url, rvars, function(responseData) {
+				IEMLApp.fetch(rvars, function(responseData) {
 					if (responseData.result != 'error') {
 						IEMLApp.userLibraries = responseData;
 					}
 				});
 			} else if (rvars.a == 'getAllLibraries') {
-				$.getJSON(url, rvars, function(responseData) {
+				IEMLApp.fetch(rvars, function(responseData) {
 					var libHtml = '';
 
 					for (var i=0; i<responseData.length; i++) {
@@ -324,7 +353,7 @@
 					$('#search-library-select').val(IEMLApp.library);
 				});
 			} else if (rvars.a == 'searchDictionary') {
-				$.getJSON(url, rvars, function(responseData) {
+				IEMLApp.fetch(rvars, function(responseData) {
 					var rvars_url = IEMLApp.form_data_make_url_safe(rvars);
 
 					state_call(IEMLApp.cons_state(rvars, responseData), '',
@@ -337,7 +366,7 @@
 					IEMLApp.receiveSearch(responseData, rvars);
 				});
 			} else if (rvars.a == 'expression') {
-				$.getJSON(url, rvars, function(responseData) {
+				IEMLApp.fetch(rvars, function(responseData) {
 					state_call(IEMLApp.cons_state(rvars, responseData), '',
 						cons_url([rvars.lang, 'library-' + rvars.library, 'view', (rvars.id ? rvars.id : rvars.exp)]
 					));
@@ -345,7 +374,7 @@
 					IEMLApp.receiveExpression(responseData);
 				});
 			} else if (rvars.a == 'login') {
-				$.getJSON(url, rvars, function(responseData) {
+				IEMLApp.fetch(rvars, function(responseData) {
 					if (responseData.result == "error") {
 						//TODO: change this to show some meaningful message to the user
 						console.log("Unable to log in.");
@@ -356,25 +385,25 @@
 					}
 				});
 			} else if (rvars.a == 'logout') {
-				$.getJSON(url, rvars, function() {
+				IEMLApp.fetch(rvars, function() {
 					init_anon_user();
 
 					IEMLApp.init_from_state(History.getState(), null);
 				});
 			} else if (rvars.a == 'viewUsers') {
-				$.getJSON(url, rvars, function(responseData) {
+				IEMLApp.fetch(rvars, function(responseData) {
 					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([IEMLApp.lang, 'users']));
 					
 					IEMLApp.receiveUserList(responseData);
 				});
 			} else if (rvars.a == 'addUser') {
-				$.getJSON(url, rvars, function(responseData) {
+				IEMLApp.fetch(rvars, function(responseData) {
 					if (responseData.pkUser) {
 						$('#userlist tbody').append(formatUserRow(responseData));
 					}
 				});
 			} else if (rvars.a == 'editDictionary' || rvars.a == 'newDictionary') {
-				$.getJSON(url, rvars, function(responseData) {
+				IEMLApp.fetch(rvars, function(responseData) {
 					if ($('#desc-result-id').val() === '') {
 						state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars.lang, 'library-' + rvars.library, 'view', responseData.expression]));
 						
@@ -384,13 +413,13 @@
 					IEMLApp.receiveExpression(responseData);
 				});
 			} else if (rvars.a == 'editVisualExpression') {
-				$.getJSON(url, rvars, function(responseData) {
+				IEMLApp.fetch(rvars, function(responseData) {
 					if (responseData.result == 'error') {
-						$('.ieml-validation-result, .result-error-icon').removeClass('hidden');
+						$('.ieml-validation-result, .result-error-icon').bshow();
 						$('.result-error').html(responseData.error);
 						return;
 					} else {
-						$('.ieml-validation-result, .result-error-icon').addClass('hidden');
+						$('.ieml-validation-result, .result-error-icon').bhide();
 					}
 
 					$('[data-result-id="' + responseData.rel_id + '"][data-expression-type="relational"]').get(0).outerHTML = formatResultRow(responseData);
@@ -398,13 +427,13 @@
 					IEMLApp.recieveVisualExpression(responseData);
 				});
 			} else if (rvars.a == 'newVisualExpression') {
-				$.getJSON(url, rvars, function(responseData) {
+				IEMLApp.fetch(rvars, function(responseData) {
 					if (responseData.result == 'error') {
-						$('.ieml-validation-result, .result-error-icon').removeClass('hidden');
+						$('.ieml-validation-result, .result-error-icon').bshow();
 						$('.result-error').html(responseData.error);
 						return;
 					} else {
-						$('.ieml-validation-result, .result-error-icon').addClass('hidden');
+						$('.ieml-validation-result, .result-error-icon').bhide();
 					}
 
 					//trigger list reload
@@ -415,7 +444,7 @@
 					IEMLApp.recieveVisualExpression(responseData);
 				});
 			} else if (rvars.a == 'relationalExpression') {
-				$.getJSON(url, rvars, function(responseData) {
+				IEMLApp.fetch(rvars, function(responseData) {
 					IEMLApp.library = responseData.fkLibrary[0];
 
 					$('#search-form #search-library-select').val(IEMLApp.library);
@@ -425,45 +454,45 @@
 					IEMLApp.recieveVisualExpression(responseData);
 				});
 			} else if (rvars.a == 'deleteDictionary') {
-				$.getJSON(url, rvars, function(responseData) {
+				IEMLApp.fetch(rvars, function(responseData) {
 					History.back();
 					
 					$('[data-result-id="' + rvars.id + '"][data-expression-type="basic"]').remove();
 				});
 			} else if (rvars.a == 'deleteVisualExpression') {
-				$.getJSON(url, rvars, function(responseData) {
+				IEMLApp.fetch(rvars, function(responseData) {
 					$('[data-result-id="' + rvars.rel_id + '"][data-expression-type="relational"]').remove();
 				});
 			} else if (rvars.a == 'deleteExpressionFromLibrary') {
-				$.getJSON(url, rvars, function(responseData) {
+				IEMLApp.fetch(rvars, function(responseData) {
 					$('[data-result-id="' + rvars.id + '"][data-expression-type="basic"]').remove();
 				});
 			} else if (rvars.a == 'validateExpression') {
 				if (rvars.expression.length === 0) {
-					$('.ieml-validation-result').addClass('hidden');
+					$('.ieml-validation-result').bhide();
 				} else {
-					$.getJSON(url, rvars, function(responseData) {
+					IEMLApp.fetch(rvars, function(responseData) {
 						if (responseData.result == 'success') {
 							var parser_out = responseData.parser_output;
 
-							$('.ieml-validation-result').removeClass('hidden');
+							$('.ieml-validation-result').bshow();
 
 							if (parser_out.resultCode === 0) {
-								$('.ieml-validation-result .result-success-icon, .ieml-validation-result .result-success').removeClass('hidden');
-								$('.ieml-validation-result .result-error-icon, .ieml-validation-result .result-error').addClass('hidden');
+								$('.ieml-validation-result .result-success-icon, .ieml-validation-result .result-success').bshow();
+								$('.ieml-validation-result .result-error-icon, .ieml-validation-result .result-error').bhide();
 							} else {
-								$('.ieml-validation-result .result-error-icon, .ieml-validation-result .result-error').removeClass('hidden');
-								$('.ieml-validation-result .result-success-icon, .ieml-validation-result .result-success').addClass('hidden');
+								$('.ieml-validation-result .result-error-icon, .ieml-validation-result .result-error').bshow();
+								$('.ieml-validation-result .result-success-icon, .ieml-validation-result .result-success').bhide();
 
 								$('.ieml-validation-result .result-error').html(parser_out.error);
 							}
 						} else {
-							$('.ieml-validation-result').addClass('hidden');
+							$('.ieml-validation-result').bhide();
 						}
 					});
 				}
 			} else if (rvars.a == 'addExpressionToLibrary') {
-				$.getJSON(url, rvars, function(responseData) {
+				IEMLApp.fetch(rvars, function(responseData) {
 					//remove link that added this expression to library
 					if (responseData.result != 'error') {
 						var $link = $('.addExpressionToLibrary[data-exp-id="' + rvars.id + '"][data-lib-id="' + rvars.library + '"]');
@@ -574,35 +603,35 @@
 	
 	function reset_views() {
 		$('.list-view-wrap').removeClass('editor-in');
-		$('.ieml-validation-result').addClass('hidden');
+		$('.ieml-validation-result').bhide();
 
-		$('.edit-buttons-wrap').addClass('hidden');
-		$('#back-to-list-view').addClass('hidden');
+		$('.edit-buttons-wrap').bhide();
+		$('#back-to-list-view').bhide();
 		
-		$('#filter-results-wrap').addClass('hidden');
+		$('#filter-results-wrap').bhide();
 		
-		$('#record-view-container, .circuit-container').addClass('hidden');
-		$('#user-view-container').addClass('hidden');
-		$('#list-view-container').addClass('hidden');
-		$('#login-view-container').addClass('hidden');
+		$('#record-view-container, .circuit-container').bhide();
+		$('#user-view-container').bhide();
+		$('#list-view-container').bhide();
+		$('#login-view-container').bhide();
 	}
 	
 	function switch_to_view(view) {
 		reset_views();
-		$('#'+view+'-view-container').removeClass('hidden');
+		$('#'+view+'-view-container').bshow();
 	}
 	
 	function switch_to_record() {
 		reset_views();
 		
 		if (IEMLApp.user) {
-			$('.edit-buttons-wrap').removeClass('hidden');
+			$('.edit-buttons-wrap').bshow();
 		} else {
-			$('.edit-buttons-wrap').addClass('hidden');
+			$('.edit-buttons-wrap').bhide();
 		}
 		
-		$('#back-to-list-view').removeClass('hidden');
-		$('#record-view-container, .circuit-container').removeClass('hidden');
+		$('#back-to-list-view').bshow();
+		$('#record-view-container, .circuit-container').bshow();
 	}
 	
 	function enable_editor() {
@@ -611,33 +640,33 @@
 
 	function switch_to_list() {
 		reset_views();
-		$('#filter-results-wrap').removeClass('hidden');
-		$('#list-view-container').removeClass('hidden');
+		$('#filter-results-wrap').bshow();
+		$('#list-view-container').bshow();
 	}
 	
 	function init_user_login(userObj) {
 		IEMLApp.user = userObj;
 		IEMLApp.submit({'a': 'getUserLibraries'});
 		
-		$('.login-btn-wrap').addClass('hidden');
-		$('.logout-btn-wrap').removeClass('hidden');
-		$('#add-ieml-record-wrap').removeClass('hidden');
+		$('.login-btn-wrap').bhide();
+		$('.logout-btn-wrap').bshow();
+		$('#add-ieml-record-wrap').bshow();
 		
 		if (IEMLApp.user.enumType == 'admin') {
-			$('.ieml-view-users-wrap').removeClass('hidden');
+			$('.ieml-view-users-wrap').bshow();
 		} else {
-			$('.ieml-view-users-wrap').addClass('hidden');
+			$('.ieml-view-users-wrap').bhide();
 		}
 		
 		$('.user-display-name').html(userObj.strDisplayName);
 	}
 	
 	function init_anon_user() {
-		$('.logout-btn-wrap').addClass('hidden');
-		$('.login-btn-wrap').removeClass('hidden');
-		$('#add-ieml-record-wrap').addClass('hidden');
-		$('#ieml-view-users-wrap').addClass('hidden');
-		$('.edit-buttons-wrap').addClass('hidden');
+		$('.logout-btn-wrap').bhide();
+		$('.login-btn-wrap').bshow();
+		$('#add-ieml-record-wrap').bhide();
+		$('#ieml-view-users-wrap').bhide();
+		$('.edit-buttons-wrap').bhide();
 		
 		IEMLApp.user = null;
 	}
@@ -900,9 +929,9 @@
 		
 		$('#iemlEnumComplConcOff').prop('checked', info.iemlEnumComplConcOff == 'Y').trigger('change');
 		if (info.iemlEnumComplConcOff == 'Y') {
-			$('#ieml-complementary-section').addClass('hidden');
+			$('#ieml-complementary-section').bhide();
 		} else {
-			$('#ieml-complementary-section').removeClass('hidden');
+			$('#ieml-complementary-section').bshow();
 		}
 		$('#iemlEnumSubstanceOff').prop('checked', info.iemlEnumSubstanceOff == 'Y').trigger('change');
 		$('#iemlEnumAttributeOff').prop('checked', info.iemlEnumAttributeOff == 'Y').trigger('change');
@@ -922,18 +951,18 @@
 				}
 			}
 			
-			$('#ieml-contained-wrap').removeClass('hidden').html(relationHtml.contained);
-			$('#ieml-containing-wrap').removeClass('hidden').html(relationHtml.containing);
-			$('#ieml-concurrent-wrap').removeClass('hidden').html(relationHtml.concurrent);
-			$('#ieml-complementary-wrap').removeClass('hidden').html(relationHtml.complementary);
+			$('#ieml-contained-wrap').bshow().html(relationHtml.contained);
+			$('#ieml-containing-wrap').bshow().html(relationHtml.containing);
+			$('#ieml-concurrent-wrap').bshow().html(relationHtml.concurrent);
+			$('#ieml-complementary-wrap').bshow().html(relationHtml.complementary);
 		} else {
-			$('#ieml-contained-wrap, #ieml-containing-wrap, #ieml-concurrent-wrap, #ieml-complementary-wrap').addClass('hidden');
+			$('#ieml-contained-wrap, #ieml-containing-wrap, #ieml-concurrent-wrap, #ieml-complementary-wrap').bhide();
 		}
 		
 		if (info.etymology) {
-			$('#ieml-etymology-wrap').removeClass('hidden').html(format_etymology(info));
+			$('#ieml-etymology-wrap').bshow().html(format_etymology(info));
 		} else {
-			$('#ieml-etymology-wrap').addClass('hidden');
+			$('#ieml-etymology-wrap').bhide();
 		}
 		
 		if (info.debug) {
@@ -1036,7 +1065,7 @@
 	}
 	
 	function readToWrite() {
-		$('.non-edit-buttons').removeClass('hidden');
+		$('.non-edit-buttons').bshow();
 		$('#ieml-desc-result-edit').addClass('disabled');
 		textToInput($('#ieml-result'), 'input-large form-control');
 		textToInput($('#ieml-ex-result'), 'input-xlarge form-control');
@@ -1046,32 +1075,40 @@
 			var exp = $(this).val();
 
 			if (exp.length > 0) {
-				$('.ieml-validation-result').removeClass('hidden');
+				$('.ieml-validation-result').bshow();
 
 				IEMLApp.submit({
 					'a': 'validateExpression',
 					'expression': exp
 				});
 			} else {
-				$('.ieml-validation-result').addClass('hidden');
+				$('.ieml-validation-result').bhide();
 			}
 		});
 
 		$('#iemlEnumCategoryModal').removeAttr('disabled');
-		$('.edit-only').removeClass('hidden');
+		$('.edit-only').bshow();
 	}
 	
 	function writeToRead() {
-		$('.non-edit-buttons').addClass('hidden');
+		$('.non-edit-buttons').bhide();
 		$('#ieml-desc-result-edit').removeClass('disabled');
 		inputToText($('#ieml-result'));
 		inputToText($('#ieml-ex-result'));
 		inputToText($('#ieml-desc-result'));
 
-		$('.ieml-validation-result').addClass('hidden');
+		$('.ieml-validation-result').bhide();
 
 		$('#iemlEnumCategoryModal').attr('disabled', 'disabled');
-		$('.edit-only').addClass('hidden');
+		$('.edit-only').bhide();
+	}
+
+	function showLoadingIndicator() {
+		$('.globalLoading').bshow();
+	}
+
+	function hideLoadingIndicator() {
+		$('.globalLoading').bhide();
 	}
 	
 	$(function() {
@@ -1091,21 +1128,21 @@
 			var info = IEMLApp.lastRetrievedData;
 			
 			if($('#iemlEnumShowTable').is(':checked')) {
-				$('.nonExistentCell').removeClass('hidden');
-				$('table.relation tr.empty_head_tr, table.relation td.empty_head_tr_td').removeClass('hidden');
+				$('.nonExistentCell').bshow();
+				$('table.relation tr.empty_head_tr, table.relation td.empty_head_tr_td').bshow();
 				if (info.edit_vertical_head_length <= 0 && info.edit_horizontal_head_length <= 0) {
-					$('table.relation td.empty_cell').addClass('hidden');
+					$('table.relation td.empty_cell').bhide();
 				} else {
-					$('table.relation td.empty_cell').removeClass('hidden')
+					$('table.relation td.empty_cell').bshow()
 						.attr('rowspan', parseInt(info.edit_vertical_head_length, 10) + 1).attr('colspan', info.edit_horizontal_head_length);
 				}
 			} else {
-				$('.nonExistentCell').addClass('hidden');
-				$('table.relation tr.empty_head_tr, table.relation td.empty_head_tr_td').addClass('hidden');
+				$('.nonExistentCell').bhide();
+				$('table.relation tr.empty_head_tr, table.relation td.empty_head_tr_td').bhide();
 				if (info.render_vertical_head_length <= 0 && info.render_horizontal_head_length <= 0) {
-					$('table.relation td.empty_cell').addClass('hidden');
+					$('table.relation td.empty_cell').bhide();
 				} else {
-					$('table.relation td.empty_cell').removeClass('hidden')
+					$('table.relation td.empty_cell').bshow()
 						.attr('rowspan', parseInt(info.render_vertical_head_length, 10) + 1).attr('colspan', info.render_horizontal_head_length);
 				}
 			}
@@ -1206,9 +1243,9 @@
 		}).on('change', '.enable_check', function() {
 			var thisID = $(this).data('ref-id'), thisval = $(this).is(':checked') ? 'Y' : 'N';
 			if (thisval == 'N')
-				$(this).siblings('.cell_wrap').addClass('hidden');
+				$(this).siblings('.cell_wrap').bhide();
 			else
-				$(this).siblings('.cell_wrap').removeClass('hidden');
+				$(this).siblings('.cell_wrap').bshow();
 			$.post('/ajax.php?a=setTableEl&id=' + thisID + '&enumEnabled=' + thisval, function(response) {});
 		}).on('click', '.createEmptyExp', function() {
 			var $this = $(this);
@@ -1331,7 +1368,15 @@
 				});
 			});
 		});
-		
+
+		//One-time setup
+		var spinner = new Spinner({
+			length: 20, // The length of each line
+			width: 10, // The line thickness
+			radius: 30, // The radius of the inner circle
+			color: '#FFF', // #rgb or #rrggbb or array of colors
+		}).spin($('.globalLoading').get(0));
+
 		if (window.location.pathname.length == 1) {
 			$('#filter-results-keys').click();
 			$('#search-form').submit();

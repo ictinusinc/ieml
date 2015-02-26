@@ -1,6 +1,8 @@
 		</div>
 		
 	<!-- Javascript Files -->
+	<!-- spin -->
+	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/spin.min.js"></script>
 	<!-- native.history -->
 	<script type="text/javascript" src="//<?= WEBAPPROOT.'/includes/js/libs/native.history-1.8b2.min.js' ?>"></script>
 	<!-- jquery -->

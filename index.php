@@ -373,7 +373,11 @@ require_once(APPROOT.'/includes/header.php');
 				</div>
 			</div>
 		</div>
-	</div><!--/confirmCancelModal-->
+	</div><!-- /#confirmCancelModal -->
+
+	<div class="globalLoading">
+		<div class="backdrop"></div>
+	</div><!-- /.globalLoading -->
 	<?php
 
 	require_once(APPROOT.'/includes/footer.php');
