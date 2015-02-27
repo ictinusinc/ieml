@@ -284,6 +284,7 @@ function handle_request($action, $req) {
 				$newUser = array(
 					'pkUser' => Conn::getId(),
 					'strEmail' => $req['username'],
+					'strDisplayName' => $req['displayname'],
 					'tsDateCreated' => $now,
 					'tsLastUpdate' => $now,
 					'enumType' => 'user',
