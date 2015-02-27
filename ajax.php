@@ -257,16 +257,29 @@ function handle_request($action, $req) {
 			break;
 		
 		case 'addUser':
-			$asserts_ret = assert_arr(array('username', 'pass', 'enumType'), $req);
+			$asserts_ret = assert_arr(array('username', 'displayname', 'pass', 'enumType'), $req);
 			
 			if (TRUE === $asserts_ret) {
 				$now = time();
 				
 				Conn::query("
-					INSERT INTO
-						users (strEmail, strPassHash, enumType, tsDateCreated)
+					INSERT INTO users
+						(
+							strEmail,
+							strDisplayName,
+							strPassHash,
+							enumType,
+							tsDateCreated
+						)
 					VALUES
-						('".goodString($req['username'])."', '".goodString(bcrypt_hash($req['pass']))."', '".goodString($req['enumType'])."', ".$now.")");
+						(
+							'".goodString($req['username'])."',
+							'".goodString($req['displayname'])."',
+							'".goodString(bcrypt_hash($req['pass']))."',
+							'".goodString($req['enumType'])."',
+							".$now."
+						)
+				");
 				
 				$newUser = array(
 					'pkUser' => Conn::getId(),
@@ -337,15 +350,20 @@ function handle_request($action, $req) {
 				);
 				break;
 			}
+			
+			$res = Conn::queryArrays("
+				SELECT
+					pkUser,
+					strEmail,
+					strDisplayName,
+					tsDateCreated,
+					UNIX_TIMESTAMP(tsLastUpdate) AS tsLastUpdate,
+					enumType,
+					enumDeleted
+				FROM users
+				WHERE enumDeleted = '" . ($req['deleted'] == 'yes' ? 'yes' : 'no') . "'
+			");
 
-			$res = NULL;
-			
-			if ($req['deleted'] == 'yes') {
-				$res = Conn::queryArrays("SELECT pkUser, strEmail, tsDateCreated, UNIX_TIMESTAMP(tsLastUpdate) AS tsLastUpdate, enumType, enumDeleted FROM users WHERE enumDeleted = 'yes'");
-			} else {
-				$res = Conn::queryArrays("SELECT pkUser, strEmail, tsDateCreated, UNIX_TIMESTAMP(tsLastUpdate) AS tsLastUpdate, enumType, enumDeleted FROM users WHERE enumDeleted = 'no'");
-			}
-			
 			for ($i=0; $i<count($res); $i++) {
 				$res[$i]['tsDateCreated'] = goodInt($res[$i]['tsDateCreated']);
 				$res[$i]['tsLastUpdate'] = goodInt($res[$i]['tsLastUpdate']);

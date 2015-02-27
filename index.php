@@ -312,6 +312,14 @@ require_once(APPROOT.'/includes/header.php');
 						<input type="hidden" name="a" value="addUser">
 
 						<div class="control-group">
+							<label class="control-label" for="addUserModalDisplayName" data-lang-switch="name"><?php echo trans_phrase('name', $lang); ?></label>
+
+							<div class="controls">
+								<input type="text" class="form-control" id="addUserModalDisplayName" name="addUserModalDisplayName" />
+							</div>
+						</div>
+
+						<div class="control-group">
 							<label class="control-label" for="addUserModalUsername" data-lang-switch="user"><?php echo trans_phrase('user', $lang); ?></label>
 
 							<div class="controls">
@@ -331,7 +339,7 @@ require_once(APPROOT.'/includes/header.php');
 						</div>
 
 						<div class="control-group">
-							<label class="control-label" for="addUserModalUsername" data-lang-switch="password"><?php echo trans_phrase('password', $lang); ?></label>
+							<label class="control-label" for="addUserModalPass" data-lang-switch="password"><?php echo trans_phrase('password', $lang); ?></label>
 
 							<div class="controls">
 								<input type="password" class="form-control" id="addUserModalPass" name="addUserModalPass" />
@@ -339,7 +347,7 @@ require_once(APPROOT.'/includes/header.php');
 						</div>
 
 						<div class="control-group">
-							<label class="control-label" for="addUserModalUsername" data-lang-switch="conf_pass"><?php echo trans_phrase('conf_pass', $lang); ?></label>
+							<label class="control-label" for="addUserModalConfPass" data-lang-switch="conf_pass"><?php echo trans_phrase('conf_pass', $lang); ?></label>
 
 							<div class="controls">
 								<input type="password" class="form-control" id="addUserModalConfPass" name="addUserModalConfPass" />

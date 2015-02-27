@@ -402,6 +402,12 @@
 						$('#userlist tbody').append(formatUserRow(responseData));
 					}
 				});
+			} else if (rvars.a == 'delUser') {
+				IEMLApp.fetch(rvars, function(responseData) {
+					if (responseData.result != 'error') {
+						$('#userlist tbody tr[data-id="' + rvars.pkUser + '"]').remove();
+					}
+				});
 			} else if (rvars.a == 'editDictionary' || rvars.a == 'newDictionary') {
 				IEMLApp.fetch(rvars, function(responseData) {
 					if ($('#desc-result-id').val() === '') {
@@ -1029,13 +1035,13 @@
 	}
 	
 	function formatUserRow(user) {
-		return '<tr>' +
+		return '<tr data-id="' + user.pkUser + '" data-name="' + user.strDisplayName + '">' +
 			'<td>'+user.strEmail+'</td>' +
 			'<td>'+user.enumType+'</td>' +
 			'<td>' + LightDate.date('Y-m-d H:i:s', LightDate.date_timezone_adjust(user.tsDateCreated * 1000)) + '</td>' +
 			'<td>' + 
 				//<!--a href="/ajax.php?a=editUser&pkUser='+user.pkUser+'" class="editUser btn btn-default">Edit</a-->' +
-				'<button type="button" href="javascript:void(0)" class="delUser btn btn-default" data-id="' + user.pkUser + '">Delete</button>' +
+				'<button type="button" href="javascript:void(0)" class="delUser btn btn-default">Delete</button>' +
 			'</td>' +
 		'</tr>';
 	}
@@ -1282,6 +1288,7 @@
 			IEMLApp.submit({
 				'a' : formData.a,
 				'username' : formData.addUserModalUsername,
+				'displayname' : formData.addUserModalDisplayName,
 				'pass' : formData.addUserModalPass,
 				'enumType' : formData.addUserModalType
 			});
@@ -1289,10 +1296,13 @@
 			return false;
 		}).on('click', '.delUser', function() {
 			var $this = $(this);
+			var $row = $this.parents('tr').eq(0);
 
-			showConfirmDialog('Are you sure?', function() {
-				IEMLApp.submit({ 'a': 'delUser', 'pkUser': $this.data('id') });
-			});
+			showConfirmDialog('Are you wish to delete ' + $row.data('name') + '?',
+				function() {
+					IEMLApp.submit({ 'a': 'delUser', 'pkUser': $row.data('id') });
+				}
+			);
 			
 			return false;
 		}).on('click', '.editUser', function() {
