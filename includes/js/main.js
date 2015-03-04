@@ -1062,8 +1062,16 @@
 	
 	function textToInput(sel, classes) {
 		var text = sel.text();
-		sel.html('<input type="text" class="'+classes+'" />');
-		sel.children('input').val(text);
+		var $input = $('<input type="text" class="'+classes+'" />');
+		$input.val(text);
+		sel.html($input);
+	}
+
+	function textToTextArea(sel, classes) {
+		var text = sel.text();
+		var $textarea = $('<textarea type="text" class="'+classes+'" ></textarea>');
+		$textarea.val(text);
+		sel.html($textarea);
 	}
 	
 	function inputToText(sel) {
@@ -1074,8 +1082,8 @@
 		$('.non-edit-buttons').bshow();
 		$('#ieml-desc-result-edit').addClass('disabled');
 		textToInput($('#ieml-result'), 'input-large form-control');
-		textToInput($('#ieml-ex-result'), 'input-xlarge form-control');
-		textToInput($('#ieml-desc-result'), 'input-xlarge form-control');
+		textToInput($('#ieml-ex-result'), 'input-xxlarge form-control');
+		textToInput($('#ieml-desc-result'), 'input-xxlarge form-control');
 		
 		$('#ieml-result > .input-large').on('input', function() {
 			var exp = $(this).val();

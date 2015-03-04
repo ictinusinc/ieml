@@ -336,3 +336,15 @@ table.relation .cell_wrap span.cell_expression {
 	border-right: 1px solid #ddd;
 	border-top: 1px solid #ddd;
 }
+
+.input-large {
+	width: 210px;
+}
+
+.input-xlarge {
+	width: 270px;
+}
+
+.input-xxlarge {
+	width: 510px;
+}
