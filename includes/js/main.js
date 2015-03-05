@@ -164,6 +164,8 @@
 
 		if (settings.lang) {
 			IEMLApp.set_lang(settings.lang);
+
+			IEMLApp.switch_lang(IEMLApp.lang);
 		}
 		
 		if (settings.mode == 'users') {
@@ -248,6 +250,14 @@
 	
 	IEMLApp.switch_lang = function(new_lang, cur_state) {
 		new_lang = new_lang.toUpperCase();
+
+		if (!cur_state || !cur_state.req || cur_state.req.lang != new_lang) {
+			IEMLApp.submit({ 'a': 'getAllLibraries', 'lang': new_lang });
+
+			if (IEMLApp.user) {
+				IEMLApp.submit({ 'a': 'getUserLibraries', 'lang': new_lang });
+			}
+		}
 
 		if (cur_state && cur_state.req && cur_state.req.lang != new_lang) {
 			cur_state.req.lang = new_lang;
@@ -652,7 +662,6 @@
 	
 	function init_user_login(userObj) {
 		IEMLApp.user = userObj;
-		IEMLApp.submit({ 'a': 'getUserLibraries', 'lang': IEMLApp.lang });
 		
 		$('.login-btn-wrap').bhide();
 		$('.logout-btn-wrap').bshow();
@@ -1430,8 +1439,6 @@
 		{
 			init_anon_user();
 		}
-
-		IEMLApp.submit({ 'a': 'getAllLibraries', 'lang': IEMLApp.lang });
 		
 		IEMLApp.init_from_url(window.location);
 	});
