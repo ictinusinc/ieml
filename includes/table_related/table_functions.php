@@ -622,19 +622,21 @@ function gen_contained($exp_info, &$table) {
 function gen_containing_body($exp_info, &$table) {
 	$containing = array();
 
-	if ($exp_info['enumHeaderType'] == 'hor') {
-		for ($j=0; $j<count($table['body']); $j++) {
-			for ($k=0; $k<count($table['body'][$j]); $k++) {
-				if ($exp_info['intPosInTable'] <= $j && $j < $exp_info['intPosInTable'] + $exp_info['intSpan']) {
-					$containing[] = $table['body'][$j][$k];
+	if ($exp_info['enumElementType'] == 'header') {
+		if ($exp_info['enumHeaderType'] == 'hor') {
+			for ($j=0; $j<count($table['body']); $j++) {
+				for ($k=0; $k<count($table['body'][$j]); $k++) {
+					if ($exp_info['intPosInTable'] <= $j && $j < $exp_info['intPosInTable'] + $exp_info['intSpan']) {
+						$containing[] = $table['body'][$j][$k];
+					}
 				}
 			}
-		}
-	} else {
-		for ($j=0; $j<count($table['body']); $j++) {
-			for ($k=0; $k<count($table['body'][$j]); $k++) {
-				if ($exp_info['intPosInTable'] <= $k && $k < $exp_info['intPosInTable'] + $exp_info['intSpan']) {
-					$containing[] = $table['body'][$j][$k];
+		} else {
+			for ($j=0; $j<count($table['body']); $j++) {
+				for ($k=0; $k<count($table['body'][$j]); $k++) {
+					if ($exp_info['intPosInTable'] <= $k && $k < $exp_info['intPosInTable'] + $exp_info['intSpan']) {
+						$containing[] = $table['body'][$j][$k];
+					}
 				}
 			}
 		}
