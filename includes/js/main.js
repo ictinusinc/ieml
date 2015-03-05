@@ -724,15 +724,19 @@
 		
 		if (rel) {
 			if (rel.contained && rel.contained.length > 0) {
-				for (var i=0; i<rel.contained.length; i++) {
-					contained_html += '<li>'+format_single_relation(rel.contained[i])+'</li>';
+				for (var i = 0; i < rel.contained.length; i++) {
+					if (rel.contained[i].desc) {
+						contained_html += '<li>' + format_single_relation(rel.contained[i]) + '</li>';
+					}
 					
 					var concurrent_rel = rel.concurrent[rel.contained[i].exp[0]];
 					if (concurrent_rel.length > 0) {
 						concurrent_html += '<div class="concurring-relation col-md-6"><span class="concurring-relation-text"><strong>In relation to "' + format_single_relation(rel.contained[i]) + '"</strong></span><ul class="unstyled relation-list">';
 
 						for (var j=0; j<concurrent_rel.length; j++) {
-							concurrent_html += '<li>'+format_single_relation(concurrent_rel[j])+'</li>';
+							if (concurrent_rel[j].desc) {
+								concurrent_html += '<li>' + format_single_relation(concurrent_rel[j]) + '</li>';
+							}
 						}
 						concurrent_html += '</ul></div>';
 					}
@@ -748,7 +752,9 @@
 			if (rel.containing && rel.containing.length > 0) {
 				containing_html += '<ul class="unstyled relation-list">';
 				for (var k=0; k<rel.containing.length; k++) {
-					containing_html += '<li>'+format_single_relation(rel.containing[k])+'</li>';
+					if (rel.containing[k].desc) {
+						containing_html += '<li>' + format_single_relation(rel.containing[k]) + '</li>';
+					}
 				}
 				containing_html += '</ul>';
 			} else {
