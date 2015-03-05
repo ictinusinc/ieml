@@ -44,6 +44,16 @@ function expression_sort_cmp($a, $b) {
 	}
 }
 
+function make_word_possessive($word) {
+	if ($word[strlen($word) - 1] == 's') {
+		$word .= "'";
+	} else {
+		$word .= "'s";
+	}
+
+	return $word;
+}
+
 function handle_request($action, $req) {
 	$request_ret = NULL;
 	
@@ -376,36 +386,63 @@ function handle_request($action, $req) {
 			break;
 
 		case 'getUserLibraries':
-			$ret = NULL;
-			if ($_SESSION['user']) {
-				$ret = Conn::queryArrays("
-					SELECT
-						pkLibrary, fkUser, strName
-					FROM library
-					WHERE fkUser = ".goodInt($_SESSION['user']['pkUser'])."
-				");
-			} else {
-				$ret = array(
-					'result' => 'error',
-					'resultCode' => 1,
-					'error' => 'User must be logged in to use this route.'
-				);
-			}
+			$asserts_ret = assert_arr(array('lang'), $req);
 
-			$request_ret = $ret;
+			if (TRUE === $asserts_ret) {
+				$ret = NULL;
+
+				if ($_SESSION['user']) {
+					$ret = Conn::queryArrays("
+						SELECT
+							pkLibrary, fkUser, strName
+						FROM library
+						WHERE fkUser = ".goodInt($_SESSION['user']['pkUser'])."
+					");
+				} else {
+					$ret = array(
+						'result' => 'error',
+						'resultCode' => 1,
+						'error' => 'User must be logged in to use this route.'
+					);
+				}
+
+				$translated_vocabulary = $req['lang'] == 'FR' ? 'Vocabulaire' : 'Vocabulary';
+
+				for ($i = 0; $i < count($ret); $i++) {
+					$lib = &$ret[$i];
+					$lib['strName'] = make_word_possessive($lib['strName']) . ' ' . $translated_vocabulary;
+				}
+
+				$request_ret = $ret;
+			} else {
+				$request_ret = assert_format($asserts_ret);
+			}
 
 			break;
 
 		case 'getAllLibraries':
-			$request_ret = Conn::queryArrays("
-				SELECT
-					pkLibrary, fkUser, strName
-				FROM library
-				LEFT JOIN users ON library.fkUser = users.pkUser
-				WHERE
-					users.enumDeleted = 'no'
-					OR library.fkUser IS NULL
-			");
+			$asserts_ret = assert_arr(array('lang'), $req);
+
+			if (TRUE === $asserts_ret) {
+				$request_ret = Conn::queryArrays("
+					SELECT
+						pkLibrary, fkUser, strName
+					FROM library
+					LEFT JOIN users ON library.fkUser = users.pkUser
+					WHERE
+						users.enumDeleted = 'no'
+						OR library.fkUser IS NULL
+				");
+
+				$translated_vocabulary = $req['lang'] == 'FR' ? 'Vocabulaire' : 'Vocabulary';
+
+				for ($i = 1; $i < count($request_ret); $i++) {
+					$lib = &$request_ret[$i];
+					$lib['strName'] = make_word_possessive($lib['strName']) . ' ' . $translated_vocabulary;
+				}
+			} else {
+				$request_ret = assert_format($asserts_ret);
+			}
 
 			break;
 		

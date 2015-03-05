@@ -652,7 +652,7 @@
 	
 	function init_user_login(userObj) {
 		IEMLApp.user = userObj;
-		IEMLApp.submit({'a': 'getUserLibraries'});
+		IEMLApp.submit({ 'a': 'getUserLibraries', 'lang': IEMLApp.lang });
 		
 		$('.login-btn-wrap').bhide();
 		$('.logout-btn-wrap').bshow();
@@ -1424,7 +1424,8 @@
 		{
 			init_anon_user();
 		}
-		IEMLApp.submit({'a': 'getAllLibraries'});
+
+		IEMLApp.submit({ 'a': 'getAllLibraries', 'lang': IEMLApp.lang });
 		
 		IEMLApp.init_from_url(window.location);
 	});
