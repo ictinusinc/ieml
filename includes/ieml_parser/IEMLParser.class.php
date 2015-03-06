@@ -1,4 +1,4 @@
- <?php
+<?php
 
 include_once(dirname(__FILE__).'/IEMLASTNode.class.php');
 include_once(dirname(__FILE__).'/ParserException.class.php');
