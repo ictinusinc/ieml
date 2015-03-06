@@ -1,5 +1,4 @@
 <?php
-
 require_once('includes/config.php');
 require_once(APPROOT . '/includes/ieml_parser/DebugLog.class.php');
 require_once(APPROOT . '/includes/functions.php');
@@ -146,15 +145,37 @@ function handle_request($action, $req) {
 
 				$ret = Conn::queryArray("
 					SELECT
-						prim.pkExpressionPrimary as id, prim.strExpression as expression,
-						prim.intSetSize, prim.intLayer, prim.strFullBareString,
-						prim.enumClass, prim.enumCategory,
-						t2did_key.enumShowEmpties, t2did_key.enumCompConc, t2did_key.strEtymSwitch
+						prim.pkExpressionPrimary as id,
+						prim.strExpression as expression,
+						prim.intSetSize,
+						prim.intLayer,
+						prim.strFullBareString,
+						prim.enumClass,
+						prim.enumCategory,
+
+						prim.enumShowEmpties,
+						prim.enumCompConc,
+						prim.strEtymSwitch
 					FROM expression_primary prim
-					LEFT JOIN table_2d_ref t2dref ON prim.pkExpressionPrimary = t2dref.fkExpressionPrimary
-					LEFT JOIN table_2d_id t2did ON t2dref.fkTable2D = t2did.pkTable2D
-					LEFT JOIN expression_primary t2did_key ON t2did.fkExpression = t2did_key.pkExpressionPrimary
 					WHERE prim.pkExpressionPrimary = " . $goodID);
+
+				if ($prim['strEtymSwitch']) {
+					$ret_key = Conn::queryArray('
+						SELECT
+							t2did_key.enumShowEmpties,
+							t2did_key.enumCompConc,
+							t2did_key.strEtymSwitch
+						FROM table_2d_ref t2dref
+						LEFT JOIN table_2d_id t2did ON t2dref.fkTable2D = t2did.pkTable2D
+						LEFT JOIN expression_primary t2did_key ON t2did.fkExpression = t2did_key.pkExpressionPrimary
+						WHERE
+							t2dref.fkExpressionPrimary = ' . $goodID . '
+					');
+
+					$ret['enumShowEmpties'] = $ret_key['enumShowEmpties'];
+					$ret['enumCompConc'] = $ret_key['enumCompConc'];
+					$ret['strEtymSwitch'] = $ret_key['strEtymSwitch'];
+				}
 
 				$ret['example'] = fetch_example_for_expression_id($goodID, $lang);
 

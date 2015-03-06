@@ -98,12 +98,8 @@ function getTableForElement($ret, $goodID, $options) {
 	for ($i=0; $i<count($ret['tables']); $i++) {
 		$ret['tables'][$i] = array_values($ret['tables'][$i]);
 	}
-	
-	if ($ret['enumCategory'] == 'Y') {
-		$ret['etymology'] = NULL;
-	} else {
-		$ret['etymology'] = get_etymology($ret, $lang);
-	}
+
+	$ret['etymology'] = get_etymology($ret, $lang);
 	
 	return $ret;
 }
@@ -292,7 +288,7 @@ function get_etymology($query_exp, $lang) {
 	$etymology = array();
 	for ($i=0; $i<count($temp_etym); $i++) {
 		if ($query_exp['strEtymSwitch'][$i] == 'Y') {
-			$etymology[] = $temp_etym[$i];
+				$etymology[] = $temp_etym[$i];
 		}
 	}
 
