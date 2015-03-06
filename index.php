@@ -257,6 +257,17 @@ require_once(APPROOT.'/includes/header.php');
 				<div class="tab-pane" id="relations">
 					<div class="container">
 						<div id="ieml-relations-wrap">
+
+							<h3 class="heading_underline" data-lang-switch="etymology"><?php echo trans_phrase('etymology', $lang); ?></h3>
+
+							<div id="ieml-etymology-wrap"></div>
+
+							<div id="ieml-complementary-section">
+								<h3 class="heading_underline" data-lang-switch="complementary_concepts"><?php echo trans_phrase('complementary_concepts', $lang); ?></h3>
+
+								<div id="ieml-complementary-wrap"></div>
+							</div>
+
 							<h3 class="heading_underline"><span data-lang-switch="taxonomic"><?php echo trans_phrase('taxonomic', $lang); ?></span></h3>
 
 							<div class="row">
@@ -277,21 +288,14 @@ require_once(APPROOT.'/includes/header.php');
 
 							<div id="ieml-concurrent-wrap"></div>
 
-							<div id="ieml-complementary-section">
-								<h3 class="heading_underline" data-lang-switch="complementary_concepts"><?php echo trans_phrase('complementary_concepts', $lang); ?></h3>
-
-								<div id="ieml-complementary-wrap"></div>
-							</div>
-
-							<h3 class="heading_underline" data-lang-switch="etymology"><?php echo trans_phrase('etymology', $lang); ?></h3>
-
-							<div id="ieml-etymology-wrap"></div>
 						</div>
 					</div>
 				</div>
 
 				<div class="tab-pane" id="graph">
-					&hellip;
+					<div class="container">
+						&hellip;
+					</div>
 				</div>
 			</div>
 		</div>
