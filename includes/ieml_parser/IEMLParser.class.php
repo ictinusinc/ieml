@@ -212,9 +212,9 @@ class IEMLParser {
 				
 				if ($highest_layer < 0 || $highest_layer >= count(IEMLParser::$LAYER_STRINGS)) {
 					throw new ParseException('Layer mismatch', 4, array($source_character, strlen($string)));
-				} else if ($this->hasTopLevelAddition($string, $highest_layer)) {
+				} else if ($this->hasTopLevelAddition($string)) {
 					//determine additive relations
-					$additive_relations = $this->getAdditiveRelations($string, $highest_layer, $source_character);
+					$additive_relations = $this->getAdditiveRelations($string);
 					
 					$AST = new IEMLASTNode($string, IEMLNodeType::$ADD, array(), $source_character);
 					
@@ -268,61 +268,47 @@ class IEMLParser {
 		return $highest_layer;
 	}
 	
-	private function getAdditiveRelations($string, $highest_layer, $source_character) {
+	private function getAdditiveRelations($string) {
 		Devlog::i(__FUNCTION__.pre_dump(func_get_args()));
 
 		$string = trim($string);
-		$str_len = strlen($string);
 		$additive_results = array();
-		$esc_marker = preg_quote(IEMLParser::$LAYER_STRINGS[$highest_layer], '/');
-		$preg_result = NULL;
-		$offs = 0;
-		
-		for ($i=0; $i == 0 || $preg_result || $offs < $str_len; $i++) {
-			$preg_match = NULL;
-			
-			if ($i == 0) {
-				$preg_result = preg_match('/ */', $string, $preg_match, PREG_OFFSET_CAPTURE, $offs);
-			} else {
-				$preg_result = preg_match('/ *\+/', $string, $preg_match, PREG_OFFSET_CAPTURE, $offs);
-			}
-			
-			if ($preg_result) {
-				$offs = $preg_match[0][1] + strlen($preg_match[0][0]);
-				
-				$preg_result = preg_match('/([^'.$esc_marker.']+'.$esc_marker.')/', $string, $preg_match, PREG_OFFSET_CAPTURE, $offs);
-				
-				if ($preg_result) {
-					$additive_results[] = $preg_match[1];
-					$offs = $preg_match[1][1] + strlen($preg_match[1][0]);
-				} else {
-					throw new ParseException('Could not match additive relation "'.$string.'" to Layer '.$highest_layer, 2, array($source_character + $offs, strlen($string)));
-				}
-			} else {
-				break;
-			}
-		}
-		Devlog::i(__FUNCTION__.' results'.pre_dump($additive_results).pre_dump($offs, $str_len));
+		$paren_count = 0;
+		$last_addition_offset = 0;
 
-		if ($offs == $str_len) {
-			return $additive_results;
-		} else {
-			throw new ParseException('Could not match additive relation "'.$string.'" to Layer '.$highest_layer, 2, array($source_character, strlen($string)));
+		for ($i = 0; $i <= strlen($string); $i++) {
+			if ($i < strlen($string)) {
+				if ($string[$i] == '(') {
+					$paren_count++;
+				} else if ($string[$i] == ')') {
+					$paren_count--;
+				}
+			}
+
+			if ($i == strlen($string) || $string[$i] == '+') {
+				if ($paren_count == 0) {
+					$additive_results[] = array(
+						trim(substr($string, $last_addition_offset, $i - $last_addition_offset)),
+						$last_addition_offset
+					);
+					$last_addition_offset = $i+1;
+				}
+			}
 		}
+
+		Devlog::i(__FUNCTION__.' results'.pre_dump($additive_results));
+
+		return $additive_results;
 	}
 
-	private function hasTopLevelAddition($string, $highest_layer) {
+	private function hasTopLevelAddition($string) {
 		Devlog::i(__FUNCTION__.pre_dump(func_get_args()));
 
-		$esc_marker = preg_quote(IEMLParser::$LAYER_STRINGS[$highest_layer], '/');
-		$term_regex = '[^' . $esc_marker . ']+' . $esc_marker;
-		$esc_plus = preg_quote('+', '/');
+		$additive_result_count = count($this->getAdditiveRelations($string));
 
-		$preg_results = !!preg_match('/^' . $term_regex . '(?:[^' . $esc_plus . ']*' . $esc_plus . $term_regex . ')+$/', trim($string));
+		Devlog::i(__FUNCTION__.' results'.pre_dump($additive_result_count, $additive_result_count > 1));
 
-		Devlog::i(__FUNCTION__.' results'.pre_dump($preg_results));
-
-		return $preg_results;
+		return $additive_result_count > 1;
 	}
 	
 	private function getMultiplicativeRelations($string, $highest_layer, $source_character) {
