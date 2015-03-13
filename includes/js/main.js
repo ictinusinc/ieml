@@ -729,7 +729,13 @@
 	}
 	
 	function format_relations(info) {
-		var rel = info.relations, contained_html = '', containing_html = '', concurrent_html = '', complementary_html = '', etymology_html = '';
+		var rel = info.relations;
+		var contained_html = '';
+		var containing_html = '';
+		var concurrent_html = '';
+		var complementary_html = '';
+		var diagonal_html = '';
+		var etymology_html = '';
 		
 		if (rel) {
 			if (rel.contained && rel.contained.length > 0) {
@@ -783,9 +789,27 @@
 				complementary_html += 'None.';
 			}
 			complementary_html += '</p>';
+			
+			if (rel.diagonal && rel.diagonal.length > 0) {
+				diagonal_html += '<ul class="unstyled relation-list">';
+				for (var l=0; l<rel.diagonal.length; l++) {
+					if (rel.diagonal[l].desc) {
+						diagonal_html += '<li>' + format_single_relation(rel.diagonal[l]) + '</li>';
+					}
+				}
+				diagonal_html += '</ul>';
+			} else {
+				diagonal_html = 'Nothing.';
+			}
 		}
 		
-		return {'contained': contained_html, 'containing': containing_html, 'concurrent': concurrent_html, 'complementary': complementary_html};
+		return {
+			'contained': contained_html,
+			'containing': containing_html,
+			'concurrent': concurrent_html,
+			'complementary': complementary_html,
+			'diagonal': diagonal_html
+		};
 	}
 	
 	function format_etymology(info) {
@@ -959,7 +983,13 @@
 		$('#iemlEnumModeOff').prop('checked', info.iemlEnumModeOff == 'Y').trigger('change');
 		
 		if (info.tables) {
-			var relationHtml = {'contained': '', 'containing': '', 'concurrent': '', 'complementary': ''};
+			var relationHtml = {
+				'contained': '',
+				'containing': '',
+				'concurrent': '',
+				'complementary': '',
+				'diagonal': ''
+			};
 			
 			for (var l=0; l<info.tables.length; l++) {
 				for (var m=0; m<info.tables[l].length; m++) {
@@ -969,6 +999,7 @@
 					relationHtml.containing += rel_info.containing;
 					relationHtml.concurrent += rel_info.concurrent;
 					relationHtml.complementary += rel_info.complementary;
+					relationHtml.diagonal += rel_info.diagonal;
 				}
 			}
 			
@@ -976,6 +1007,7 @@
 			$('#ieml-containing-wrap').bshow().html(relationHtml.containing);
 			$('#ieml-concurrent-wrap').bshow().html(relationHtml.concurrent);
 			$('#ieml-complementary-wrap').bshow().html(relationHtml.complementary);
+			$('#ieml-diagonal-wrap').bshow().html(relationHtml.diagonal);
 		} else {
 			$('#ieml-contained-wrap, #ieml-containing-wrap, #ieml-concurrent-wrap, #ieml-complementary-wrap').bhide();
 		}

@@ -268,6 +268,12 @@ require_once(APPROOT.'/includes/header.php');
 								<div id="ieml-complementary-wrap"></div>
 							</div>
 
+							<div id="ieml-diagonal-section">
+								<h3 class="heading_underline" data-lang-switch="diagonal"><?php echo trans_phrase('diagonal', $lang); ?></h3>
+
+								<div id="ieml-diagonal-wrap"></div>
+							</div>
+
 							<h3 class="heading_underline"><span data-lang-switch="taxonomic"><?php echo trans_phrase('taxonomic', $lang); ?></span></h3>
 
 							<div class="row">

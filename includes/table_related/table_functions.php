@@ -684,6 +684,25 @@ function gen_complementary($exp_info, &$table) {
 	return $complementary;
 }
 
+function gen_diagonal($info, &$table) {
+	$diagonal = array();
+	$expression_in_diagonal = false;
+
+	$body = $table['body'];
+
+	for ($i = 0; $i < min(count($body), count($body[0])); $i++) {
+		$current_expression = $body[$i][$i];
+
+		if ($info['expression'] != $current_expression['expression']) {
+			$diagonal[] = $current_expression;
+		} else {
+			$expression_in_diagonal = true;
+		}
+	}
+
+	return $expression_in_diagonal ? $diagonal : array();
+}
+
 function extract_recursive_prop($arr, $prop) {
 	$ret = array();
 
@@ -707,7 +726,8 @@ function gen_exp_relations($exp, $top, &$table) {
 		$ret = array(
 			'contained' => array(),
 			'complementary' => array(),
-			'concurrent' => array()
+			'concurrent' => array(),
+			'diagonal' => array()
 		);
 		$ret['containing'] = array_flatten(extract_recursive_prop($table['headers'], 'expression'));
 		array_append($ret['containing'], array_flatten(extract_recursive_prop($table['body'], 'expression')));
@@ -718,7 +738,8 @@ function gen_exp_relations($exp, $top, &$table) {
 			$ret = array(
 				'contained' => gen_contained($info, $table),
 				'containing' => gen_containing($info, $table),
-				'complementary' => gen_complementary($info, $table)
+				'complementary' => gen_complementary($info, $table),
+				'diagonal' => gen_diagonal($info, $table)
 			);
 			$ret['concurrent'] = gen_concurrent($ret['contained'], $table);
 
@@ -738,6 +759,10 @@ function postproc_exp_relations(&$rel, $callback) {
 
 	for ($i=0; $i<count($rel['containing']); $i++) {
 		$rel['containing'][$i] = call_user_func($callback, $rel['containing'][$i]);
+	}
+
+	for ($i=0; $i<count($rel['diagonal']); $i++) {
+		$rel['diagonal'][$i] = call_user_func($callback, $rel['diagonal'][$i]);
 	}
 
 	foreach($rel['concurrent'] as $exp => $con_list) {
