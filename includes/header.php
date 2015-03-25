@@ -96,7 +96,7 @@ header('Content-Type: text/html; charset=utf-8;');
 						<div class="pull-left">
 							<div class="edit-buttons-wrap hidden">
 								<button type="button" class="btn btn-default" id="ieml-desc-result-edit" data-lang-switch="edit"><?php echo trans_phrase('edit', $lang); ?></button>
-								<span class="non-edit-buttons hidden"><button type="button" class="btn btn-default" id="ieml-desc-result-save" data-lang-switch="save"><?php echo trans_phrase('save', $lang); ?></button><button type="button" class="btn btn-default" id="ieml-desc-result-cancel"><?php echo trans_phrase('cancel', $lang); ?></button><button type="button" class="btn btn-default" id="ieml-desc-result-delete" data-lang-switch="delete"><?php echo trans_phrase('delete', $lang); ?></button></span>
+								<span class="non-edit-buttons hidden"><button type="button" class="btn btn-default" id="ieml-desc-result-save" data-lang-switch="save"><?php echo trans_phrase('save', $lang); ?></button><button type="button" class="btn btn-default" id="ieml-desc-result-cancel"><?php echo trans_phrase('cancel', $lang); ?></button><button type="button" class="btn btn-default" id="ieml-desc-result-delete"><span class="glyphicon glyphicon-trash"></span> <span data-lang-switch="delete"><?php echo trans_phrase('delete', $lang); ?></span></button>
 							</div>
 							
 							<div class="btn-group" data-toggle="buttons" id="filter-results-wrap">
