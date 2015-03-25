@@ -92,15 +92,20 @@ header('Content-Type: text/html; charset=utf-8;');
 			<div class="container">
 				<div class="row">
 					<div class="col-sm-12">
-						
 						<div class="pull-left">
-							<div class="edit-buttons-wrap hidden">
+							<span class="edit-buttons-wrap hidden">
 								<button type="button" class="btn btn-default" id="ieml-desc-result-edit" data-lang-switch="edit"><?php echo trans_phrase('edit', $lang); ?></button>
-								<span class="non-edit-buttons hidden"><button type="button" class="btn btn-default" id="ieml-desc-result-save" data-lang-switch="save"><?php echo trans_phrase('save', $lang); ?></button><button type="button" class="btn btn-default" id="ieml-desc-result-cancel"><?php echo trans_phrase('cancel', $lang); ?></button><button type="button" class="btn btn-default" id="ieml-desc-result-delete"><span class="glyphicon glyphicon-trash"></span> <span data-lang-switch="delete"><?php echo trans_phrase('delete', $lang); ?></span></button>
-							</div>
-							
-							<div class="btn-group" data-toggle="buttons" id="filter-results-wrap">
+								<span class="non-edit-buttons hidden"><button type="button" class="btn btn-default" id="ieml-desc-result-save" data-lang-switch="save"><?php echo trans_phrase('save', $lang); ?></button><button type="button" class="btn btn-default" id="ieml-desc-result-cancel"><?php echo trans_phrase('cancel', $lang); ?></button><button type="button" class="btn btn-default" id="ieml-desc-result-delete"><span class="glyphicon glyphicon-trash"></span></button></span>
+							</span>
+							<button type="button" class="btn btn-default" id="add-ieml-record">
+								<span class="glyphicon glyphicon-plus"></span>
+								<span data-lang-switch="add_record"><?= trans_phrase('add_record', $lang) ?></span>
+							</button>
+						</div>
+						<div class="pull-right">
+							<button type="button" class="btn btn-default" id="ieml-view-users" data-lang-switch="view_users"><?php echo trans_phrase('view_users', $lang); ?></button>
 
+							<div class="btn-group" data-toggle="buttons" id="filter-results-wrap">
 								<label class="btn btn-default">
 									<input type="radio" id="filter-results-button" name="filter-results" autocomplete="off" value="" checked />
 									<span data-lang-switch="filter_show_all">
@@ -113,14 +118,8 @@ header('Content-Type: text/html; charset=utf-8;');
 										<?php echo trans_phrase('filter_keys_only', $lang); ?>
 									</span>
 								</label>
-							</div>
+							</div><button type="button" class="btn btn-default" id="ieml-view-index"><span class="glyphicon glyphicon-th-list"></span></button>
 						</div>
-
-						<div class="pull-right" id="add-ieml-record-wrap"><button type="button" class="btn btn-default" id="add-ieml-record">
-							<span class="glyphicon glyphicon-plus"></span>
-							<span data-lang-switch="add_record"><?= trans_phrase('add_record', $lang) ?></span>
-						</button></div>
-						<div class="pull-right" id="ieml-view-users-wrap"><button type="button" class="btn btn-default" id="ieml-view-users" data-lang-switch="view_users"><?php echo trans_phrase('view_users', $lang); ?></button></div>
 
 					</div>
 				</div>

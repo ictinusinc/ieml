@@ -116,7 +116,7 @@
 		var ret = {};
 
 		for (var i in opt_map) {
-			var mat = url.match(new RegExp('\/'+opt_map[i]+'\/?', 'i'));
+			var mat = url.match(new RegExp('\/' + opt_map[i] + '\/?', 'i'));
 
 			if (mat) {
 				ret[i] = mat[1];
@@ -155,10 +155,10 @@
 	};
 	
 	IEMLApp.init_from_url = function (url_obj) {
-		var qry = url_obj.search, path_arr = path_split(url_obj.pathname),
-			path_last = path_arr[path_arr.length-1], path = url_obj.pathname,
-			star_index = path.indexOf('*'),
-			settings = IEMLApp.match_url_settings(path.substr(0, star_index > -1 ? star_index : path.length));
+		var qry = url_obj.search, path_arr = path_split(url_obj.pathname);
+		var path_last = path_arr[path_arr.length-1], path = url_obj.pathname;
+		var star_index = path.indexOf('*');
+		var settings = IEMLApp.match_url_settings(path.substr(0, star_index > -1 ? star_index : path.length));
 
 		if (settings.library) {
 			IEMLApp.library = settings.library;
@@ -314,10 +314,10 @@
 		var escaped = $.extend({}, obj);
 
 		if (escaped.layer && escaped.layer.substr(0, 5) != 'layer') {
-			escaped.layer = 'layer-'+escaped.layer;
+			escaped.layer = 'layer-' + escaped.layer;
 		}
 		if (escaped.search && escaped.search.substr(0, 1) != '*') {
-			escaped.search = '*'+escaped.search;
+			escaped.search = '*' + escaped.search;
 		} else {
 			escaped.search = '*';
 		}
@@ -626,19 +626,21 @@
 		$('.ieml-validation-result').bhide();
 
 		$('.edit-buttons-wrap').bhide();
-		$('#back-to-list-view').bhide();
 		
 		$('#filter-results-wrap').bhide();
+		$('#ieml-view-index').bhide();
 		
 		$('#record-view-container, .circuit-container').bhide();
 		$('#user-view-container').bhide();
 		$('#list-view-container').bhide();
 		$('#login-view-container').bhide();
+
+		$('#add-ieml-record').bshow();
 	}
 	
 	function switch_to_view(view) {
 		reset_views();
-		$('#'+view+'-view-container').bshow();
+		$('#' + view + '-view-container').bshow();
 	}
 	
 	function switch_to_record() {
@@ -650,8 +652,8 @@
 			$('.edit-buttons-wrap').bhide();
 		}
 		
-		$('#back-to-list-view').bshow();
 		$('#record-view-container, .circuit-container').bshow();
+		$('#ieml-view-index').bshow();
 	}
 	
 	function enable_editor() {
@@ -669,22 +671,21 @@
 		
 		$('.login-btn-wrap').bhide();
 		$('.logout-btn-wrap').bshow();
-		$('#add-ieml-record-wrap').bshow();
 		
 		if (IEMLApp.user.enumType == 'admin') {
-			$('.ieml-view-users-wrap').bshow();
+			$('.ieml-view-users').bshow();
 		} else {
-			$('.ieml-view-users-wrap').bhide();
+			$('.ieml-view-users').bhide();
 		}
 		
 		$('.user-display-name').html(userObj.strDisplayName);
 	}
 	
 	function init_anon_user() {
-		$('.logout-btn-wrap').bhide();
 		$('.login-btn-wrap').bshow();
-		$('#add-ieml-record-wrap').bhide();
-		$('#ieml-view-users-wrap').bhide();
+		$('.logout-btn-wrap').bhide();
+		$('#add-ieml-record').bhide();
+		$('#ieml-view-users').bhide();
 		$('.edit-buttons-wrap').bhide();
 		
 		IEMLApp.user = null;
@@ -717,10 +718,10 @@
 		var ret = '';
 
 		if (info.id) {
-			ret += '<a href="/ajax.php?id='+info.id + '&a=searchDictionary" data-exp="'+info.exp+'" data-id="'+info.id+'" class="editExp">';
+			ret += '<a href="/ajax.php?id=' + info.id + '&a=searchDictionary" data-exp="' + info.exp + '" data-id="' + info.id + '" class="editExp">';
 
 			if (info.desc) {
-				ret += info.desc + ' ('+info.exp[0]+')';
+				ret += info.desc + ' (' + info.exp[0] + ')';
 			} else {
 				ret += info.exp[0];
 			}
@@ -821,7 +822,7 @@
 		
 		for (var i=0; i<etym.length; i++) {
 			if (etym[i].id && etym[i].id.length > 0 && etym[i].exp && etym[i].exp.length > 0 && etym[i].desc && etym[i].desc.length > 0) {
-				ret += '<li><a href="/ajax.php?id='+etym[i].id+'&a=searchDictionary" data-exp="'+etym[i].exp + '" data-id="'+etym[i].id+'" class="editExp">'+etym[i].desc + ' (' + etym[i].exp + ')</a></li>';
+				ret += '<li><a href="/ajax.php?id=' + etym[i].id + '&a=searchDictionary" data-exp="' + etym[i].exp + '" data-id="' + etym[i].id + '" class="editExp">' + etym[i].desc + ' (' + etym[i].exp + ')</a></li>';
 			} else {
 				ret += '<li><a href="javascript:void(0);" class="createEmptyExp">' + etym[i].exp + '</a></li>';
 			}
@@ -896,7 +897,7 @@
 			
 			$('#ieml-result').html(info.expression);
 		
-			$('#ieml-result-details').html(details.gram+' Layer '+details.layer);
+			$('#ieml-result-details').html(details.gram + ' Layer ' + details.layer);
 		} else {
 			$('#ieml-result').empty();
 			
@@ -1045,7 +1046,7 @@
 		}
 
 		return '<tr data-key="' + (obj.enumCategory == 'Y' ? 'true' : 'false') + '" ' +
-			'data-layer="'+(obj.intLayer >= 0 ? obj.intLayer : '-1') + '" ' +
+			'data-layer="' + (obj.intLayer >= 0 ? obj.intLayer : '-1') + '" ' +
 			'data-result-id="' + obj.id + '" ' +
 			'data-expression-type="' + obj.enumExpressionType + '">' +
 			'<td>' + obj.expression + '</td>' +
@@ -1087,11 +1088,11 @@
 	
 	function formatUserRow(user) {
 		return '<tr data-id="' + user.pkUser + '" data-name="' + user.strDisplayName + '">' +
-			'<td>'+user.strEmail+'</td>' +
-			'<td>'+user.enumType+'</td>' +
+			'<td>' + user.strEmail + '</td>' +
+			'<td>' + user.enumType + '</td>' +
 			'<td>' + LightDate.date('Y-m-d H:i:s', LightDate.date_timezone_adjust(user.tsDateCreated * 1000)) + '</td>' +
 			'<td>' + 
-				//<!--a href="/ajax.php?a=editUser&pkUser='+user.pkUser+'" class="editUser btn btn-default">Edit</a-->' +
+				//<!--a href="/ajax.php?a=editUser&pkUser=' + user.pkUser + '" class="editUser btn btn-default">Edit</a-->' +
 				'<button type="button" href="javascript:void(0)" class="delUser btn btn-default">Delete</button>' +
 			'</td>' +
 		'</tr>';
@@ -1113,14 +1114,14 @@
 	
 	function textToInput(sel, classes) {
 		var text = sel.text();
-		var $input = $('<input type="text" class="'+classes+'" />');
+		var $input = $('<input type="text" class="' + classes + '" />');
 		$input.val(text);
 		sel.html($input);
 	}
 
 	function textToTextArea(sel, classes) {
 		var text = sel.text();
-		var $textarea = $('<textarea type="text" class="'+classes+'" ></textarea>');
+		var $textarea = $('<textarea type="text" class="' + classes + '" ></textarea>');
 		$textarea.val(text);
 		sel.html($textarea);
 	}
@@ -1131,7 +1132,7 @@
 	
 	function readToWrite() {
 		$('.non-edit-buttons').bshow();
-		$('#ieml-desc-result-edit').addClass('disabled');
+		$('#ieml-desc-result-edit').bhide();
 		textToInput($('#ieml-result'), 'input-large form-control');
 		textToInput($('#ieml-ex-result'), 'input-xxlarge form-control');
 		textToInput($('#ieml-desc-result'), 'input-xxlarge form-control');
@@ -1157,7 +1158,7 @@
 	
 	function writeToRead() {
 		$('.non-edit-buttons').bhide();
-		$('#ieml-desc-result-edit').removeClass('disabled');
+		$('#ieml-desc-result-edit').bshow();
 		inputToText($('#ieml-result'));
 		inputToText($('#ieml-ex-result'));
 		inputToText($('#ieml-desc-result'));
@@ -1232,10 +1233,6 @@
 			});
 			
 			return false;
-		}).on('click', '#back-to-list-view', function() {
-			switch_to_list();
-			
-			return false;
 		}).on('change', '#search-lang-select', function() {
 			IEMLApp.switch_lang($(this).val(), window.History.getState().data);
 			
@@ -1243,12 +1240,14 @@
 		}).on('change', '#filter-results-wrap [name="filter-results"]', function() {
 			$('#search-form').trigger('submit');
 		}).on('click', '#add-ieml-record', function() {
-			IEMLApp.lastRetrievedData = {'expression':'', 'example':'', 'enumCategory':'N', 'enumShowEmpties': 'N'};
+			IEMLApp.lastRetrievedData = { 'expression': '', 'example': '', 'enumCategory': 'N', 'enumShowEmpties': 'N' };
 			fillForm(IEMLApp.lastRetrievedData);
 			
 			readToWrite();
 			
 			$('#desc-result-id').val('');
+
+			$('#add-ieml-record').bhide();
 			
 			return false;
 		}).on('click', '#ieml-desc-result-save', function() {
@@ -1290,7 +1289,6 @@
 		}).on('click', '#ieml-desc-result-cancel', function() {
 			writeToRead();
 			fillForm(IEMLApp.lastRetrievedData);
-			
 		}).on('click', '#ieml-desc-result-edit', function() {
 			if (!$('#ieml-desc-result-edit').hasClass('disabled')) {
 				readToWrite();
@@ -1334,6 +1332,11 @@
 		}).on('click', '#ieml-view-users', function() {
 			IEMLApp.submit({'a': 'viewUsers', 'deleted': 'no'});
 			
+			return false;
+		}).on('click', '#ieml-view-index', function() {
+			$('#filter-results-keys').click();
+			$('#search-form').submit();
+
 			return false;
 		}).on('click', '#addUser', function() {
 			$('#iemlAddUserModal').modal('show');
@@ -1443,7 +1446,7 @@
 			length: 20, // The length of each line
 			width: 10, // The line thickness
 			radius: 30, // The radius of the inner circle
-			color: '#FFF', // #rgb or #rrggbb or array of colors
+			color: '#FFF',
 		}).spin($('.globalLoading').get(0));
 
 		if (window.location.pathname.length == 1) {

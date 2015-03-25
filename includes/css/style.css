@@ -166,13 +166,6 @@
 }
 
 
-/* Search Form ----- */
-
-#filter-results-wrap {
-	min-width: 169px;
-}
-
-
 /* List Table ----- */
 
 #listview tbody tr td:last-child > * {
