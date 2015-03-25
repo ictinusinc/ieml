@@ -73,11 +73,15 @@
 		var only_script = $children.toArray().reduce(function(acc, el) {
 				return acc && !!$(el).data('is-script');
 			}, true);
+		var $content_type = $('.editor-drawer .content-type');
+		$content_type.children().bhide();
 
 		if (only_script) {
 			$this.addClass('only-script');
+			$content_type.find('[data-lang-switch="text_usl"]').bshow();
 		} else {
 			$this.removeClass('only-script');
+			$content_type.find('[data-lang-switch="proposition_phrase"]').bshow();
 		}
 
 		// IEMLApp.submit({

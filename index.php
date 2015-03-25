@@ -61,7 +61,7 @@ require_once(APPROOT.'/includes/header.php');
 									<div class="editor-head">
 										<div class="row">
 											<div class="col-md-4">
-												<span class="content-type">Preposition (phrase)</span>
+												<span class="content-type"><span data-lang-switch="proposition_phrase"><?= trans_phrase('proposition_phrase', $lang); ?></span><span class="hidden" data-lang-switch="text_usl"><?= trans_phrase('text_usl', $lang); ?></span></span>
 											</div>
 											<div class="col-md-6 draggable-list">
 												<div class="draggable" data-script-val="+"><span class="glyphicon glyphicon-plus"></span></div>

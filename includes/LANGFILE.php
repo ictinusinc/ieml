@@ -63,7 +63,9 @@ $UI_lang = array(
 		'auxiliary' => 'Auxiliary',
 		'basic_lexicon' => 'Basic Lexicon',
 		'new' => 'New',
-		'name' => 'Nom'
+		'name' => 'Nom',
+		'proposition_phrase' => 'Proposition (phrase)',
+		'text_usl' => 'Text (USL)'
 	),
 	'EN' => array(
 		'key' => 'Key',
@@ -126,7 +128,9 @@ $UI_lang = array(
 		'auxiliary' => 'Auxiliary',
 		'basic_lexicon' => 'Basic Lexicon',
 		'new' => 'New',
-		'name' => 'Name'
+		'name' => 'Name',
+		'proposition_phrase' => 'Proposition (phrase)',
+		'text_usl' => 'Text (USL)'
 	)
 );
 
