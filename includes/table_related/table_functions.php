@@ -674,11 +674,23 @@ function gen_concurrent($contained, &$table) {
 	return $concurrent;
 }
 
-function gen_complementary($exp_info, &$table) {
+function gen_complementary($exp) {
+	global $lvl_to_sym;
+
 	$complementary = NULL;
 
-	if ($exp_info['enumElementType'] == 'element') {
-		$complementary = $table['body'][$exp_info['intHeaderLevel']][$exp_info['intPosInTable']];
+	$tokens = \IEML_ExpParse\str_to_tokens($exp);
+	$AST = \IEML_ExpParse\tokens_to_AST($tokens);
+	
+	$etym = \IEML_ExpParse\fetch_etymology_from_AST($AST);
+
+	if (count($etym) == 2) {
+		$highest_layer = \IEML_ExpParse\highest_LAYER_AST($AST);
+
+		$complementary = 
+			\IEML_ExpParse\AST_original_str($etym[1], $exp) .
+			\IEML_ExpParse\AST_original_str($etym[0], $exp) .
+			$lvl_to_sym[$highest_layer];
 	}
 
 	return $complementary;
@@ -724,8 +736,8 @@ function gen_exp_relations($exp, $top, &$table) {
 
 	if ($exp['expression'] == $top) {
 		$ret = array(
+			'complementary' => gen_complementary($exp['expression']),
 			'contained' => array(),
-			'complementary' => array(),
 			'concurrent' => array(),
 			'diagonal' => array()
 		);
@@ -736,9 +748,9 @@ function gen_exp_relations($exp, $top, &$table) {
 
 		if ($info) {
 			$ret = array(
+				'complementary' => gen_complementary($exp['expression']),
 				'contained' => gen_contained($info, $table),
 				'containing' => gen_containing($info, $table),
-				'complementary' => gen_complementary($info, $table),
 				'diagonal' => gen_diagonal($info, $table)
 			);
 			$ret['concurrent'] = gen_concurrent($ret['contained'], $table);
