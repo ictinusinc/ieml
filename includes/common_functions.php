@@ -234,9 +234,13 @@ function format_table_for($table_head_query, $query_exp, $top, $options) {
 		'headers' => $table_info['headers'],
 		'body' => $table_info['body']
 	), function($el) use ($flat_assoc) {
-		if (array_key_exists($el['expression'], $flat_assoc)) {
-			$el['example'] = $flat_assoc[$el['expression']]['example'];
+		if (isset($flat_assoc[$el['expression']])) {
+			$flat_element = $flat_assoc[$el['expression']];
+
+			$el['id'] = $flat_element['id'];
+			$el['example'] = $flat_element['example'];
 		} else {
+			$el['id'] = NULL;
 			$el['example'] = NULL;
 		}
 		
