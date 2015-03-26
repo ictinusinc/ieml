@@ -2,10 +2,8 @@
 
 function getTableForElement($ret, $goodID, $options) {
 	$table_head_query = NULL;
-	$table_body_query = NULL;
 	$top = NULL;
 	$lang = strtolower($options['lang']);
-	
 
 	if ($ret['enumCategory'] == 'Y') {
 		//if we're dealing with a key, retrieve it accordingly
@@ -72,11 +70,13 @@ function getTableForElement($ret, $goodID, $options) {
 		
 		array_append($table_head_query, $related_tables);
 		
-		$top = array(
-			'expression' => $table_head_query[0]['expression'],
-			'example' => $table_head_query[0]['example'],
-			'id' => $table_head_query[0]['id']
-		);
+		if (count($table_head_query) > 0) {
+			$top = array(
+				'expression' => $table_head_query[0]['expression'],
+				'example' => $table_head_query[0]['example'],
+				'id' => $table_head_query[0]['id']
+			);
+		}
 	}
 	
 	$ret['tables'] = array();
@@ -143,11 +143,11 @@ function format_table_for($table_head_query, $query_exp, $top, $options) {
 	//fetch metadata about table elements
 	$table_body_query = Conn::queryArrays("
 		SELECT
-			ref.fkExpressionPrimary AS id, ref.intPosInTable, ref.enumElementType, ref.enumHeaderType, ref.intSpan,
+			ref.intPosInTable, ref.enumElementType, ref.enumHeaderType, ref.intSpan,
 			ref.intHeaderLevel, ref.pkTable2DRef AS refID, ref.enumEnabled, ref.strCellExpression as expression
 		FROM table_2d_ref ref
 		WHERE fkTable2D = ".$table_head_query['pkTable2D']."");
-	
+
 	//fetch expression data about elements in the table
 	$exp_query = Conn::queryArrays("
 		SELECT
@@ -161,14 +161,14 @@ function format_table_for($table_head_query, $query_exp, $top, $options) {
 		$expression['example'] = fetch_example_for_expression_id($expression['id'], $lang);
 	}
 	
-	$table_info = reconstruct_table_info($top, $table_head_query, $table_body_query);
-	$table_info['post_raw_table'] = json_decode($table_head_query['jsonTableLogic'], TRUE);
-	
 	$flat_assoc = array();
 	for ($i=0; $i<count($exp_query); $i++) {
 		$flat_assoc[$exp_query[$i]['expression']] = $exp_query[$i];
 	}
 	$flat_assoc[$top['expression']] = $top;
+	
+	$table_info = reconstruct_table_info($top, $table_head_query, $table_body_query);
+	$table_info['post_raw_table'] = json_decode($table_head_query['jsonTableLogic'], TRUE);
 	
 	$empty_head_count = IEML_count_empty_col($table_info, function($a) use ($flat_assoc) {
 		return !isset($flat_assoc[$a[0]['expression']]);
@@ -195,15 +195,23 @@ function format_table_for($table_head_query, $query_exp, $top, $options) {
 	
 	$ret['relations'] = postproc_exp_relations($ret['relations'], function($el) use ($flat_assoc) {
 		if (isset($el)) {
-			if (is_array($el) && array_key_exists('expression', $el) && array_key_exists($el['expression'], $flat_assoc)) {
-				return array('exp' => array($el['expression'], $el['intSpan']), 'desc' => $flat_assoc[$el['expression']]['example'], 'id' => $flat_assoc[$el['expression']]['id']);
-			} else if (is_string($el) && array_key_exists($el, $flat_assoc)) {
-				return array('exp' => array($el, 1), 'desc' => $flat_assoc[$el]['example'], 'id' => $flat_assoc[$el]['id']);
+			if (is_array($el) && isset($el['expression']) && isset($flat_assoc[$el['expression']])) {
+				return array(
+					'exp' => array($el['expression'], $el['intSpan']),
+					'desc' => $flat_assoc[$el['expression']]['example'],
+					'id' => $flat_assoc[$el['expression']]['id']
+				);
+			} else if (is_string($el) && isset($flat_assoc[$el])) {
+				return array(
+					'exp' => array($el, 1),
+					'desc' => $flat_assoc[$el]['example'],
+					'id' => $flat_assoc[$el]['id']
+				);
 			} else {
 				if (is_array($el)) {
 					$ret = array();
 
-					if (array_key_exists('expression', $el)) {
+					if (isset($el['expression'])) {
 						$ret['exp'] = array($el['expression'], 1);
 					} else {
 						$ret['exp'] = NULL;

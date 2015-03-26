@@ -512,12 +512,15 @@ function reconstruct_table_info($top, $head, $body_query) {
 		'height' => (int)$head['intHeight'],
 		'hor_header_depth' => (int)$head['intHorHeaderDepth'],
 		'ver_header_depth' => (int)$head['intVerHeaderDepth'],
-		'headers' => array(array_fill(0, $head['intHorHeaderDepth'], array()), array_fill(0, $head['intVerHeaderDepth'], array())),
+		'headers' => array(
+			$head['intHorHeaderDepth'] > 0 ? array_fill(0, $head['intHorHeaderDepth'], array()) : array(),
+			$head['intVerHeaderDepth'] > 0 ? array_fill(0, $head['intVerHeaderDepth'], array()) : array()
+		),
 		'body' => NULL,
 		'top' => $top
 	);
 	
-	$key['body'] = array_fill(0, $key['height'], array());
+	$key['body'] = $key['height'] > 0 ? array_fill(0, $key['height'], array()) : array();
 	
 	foreach ($body_query as $bel) {
 		if ($bel['enumElementType'] == 'element') {

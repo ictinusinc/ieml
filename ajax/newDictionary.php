@@ -1,5 +1,7 @@
 <?php
 
+$ret = NULL;
+
 $lang = strtolower($req['lang']);
 
 $parse_res = IEMLParser::AST_or_FAIL($req['exp']);
@@ -14,13 +16,20 @@ if ($parse_res['resultCode'] == 0) {
 	$clean_bare_str = goodString($bare_str);
 
 	$existing_expression = Conn::queryArray('
-		SELECT pkExpressionPrimary AS id
+		SELECT pkExpressionPrimary AS id, enumDeleted
 		FROM expression_primary
 		WHERE strExpression = \'' . $clean_expression . '\'
 		AND strFullBareString = \'' . $clean_bare_str . '\'
 	');
 
-	if (empty($existing_expression)) {
+	if (!$existing_expression || $existing_expression && $existing_expression['enumDeleted'] == 'Y') {
+		if ($existing_expression) {
+			Conn::query('
+				DELETE IGNORE FROM expression_primary
+				WHERE pkExpressionPrimary = ' . $existing_expression['id'] . '
+			');
+		}
+
 		Conn::query("
 			INSERT INTO expression_primary
 				(strExpression, enumCategory, intSetSize, intLayer, strFullBareString, enumClass)
@@ -38,7 +47,9 @@ if ($parse_res['resultCode'] == 0) {
 			'intSetSize' => $set_size,
 			'intLayer' => $layer,
 			'strFullBareString' => $bare_str,
-			'enumClass' => $class
+			'enumClass' => $class,
+			'enumCompConc' => 'N',
+			'strEtymSwitch' => 'NNN'
 		);
 
 		Conn::query("
@@ -58,13 +69,11 @@ if ($parse_res['resultCode'] == 0) {
 		}
 		
 		$ret = getTableForElement($ret, goodInt($ret['id']), $req);
-		
-		$request_ret = $ret;
 	} else {
 		$ret = array(
 			'result' => 'error',
 			'resultCode' => 1,
-			'error' => 'Expression "' . $req['exp'] . '" already exists in the database'
+			'error' => 'Duplicate expression.'
 		);
 	}
 } else {
@@ -74,3 +83,5 @@ if ($parse_res['resultCode'] == 0) {
 		'error' => '"'.$req['exp'].'" is not a valid IEML string'
 	);
 }
+
+return $ret;

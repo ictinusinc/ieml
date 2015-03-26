@@ -159,7 +159,7 @@ function handle_request($action, $req) {
 					FROM expression_primary prim
 					WHERE prim.pkExpressionPrimary = " . $goodID);
 
-				if ($prim['strEtymSwitch']) {
+				if ($ret['strEtymSwitch']) {
 					$ret_key = Conn::queryArray('
 						SELECT
 							t2did_key.enumShowEmpties,
@@ -243,7 +243,7 @@ function handle_request($action, $req) {
 			$asserts_ret = assert_arr(array('exp', 'lang', 'library', 'enumCategory', 'example', 'descriptor', 'enumShowEmpties'), $req);
 			
 			if (TRUE === $asserts_ret) {
-				require_once(__DIR__ . '/ajax/newDictionary.php');
+				$request_ret = require_once(__DIR__ . '/ajax/newDictionary.php');
 			} else {
 				$request_ret = assert_format($asserts_ret);
 			}
@@ -254,7 +254,7 @@ function handle_request($action, $req) {
 			$asserts_ret = assert_arr(array('editor_array', 'lang', 'library', 'example'), $req);
 			
 			if (TRUE === $asserts_ret) {
-				//NOTE: this terrible language construct is used because if complex program control in the file
+				//NOTE: this terrible language construct is used because of complex program control in the file
 				$request_ret = require(__DIR__ . '/ajax/newVisualExpression.php');
 			} else {
 				$request_ret = assert_format($asserts_ret);
@@ -266,7 +266,7 @@ function handle_request($action, $req) {
 			$asserts_ret = assert_arr(array('editor_array', 'lang', 'library', 'example'), $req);
 			
 			if (TRUE === $asserts_ret) {
-				//NOTE: this terrible language construct is used because if complex program control in the file
+				//NOTE: this terrible language construct is used because of complex program control in the file
 				$request_ret = require(__DIR__ . '/ajax/editVisualExpression.php');
 			} else {
 				$request_ret = assert_format($asserts_ret);
