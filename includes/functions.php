@@ -10,11 +10,11 @@ function goodInt($item) {
 }
 
 function mysql_escape_mimic($inp) { 
-    if(is_array($inp)) return array_map(__METHOD__, $inp); 
+	if(is_array($inp)) return array_map(__METHOD__, $inp); 
 
-    if(!empty($inp) && is_string($inp)) return str_replace(array('\\', "\0", "\n", "\r", "'", '"', "\x1a"), array('\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'), $inp); 
+	if(!empty($inp) && is_string($inp)) return str_replace(array('\\', "\0", "\n", "\r", "'", '"', "\x1a"), array('\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'), $inp); 
 
-    return $inp; 
+	return $inp; 
 } 
 
 function goodString($var){
@@ -55,26 +55,26 @@ function bcrypt_check($password, $stored_hash) {
 }
 
 function array_any($arr, $cb = NULL) {
-    if ($cb == NULL) {
-        foreach ($arr as $val) {
-            if ($val) return TRUE;
-        }
-    } else {
-        return array_any(array_map($cb, $arr));
-    }
-    return FALSE;
+	if ($cb == NULL) {
+		foreach ($arr as $val) {
+			if ($val) return TRUE;
+		}
+	} else {
+		return array_any(array_map($cb, $arr));
+	}
+	return FALSE;
 }
 
 function array_all($arr, $cb = NULL) {
-    if ($cb == NULL) {
-        foreach ($arr as $val) {
-            if (!$val) return FALSE;
-        }
-        return TRUE;
-    } else {
-        return array_all(array_map($cb, $arr));
-    }
-    return FALSE;
+	if ($cb == NULL) {
+		foreach ($arr as $val) {
+			if (!$val) return FALSE;
+		}
+		return TRUE;
+	} else {
+		return array_all(array_map($cb, $arr));
+	}
+	return FALSE;
 }
 
 function invert_bool($val, $true, $false) {
@@ -255,91 +255,84 @@ function api_message($msg = NULL) {
 
 //Conn class----------------------------------------------------------------------------------
 
-class Conn{
-    public static $staticHandle, $staticResult, $lastQuery;
-    
-    static function query($sql="") {
-        if (!isset(Conn::$staticHandle)) Conn::initiateStaticHandle();
-        Conn::$lastQuery = $sql;
-        
-        Conn::$staticResult = @mysql_query($sql, Conn::$staticHandle) or Conn::dbError();
-    }
-    
-    static function queryObjects($sql="") {
-        if (!isset(Conn::$staticHandle)) Conn::initiateStaticHandle();
-        Conn::$lastQuery = $sql;
-        
-        Conn::$staticResult = @mysql_query($sql, Conn::$staticHandle) or Conn::dbError();
-        
-        $aTemp = array();
-        while($temp = mysql_fetch_object(Conn::$staticResult)){
-            $aTemp[] = $temp;
-        }
-        return $aTemp;
-    }
-    
-    static function queryObject($sql="") {
-        if (!isset(Conn::$staticHandle)) Conn::initiateStaticHandle();
-        Conn::$lastQuery = $sql;
-        
-        Conn::$staticResult = @mysql_query($sql, Conn::$staticHandle) or Conn::dbError();
-        
-        return $temp = mysql_fetch_object(Conn::$staticResult);
-    }
-    
-    static function queryArrays($sql="", $type = MYSQL_ASSOC) {
-        if (!isset(Conn::$staticHandle)) Conn::initiateStaticHandle();
-        Conn::$lastQuery = $sql;
-        
-        Conn::$staticResult = @mysql_query($sql, Conn::$staticHandle) or Conn::dbError();
-        
-        $aTemp = array();
-        while($temp = mysql_fetch_array(Conn::$staticResult, $type)) {
-            $aTemp[] = $temp;
-        }
-        return $aTemp;
-    }
-    
-    static function queryArray($sql="", $type = MYSQL_ASSOC) {
-        if (!isset(Conn::$staticHandle)) Conn::initiateStaticHandle();
-        Conn::$lastQuery = $sql;
-        
-        Conn::$staticResult = @mysql_query($sql, Conn::$staticHandle) or Conn::dbError();
-        
-        return mysql_fetch_array(Conn::$staticResult, $type);
-    }
-    
-    //convenience functions----------------------------------
-    
-    static function getCount(){
-        return @mysql_num_rows(Conn::$staticResult) or 0;
-    }
-    
-    static function reset(){
-        @mysql_data_seek(Conn::$staticResult, 0);
-    }
-    
-    //start and end handle------------------------------------
-    
-    static function initiateStaticHandle() {
-        Conn::$staticHandle = @mysql_connect(MYSQLSERVER, USERNAME, PASSWORD) or Conn::dbError();
-        mysql_set_charset('latin1', Conn::$staticHandle); 
-        @mysql_select_db(DATABASE, Conn::$staticHandle) or Conn::dbError();
-    }
-    
-    static function closeStaticHandle() {
-        if (isset(Conn::$staticResult)) @mysql_free_result(Conn::$staticResult);
-        if (isset(Conn::$staticHandle)) @mysql_close(Conn::$staticHandle) or Conn::dbError();
-    }
-    
-    //misc functions-----------------------------------------------
-    
-    static function dbError() {
-        echo "<pre>MySQL Error: ".print_r(mysql_error(), true)."\n"."Last query:\n".Conn::$lastQuery."</pre>\n";
-        die('Dead.');
-    }
-    
-    static function getId(){
-        return mysql_insert_id(Conn::$staticHandle);
-    }
+class Conn {
+	public static $staticHandle;
+	public static $staticResult;
+	public static $lastQuery;
+	
+	public static function query($sql) {
+		if (!isset(self::$staticHandle)) {
+			self::initiateStaticHandle();
+		}
+
+		self::$lastQuery = $sql;
+		
+		self::$staticResult = @mysqli_query(self::$staticHandle, $sql) or self::dbError();
+	}
+	
+	public static function queryObjects($sql) {
+		self::query($sql);
+		
+		$aTemp = array();
+		while($temp = mysqli_fetch_object(self::$staticResult)){
+			$aTemp[] = $temp;
+		}
+		return $aTemp;
+	}
+	
+	public static function queryObject($sql) {
+		self::query($sql);
+		
+		return $temp = mysqli_fetch_object(self::$staticResult);
+	}
+	
+	public static function queryArrays($sql, $type = MYSQLI_ASSOC) {
+		self::query($sql);
+		
+		$aTemp = array();
+		while($temp = mysqli_fetch_array(self::$staticResult, $type)) {
+			$aTemp[] = $temp;
+		}
+		return $aTemp;
+	}
+	
+	public static function queryArray($sql, $type = MYSQLI_ASSOC) {
+		self::query($sql);
+		
+		return mysqli_fetch_array(self::$staticResult, $type);
+	}
+	
+	//convenience functions----------------------------------
+	
+	public static function getCount(){
+		return @mysqli_num_rows(self::$staticResult) or 0;
+	}
+	
+	public static function reset(){
+		@mysqli_data_seek(self::$staticResult, 0);
+	}
+	
+	//start and end handle------------------------------------
+	
+	public static function initiateStaticHandle() {
+		self::$staticHandle = @mysqli_connect(MYSQLSERVER, USERNAME, PASSWORD) or self::dbError();
+		mysqli_set_charset(self::$staticHandle, 'latin1');
+		@mysqli_select_db(self::$staticHandle, DATABASE) or self::dbError();
+	}
+	
+	public static function closeStaticHandle() {
+		if (isset(self::$staticResult)) @mysqli_free_result(self::$staticResult);
+		if (isset(self::$staticHandle)) @mysqli_close(self::$staticHandle) or self::dbError();
+	}
+	
+	//misc functions-----------------------------------------------
+	
+	public static function dbError() {
+		echo "<pre>MySQL Error: ".print_r(mysqli_error(self::$staticHandle), true)."\n"."Last query:\n".self::$lastQuery."</pre>\n";
+		die('Dead.');
+	}
+	
+	public static function getId(){
+		return mysqli_insert_id(self::$staticHandle);
+	}
 }
