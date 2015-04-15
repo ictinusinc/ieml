@@ -171,6 +171,10 @@
 
 			IEMLApp.switch_lang(IEMLApp.lang);
 		}
+		else
+		{
+			IEMLApp.submit({ 'a': 'getAllLibraries', 'lang': IEMLApp.lang });
+		}
 		
 		if (settings.mode == 'users') {
 			IEMLApp.submit({'a': 'viewUsers', 'deleted' : 'no'});
@@ -668,6 +672,7 @@
 	
 	function init_user_login(userObj) {
 		IEMLApp.user = userObj;
+		IEMLApp.submit({ 'a': 'getUserLibraries', 'lang': IEMLApp.lang });
 		
 		$('.login-btn-wrap').bhide();
 		$('.logout-btn-wrap').bshow();
@@ -1234,6 +1239,7 @@
 			
 			return false;
 		}).on('change', '#search-lang-select', function() {
+			writeToRead();
 			IEMLApp.switch_lang($(this).val(), window.History.getState().data);
 			
 			return false;
