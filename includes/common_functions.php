@@ -120,6 +120,32 @@ function fetch_example_for_expression_id($id, $lang) {
 	return '';
 }
 
+function fetch_info_for_expression($expression, $lang) {
+	$example_query = Conn::queryArrays('
+		SELECT
+			strExample as example,
+			strLanguageISO6391,
+			fkExpressionPrimary
+		FROM expression_data
+		JOIN expression_primary ON fkExpressionPrimary = pkExpressionPrimary
+		WHERE strExpression = \'' . goodString($expression) . '\'
+	');
+
+	$ret = NULL;
+
+	foreach ($example_query as $example) {
+		if (strcasecmp($example['strLanguageISO6391'], $lang) == 0) {
+			$ret = array(
+				'exp' => $expression,
+				'example' => $example['example'],
+				'id' => $example['fkExpressionPrimary']
+			);
+		}
+	}
+
+	return $ret;
+}
+
 function fetch_descriptor_for_expression_id($id, $lang) {
 	$example_query = Conn::queryArrays('
 		SELECT strDescriptor as descriptor, strLanguageISO6391
@@ -193,38 +219,53 @@ function format_table_for($table_head_query, $query_exp, $top, $options) {
 	
 	//get expression relations
 	
-	$ret['relations'] = postproc_exp_relations($ret['relations'], function($el) use ($flat_assoc) {
-		if (isset($el)) {
-			if (is_array($el) && isset($el['expression']) && isset($flat_assoc[$el['expression']])) {
+	$ret['relations'] = postproc_exp_relations($ret['relations'], function($el) use ($flat_assoc, $lang) {
+		if (is_array($el)) {
+			if (isset($el['expression'])) {
+				$assoc_expression = $flat_assoc[$el['expression']];
+
 				return array(
 					'exp' => array($el['expression'], $el['intSpan']),
-					'desc' => $flat_assoc[$el['expression']]['example'],
-					'id' => $flat_assoc[$el['expression']]['id']
-				);
-			} else if (is_string($el) && isset($flat_assoc[$el])) {
-				return array(
-					'exp' => array($el, 1),
-					'desc' => $flat_assoc[$el]['example'],
-					'id' => $flat_assoc[$el]['id']
+					'desc' => $assoc_expression['example'],
+					'id' => $assoc_expression['id']
 				);
 			} else {
-				if (is_array($el)) {
-					$ret = array();
+				$ret = array();
 
-					if (isset($el['expression'])) {
-						$ret['exp'] = array($el['expression'], 1);
-					} else {
-						$ret['exp'] = NULL;
-					}
-					$ret['id'] = NULL;
-					$ret['desc'] = NULL;
-
-					return $ret;
+				if (isset($el['expression'])) {
+					$ret['exp'] = array($el['expression'], 1);
 				} else {
-					return array('exp' => array($el, 1), 'desc' => NULL, 'id' => NULL);
+					$ret['exp'] = NULL;
+				}
+				$ret['id'] = NULL;
+				$ret['desc'] = NULL;
+
+				return $ret;
+			}
+		} else if (is_string($el)) {
+			if (isset($flat_assoc[$el])) {
+				$assoc_expression = $flat_assoc[$el];
+
+				return array(
+					'exp' => array($el, 1),
+					'desc' => $assoc_expression['example'],
+					'id' => $assoc_expression['id']
+				);
+			} else {
+				$db_info = fetch_info_for_expression($el, $lang);
+
+				if ($db_info)
+				{
+					return array(
+						'exp' => array($el, 1),
+						'desc' => $db_info['example'],
+						'id' => $db_info['id']
+					);
 				}
 			}
 		}
+
+		return array('exp' => array($el, 1), 'desc' => NULL, 'id' => NULL);
 	});
 	
 	//add top as a vertical header
