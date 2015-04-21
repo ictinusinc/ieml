@@ -572,6 +572,11 @@ function get_exp_position_in_table($exp, &$tab_info)
 function gen_contained($exp_info, &$table) {
 	$contained = array();
 
+	if ($exp_info['expression'] != $table['top']['expression'])
+	{
+		$contained[] = $table['top'];
+	}
+
 	if ($exp_info['enumElementType'] == 'header') {
 		$i = $exp_info['enumHeaderType'] == 'hor' ? 0 : 1;
 
