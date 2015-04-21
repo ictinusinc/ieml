@@ -730,8 +730,10 @@
 			} else {
 				ret += info.exp[0];
 			}
-		} else {
+		} else if (info.exp[0]) {
 			ret += '<a href="javascript:void(0);" class="createEmptyExp">' + info.exp[0];
+		} else {
+			return '';
 		}
 
 		ret += '</a>';
@@ -766,12 +768,12 @@
 						concurrent_html += '</ul></div>';
 					}
 				}
+			}
 
-				if (contained_html.length > 0) {
-					contained_html = '<ul class="unstyled relation-list">' + contained_html + '</ul>';
-				} else {
-					contained_html = 'Nothing.';
-				}
+			if (contained_html.length > 0) {
+				contained_html = '<ul class="unstyled relation-list">' + contained_html + '</ul>';
+			} else {
+				contained_html = '<p>None.</p>';
 			}
 			
 			if (rel.containing && rel.containing.length > 0) {
@@ -783,22 +785,20 @@
 				}
 				containing_html += '</ul>';
 			} else {
-				containing_html = 'Nothing.';
+				containing_html = '<p>None.</p>';
 			}
 			
 			if (concurrent_html.length > 0) {
 				concurrent_html = '<div class="row">' + concurrent_html + '</div>';
 			} else {
-				concurrent_html = 'Nothing.';
+				concurrent_html = '<p>None.</p>';
 			}
 			
-			complementary_html = '<p>';
-			if (rel.complementary && rel.complementary.exp) {
-				complementary_html += format_single_relation(rel.complementary);
-			} else {
-				complementary_html += 'None.';
+			complementary_html = format_single_relation(rel.complementary);
+			if (complementary_html.length === 0) {
+				complementary_html = 'None.';
 			}
-			complementary_html += '</p>';
+			complementary_html = '<p>' + complementary_html + '</p>';
 			
 			if (rel.diagonal && rel.diagonal.length > 0) {
 				diagonal_html += '<ul class="unstyled relation-list">';
@@ -809,7 +809,7 @@
 				}
 				diagonal_html += '</ul>';
 			} else {
-				diagonal_html = 'Nothing.';
+				diagonal_html = '<p>None.</p>';
 			}
 		}
 		
@@ -823,9 +823,10 @@
 	}
 	
 	function format_etymology(info) {
-		var etym = info.etymology, ret = '<ul class="unstyled etymology">';
+		var etym = info.etymology;
+		var ret = '';
 		
-		for (var i=0; i<etym.length; i++) {
+		for (var i = 0; i < etym.length; i++) {
 			if (etym[i].id && etym[i].id.length > 0 && etym[i].exp && etym[i].exp.length > 0 && etym[i].desc && etym[i].desc.length > 0) {
 				ret += '<li><a href="/ajax.php?id=' + etym[i].id + '&a=searchDictionary" data-exp="' + etym[i].exp + '" data-id="' + etym[i].id + '" class="editExp">' + etym[i].desc + ' (' + etym[i].exp + ')</a></li>';
 			} else {
@@ -833,9 +834,7 @@
 			}
 		}
 		
-		ret += '</ul>';
-		
-		return ret;
+		return ret ? '<ul class="unstyled etymology">' + ret + '</ul>' : '';
 	}
 
 	function clearEditor() {
@@ -1022,11 +1021,8 @@
 			$('#ieml-contained-wrap, #ieml-containing-wrap, #ieml-concurrent-wrap, #ieml-complementary-wrap').bhide();
 		}
 		
-		if (info.etymology) {
-			$('#ieml-etymology-wrap').bshow().html(format_etymology(info));
-		} else {
-			$('#ieml-etymology-wrap').bhide();
-		}
+		var etymology_html = format_etymology(info);
+		$('#ieml-etymology-wrap').bshow().html(etymology_html || '<p>None.</p>');
 		
 		if (info.debug) {
 			console.log('Debug from server: ', info.debug);
