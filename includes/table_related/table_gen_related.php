@@ -183,7 +183,7 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 						$out[] = IEML_combine_headers($sub_heads[0][$i], $sub_heads[1][$j]);
 					}
 				}
-			} else {
+			} else if (count($sub_heads) == 3) {
 				$third_seme = array();
 				
 				for ($k=0; $k<count($sub_heads[2]); $k++) {
@@ -279,26 +279,16 @@ function IEML_count_num_var($AST) {
 
 /**
  * determine the number of layer subexpressions in AST
- * 
- * @access public
- * @param mixed $AST
- * @return void
  */
-function IEML_get_num_parts_in_lev($AST) {
+function IEML_get_num_parts_in_lev($AST) { 
 	$out = 0;
 	
 	if ($AST['internal']) {
 		if ($AST['value']['type'] == 'LAYER') {
 			$out = IEML_get_num_parts_in_lev($AST['children'][0]);
 		} else if ($AST['value']['type'] == 'MUL' || $AST['type'] == 'L0PLUS') {
-			$out = 0;
-			
-			for ($i=0; $i<count($AST['children']); $i++) {
-				if ($AST['children'][$i]['internal'] && $AST['children'][$i]['value']['type'] == 'LAYER') {
-					$out += 1;
-				} else {
-					$out += IEML_get_num_parts_in_lev($AST['children'][$i]);
-				}
+			for ($i = 0; $i < count($AST['children']); $i++) {
+				$out += IEML_get_num_parts_in_lev($AST['children'][$i]);
 			}
 		}
 	} else {

@@ -51,9 +51,12 @@ class IEMLParser {
 	public static function bareLexicoCompare($a, $b) {
 		$len = min(strlen($a), strlen($b));
 
-		for ($i=0; $i<$len; $i++) {
-			if (IEMLParser::$REVERSE_ATOMS[$a[$i]] !== IEMLParser::$REVERSE_ATOMS[$b[$i]]) {
-				return IEMLParser::$REVERSE_ATOMS[$a[$i]] - IEMLParser::$REVERSE_ATOMS[$b[$i]];
+		for ($i = 0; $i < $len; $i++) {
+			$a_reverse = IEMLParser::$REVERSE_ATOMS[$a[$i]];
+			$b_reverse = IEMLParser::$REVERSE_ATOMS[$b[$i]];
+
+			if ($a_reverse !== $b_reverse) {
+				return $a_reverse - $b_reverse;
 			}
 		}
 

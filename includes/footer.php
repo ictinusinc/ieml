@@ -1,5 +1,5 @@
-		</div>
-		
+	</div>
+	
 	<!-- Javascript Files -->
 	<!-- spin -->
 	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/spin.min.js"></script>

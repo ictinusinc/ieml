@@ -29,18 +29,18 @@ function ensure_table_for_key($key) {
 }
 
 function expression_sort_cmp($a, $b) {
-	$a_eff_layer = isset($a['intLayer']) ? $a['intLayer'] : -1;
-	$b_eff_layer = isset($b['intLayer']) ? $b['intLayer'] : -1;
+	$a_effective_layer = isset($a['intLayer']) ? $a['intLayer'] : -1;
+	$b_effective_layer = isset($b['intLayer']) ? $b['intLayer'] : -1;
 
-	if ($a['intLayer'] == $b['intLayer']) {
-		if ($a['intSetSize'] == $b['intSetSize']) {
-			return IEMLParser::bareLexicoCompare($a['strFullBareString'], $b['strFullBareString']);
-		} else {
-			return $a['intSetSize'] - $b['intSetSize'];
-		}
-	} else {
+	if ($a_effective_layer != $b_effective_layer) {
 		return $a_eff_layer - $b_eff_layer;
 	}
+
+	if ($a['intSetSize'] != $b['intSetSize']) {
+		return $a['intSetSize'] - $b['intSetSize'];
+	}
+
+	return IEMLParser::bareLexicoCompare($a['strFullBareString'], $b['strFullBareString']);
 }
 
 function make_word_possessive($word) {
@@ -230,7 +230,7 @@ function handle_request($action, $req) {
 			
 		case 'editDictionary':
 			$asserts_ret = assert_arr(array('enumCategory', 'exp', 'example', 'descriptor', 'lang', 'id', 'enumShowEmpties', 'iemlEnumComplConcOff', 'iemlEnumSubstanceOff'), $req);
-			
+
 			if (TRUE === $asserts_ret) {
 				require_once(__DIR__ . '/ajax/editDictionary.php');
 			} else {
