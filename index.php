@@ -42,68 +42,6 @@ require_once(APPROOT.'/includes/header.php');
 
 		<div id="list-view-container" class="hidden">
 			<div class="list-view-wrap">
-
-					<div class="editor-drawer">
-						<div class="row">
-							<div class="col-md-12">
-								<span class="pull-left ieml-validation-result hidden">
-									<div class="result-error-icon hidden"><span class="glyphicon glyphicon-remove">&nbsp;</span></div>
-								</span>
-							</div>
-							<div class="col-md-12">
-								<span class="pull-left ieml-validation-result hidden">
-									<span class="result-error"></span>
-								</span>
-							</div>
-
-							<div class="col-md-12">
-								<div class="editor">
-									<div class="editor-head">
-										<div class="row">
-											<div class="col-md-4">
-												<span class="content-type"><span data-lang-switch="proposition_phrase"><?= trans_phrase('proposition_phrase', $lang); ?></span><span class="hidden" data-lang-switch="text_usl"><?= trans_phrase('text_usl', $lang); ?></span></span>
-											</div>
-											<div class="col-md-6 draggable-list">
-												<div class="draggable" data-script-val="+"><span class="glyphicon glyphicon-plus"></span></div>
-												<div class="draggable" data-script-val="*"><span class="glyphicon glyphicon-remove"></span></div>
-												<div class="draggable" data-script-val="E:" data-is-script="true"><strong>E</strong></div>
-											</div>
-										</div>
-									</div>
-									<div class="editor-proper"></div>
-									<div class="editor-garbage hidden"><span class="glyphicon glyphicon-trash"></span></div>
-								</div>
-							</div>
-						</div>
-						<div class="row">
-							<div class="col-md-12">
-								<div class="editor-example">
-									<div class="row">
-										<div class="col-md-6">
-											<span>Example</span>
-										</div>
-									</div>
-									<div class="row">
-										<div class="col-md-12">
-											<input type="text" class="form-control editor-example-input" />
-										</div>
-									</div>
-									<div class="row">
-										<div class="col-md-3">
-											<a href="" class="btn btn-link editor-short"></a>
-										</div>
-										<div class="col-md-4 col-md-offset-5">
-											<input type="hidden" name="rel-id" />
-											<button type="button" class="btn btn-default editor-cancel" data-lang-switch="cancel"><?= trans_phrase('cancel', $lang); ?></button>
-											<button type="button" class="btn btn-default editor-save" data-lang-switch="save"><?= trans_phrase('save', $lang); ?></button>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					
 					<table id="listview" class="table table-striped table-bordered table-condensed">
 						<thead>
 							<tr>
@@ -116,7 +54,6 @@ require_once(APPROOT.'/includes/header.php');
 						</thead>
 						<tbody></tbody>
 					</table>
-
 			</div>
 		</div>
 
@@ -301,6 +238,63 @@ require_once(APPROOT.'/includes/header.php');
 				<div class="tab-pane" id="graph">
 					<div class="container">
 						&hellip;
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="editor-drawer hidden">
+		<div class="row">
+			<div class="col-md-12">
+				<span class="pull-left ieml-validation-result hidden">
+					<div class="result-error-icon hidden"><span class="glyphicon glyphicon-remove">&nbsp;</span></div>
+				</span>
+			</div>
+			<div class="col-md-12">
+				<span class="pull-left ieml-validation-result hidden">
+					<span class="result-error"></span>
+				</span>
+			</div>
+
+			<div class="col-md-12">
+				<div class="editor">
+					<div class="editor-head">
+						<div class="row">
+							<div class="col-md-4">
+								<span class="content-type"><span data-lang-switch="proposition_phrase"><?= trans_phrase('proposition_phrase', $lang); ?></span><span class="hidden" data-lang-switch="text_usl"><?= trans_phrase('text_usl', $lang); ?></span></span>
+							</div>
+							<div class="col-md-6 draggable-list">
+								<div class="draggable" data-script-val="+"><span class="glyphicon glyphicon-plus"></span></div>
+								<div class="draggable" data-script-val="*"><span class="glyphicon glyphicon-remove"></span></div>
+								<div class="draggable" data-script-val="("><strong>(</strong></div>
+								<div class="draggable" data-script-val=")"><strong>)</strong></div>
+								<div class="draggable" data-script-val="["><strong>[</strong></div>
+								<div class="draggable" data-script-val="]"><strong>]</strong></div>
+								<div class="draggable" data-script-val="/"><strong>/</strong></div>
+							</div>
+						</div>
+					</div>
+					<div class="editor-proper"></div>
+					<div class="editor-garbage hidden"><span class="glyphicon glyphicon-trash"></span></div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<div class="editor-example">
+					<div class="row">
+						<div class="col-md-1">
+							<a href="" class="btn btn-link editor-short"></a>
+						</div>
+						<div class="col-md-9">
+							<input type="text" class="form-control editor-example-input" />
+						</div>
+						<div class="col-md-2">
+							<input type="hidden" name="rel-id" />
+							<button type="button" class="btn btn-default editor-clear" data-lang-switch="clear"><?= trans_phrase('clear', $lang); ?></button>
+							<button type="button" class="btn btn-default editor-save" data-lang-switch="save"><?= trans_phrase('save', $lang); ?></button>
+						</div>
 					</div>
 				</div>
 			</div>

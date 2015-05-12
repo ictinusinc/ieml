@@ -53,10 +53,92 @@ function make_word_possessive($word) {
 	return $word;
 }
 
-function handle_request($action, $req) {
+function handle_request($action, $req)
+{
 	$request_ret = NULL;
 	
-	switch ($action) {
+	switch ($action)
+	{
+		case 'duplicate':
+			$asserts_ret = assert_arr(array('id'), $req);
+
+			if (TRUE === $asserts_ret)
+			{
+				$goodID = $req['id'];
+
+				$expression_primary_fields = array(
+					'strExpression',
+					'intSetSize',
+					'enumClass',
+					'intLayer',
+					'strFullBareString',
+					'enumDeleted',
+					'enumCategory',
+					'enumShowEmpties',
+					'enumCompConc',
+					'strEtymSwitch',
+					'enumVisual'
+				);
+				Conn::query("
+					INSERT INTO expression_primary
+						(" . implode(', ', $expression_primary_fields) . ")
+					SELECT " . implode(', ', $expression_primary_fields) . "
+					FROM expression_primary
+					WHERE pkExpressionPrimary = " . $goodID . "
+				");
+
+				$newID = Conn::getId();
+
+				$expression_primary_array_fields = array(
+					'intIndex',
+					'fkExpressionPrimaryChild',
+					'enumOperator'
+				);
+				Conn::query("
+					INSERT INTO expression_primary_array
+						(fkExpressionPrimaryParent, " . implode(', ', $expression_primary_array_fields) . ")
+					SELECT
+						" . $newID . " as fkExpressionPrimaryParent,
+						" . implode(', ', $expression_primary_array_fields) . "
+					FROM expression_primary_array
+					WHERE fkExpressionPrimaryParent = " . $goodID . "
+				");
+
+				$expression_data_fields = array(
+					'strExample',
+					'strDescriptor',
+					'strLanguageISO6391'
+				);
+				Conn::query("
+					INSERT INTO expression_data
+						(fkExpressionPrimary, " . implode(', ', $expression_data_fields) . ")
+					SELECT
+						" . $newID . " as fkExpressionPrimary,
+						" . implode(', ', $expression_data_fields) . "
+					FROM expression_data
+					WHERE fkExpressionPrimary = " . $goodID . "
+				");
+
+				Conn::query("
+					INSERT INTO library_to_expression
+						(fkExpressionPrimary, fkLibrary)
+					SELECT
+						" . $newID . " as fkExpressionPrimary, fkLibrary
+					FROM library_to_expression
+					WHERE fkExpressionPrimary = " . $goodID . "
+				");
+
+				$request_ret = handle_request('expression', array(
+					'id' => $newID,
+					'lang' => $req['lang']
+				));
+			}
+			else
+			{
+				$request_ret = assert_format($asserts_ret);
+			}
+			break;
+
 		case 'relationalExpression':
 			$asserts_ret = assert_arr(array('id'), $req);
 			
@@ -64,48 +146,58 @@ function handle_request($action, $req) {
 				$goodID = goodInt($req['id']);
 				$ret = Conn::queryArray("
 					SELECT
-						pkRelationalExpression AS rel_id, vchExpression AS expression,
-						enumCompositionType, relexp.intLayer, relexp.enumDeleted,
-						relexp.vchExample AS example, short_url.short_url AS shortUrl,
+						prim.pkExpressionPrimary as id,
+						prim.strExpression as expression,
+						prim.intSetSize,
+						prim.intLayer,
+						prim.strFullBareString,
+						prim.enumClass,
+						prim.enumCategory,
 						(
 							SELECT GROUP_CONCAT(fkLibrary SEPARATOR ',')
 							FROM library_to_expression
-							WHERE fkRelationalExpression = pkRelationalExpression
-							GROUP BY fkRelationalExpression
-						) AS fkLibrary
-					FROM relational_expression relexp
-					JOIN library_to_expression ltoep
-						ON relexp.pkRelationalExpression = ltoep.fkRelationalExpression
-					JOIN short_url ON relexp.fkShortUrl = short_url.id
-					WHERE relexp.pkRelationalExpression = " . $goodID);
+							WHERE fkExpressionPrimary = pkExpressionPrimary
+							GROUP BY fkExpressionPrimary
+						) AS fkLibrary, 'relational' AS enumExpressionType,
+
+						prim.enumShowEmpties,
+						prim.enumCompConc,
+						prim.strEtymSwitch
+					FROM expression_primary prim
+					WHERE prim.enumVisual = 'Y'
+					AND prim.pkExpressionPrimary = " . $goodID);
+
+				$ret['example'] = fetch_example_for_expression_id($ret['id'], $req['lang']);
 
 				$ret['fkLibrary'] = explode(',', $ret['fkLibrary']);
 
 				$children_query = Conn::queryArrays("
-					SELECT fkRelationalExpression, fkExpressionPrimary
-					FROM relational_expression_tree
-					WHERE fkParentRelation = " . $goodID . "
-					ORDER BY intOrder
+					SELECT fkExpressionPrimaryChild, enumOperator
+					FROM expression_primary_array
+					WHERE fkExpressionPrimaryParent = " . $goodID . "
+					ORDER BY intIndex
 				");
 				$ret['children'] = array();
 
-				for ($i = 0; $i < count($children_query); $i++) {
+				foreach ($children_query as $child_query) {
 					$child = NULL;
 
-					if ($children_query[$i]['fkRelationalExpression']) {
-						$child = Conn::queryArray("
-							SELECT vchExpression as expression, vchExample as example
-							FROM relational_expression
-							WHERE pkRelationalExpression = " . $children_query[$i]['fkRelationalExpression'] . "
-						");
+					if ($child_query['enumOperator']) {
+						$child = array(
+							'expression' => $child_query['enumOperator']
+						);
 					} else {
 						$child = Conn::queryArray("
-							SELECT strExpression as expression, sublang.strExample AS example
-							FROM expression_primary prim
-							LEFT JOIN expression_data sublang
-								ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
-							WHERE pkExpressionPrimary = " . $children_query[$i]['fkExpressionPrimary'] . "
+							SELECT
+								pkExpressionPrimary as id,
+								strExpression as expression
+							FROM expression_primary
+							WHERE pkExpressionPrimary = " . $child_query['fkExpressionPrimaryChild'] . "
 						");
+
+						$child['example'] = fetch_example_for_expression_id(
+							$child_query['fkExpressionPrimaryChild'], $req['lang']
+						);
 					}
 
 					$ret['children'][] = $child;
@@ -152,12 +244,20 @@ function handle_request($action, $req) {
 						prim.strFullBareString,
 						prim.enumClass,
 						prim.enumCategory,
+						(
+							SELECT GROUP_CONCAT(fkLibrary SEPARATOR ',')
+							FROM library_to_expression
+							WHERE fkExpressionPrimary = pkExpressionPrimary
+							GROUP BY fkExpressionPrimary
+						) AS fkLibrary, 'basic' AS enumExpressionType,
 
 						prim.enumShowEmpties,
 						prim.enumCompConc,
 						prim.strEtymSwitch
 					FROM expression_primary prim
 					WHERE prim.pkExpressionPrimary = " . $goodID);
+
+				$ret['fkLibrary'] = explode(',', $ret['fkLibrary']);
 
 				if ($ret['strEtymSwitch']) {
 					$ret_key = Conn::queryArray('
@@ -216,10 +316,10 @@ function handle_request($action, $req) {
 			break;
 			
 		case 'deleteVisualExpression':
-			$asserts_ret = assert_arr(array('rel_id'), $req);
+			$asserts_ret = assert_arr(array('id'), $req);
 
 			if (TRUE === $asserts_ret) {
-				Conn::query("UPDATE relational_expression SET enumDeleted = 'Y' WHERE pkRelationalExpression = ".goodInt($req['rel_id']));
+				Conn::query("UPDATE relational_expression SET enumDeleted = 'Y' WHERE pkRelationalExpression = ".goodInt($req['id']));
 				
 				$request_ret = array('result' => 'success');
 			} else {

@@ -3,13 +3,16 @@
 $ret = NULL;
 
 $lang = strtolower($req['lang']);
+$is_visual = $req['enumVisual'];
 
-$parse_res = IEMLParser::AST_or_FAIL($req['exp']);
+$parser = new IEMLParser();
+$parser->visual_expression = $is_visual;
+$parse_res = $parser->parseAllStrings($req['exp']);
 
-if ($parse_res['resultCode'] == 0) {
-	$set_size = $parse_res['AST']->getSize();
-	$layer = $parse_res['AST']->getLayer();
-	$bare_str = $parse_res['AST']->fullExpand()->bareStr();
+if (!$parse_res->hasException() && !$parse_res->hasError()) {
+	$set_size = $parse_res->AST()->getSize();
+	$layer = $parse_res->AST()->getLayer();
+	$bare_str = $parse_res->AST()->fullExpand()->bareStr();
 	$class = IEMLParser::getClass($req['exp']);
 
 	$clean_expression = goodString($req['exp']);
@@ -32,10 +35,26 @@ if ($parse_res['resultCode'] == 0) {
 
 		Conn::query("
 			INSERT INTO expression_primary
-				(strExpression, enumCategory, intSetSize, intLayer, strFullBareString, enumClass)
+				(
+					strExpression,
+					enumCategory,
+					intSetSize,
+					intLayer,
+					strFullBareString,
+					enumClass,
+					enumVisual
+				)
 			VALUES
-				('" . $clean_expression . "', '" . goodString($req['enumCategory']) . "', " . $set_size
-					. ", " . $layer . ", '" . $clean_bare_str . "', '" . goodString($class) . "')");
+				(
+					'" . $clean_expression . "',
+					'" . goodString($req['enumCategory']) . "',
+					" . $set_size . ",
+					" . $layer . ",
+					'" . $clean_bare_str . "',
+					'" . goodString($class) . "',
+					'" . ($is_visual ? 'Y' : 'N') . "'
+				)
+		");
 				
 		$ret = array(
 			'id' => Conn::getId(),
@@ -54,9 +73,20 @@ if ($parse_res['resultCode'] == 0) {
 
 		Conn::query("
 			INSERT INTO expression_data
-				(fkExpressionPrimary, strExample, strDescriptor, strLanguageISO6391)
+				(
+					fkExpressionPrimary, 
+					strExample,
+					strDescriptor,
+					strLanguageISO6391
+				)
 			VALUES
-				(".goodInt($ret['id']).", '".goodString($req['example'])."', '".goodString($req['descriptor'])."', '".goodString($lang)."')");
+				(
+					".goodInt($ret['id']).",
+					'".goodString($req['example'])."',
+					'".goodString($req['descriptor'])."',
+					'".goodString($lang)."'
+				)
+		");
 
 		//TODO: handle error if unable to add to library
 		handle_request('addExpressionToLibrary', array(

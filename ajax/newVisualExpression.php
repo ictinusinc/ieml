@@ -1,48 +1,40 @@
 <?php
 
-$processed_result = process_editor_array($req['editor_array']);
+$editor_array = $req['editor_array'];
+$processed_result = process_editor_array($editor_array);
 
 if ($processed_result['result'] == 'error') {
 	return $processed_result;
 }
 
-//insert into relational_expression table once we know it's cool
-Conn::query('
-	INSERT INTO relational_expression
-		(vchExpression, vchExample, enumCompositionType, intLayer)
-	VALUES
-		(\'' . goodString($processed_result['str_expression']) . '\',
-			\'' . goodString($req['example']) . '\',
-			\'' . $processed_result['composition_type'] . '\',
-			' . (is_null($processed_result['int_layer']) ? 'NULL' : '\'' . $processed_result['int_layer'] . '\'') . 
-		')'
-);
+$insert_request = handle_request('newDictionary', array(
+	'exp' => $processed_result['str_expression'],
+	'example' => $req['example'],
+	'lang' => $req['lang'],
+	'library' => $req['library'],
+	'enumVisual' => 'Y',
+	'enumCategory' => 'N',
+	'enumShowEmpties' => 'N',
+	'descriptor' => ''
+));
 
-$expression_id = Conn::getId();
-
-$short_url_id = URLShortener::shorten_url_get_id('rel-view/' . $expression_id);
-
-//update expression with short url
-Conn::query('
-	UPDATE relational_expression
-	SET fkShortUrl = \'' . $short_url_id . '\'
-	WHERE pkRelationalExpression = ' . $expression_id
-);
+$expression_id = $insert_request['id'];
 
 //run through array once more to insert elements into DB
-foreach ($processed_result['insertables'] as $i => $to_insert) {
-	if (isset($to_insert['pkExpressionPrimary'])) {
-		insert_primary($expression_id, $to_insert['pkExpressionPrimary'], $i);
-	} else {
-		insert_relation($expression_id, $to_insert['pkRelationalExpression'], $i);
+foreach ($processed_result['processed_array'] as $i => $editor_expression)
+{
+	if (in_array($editor_expression['expression'], array('+', '*', '(', ')', '[', ']', '/')))
+	{
+		insert_operator($expression_id, $editor_expression['expression'], $i);
+	}
+	else
+	{
+		insert_primary($expression_id, $editor_expression['id'], $i);
 	}
 }
 
-handle_request('addExpressionToLibrary', array(
-	'rel_id' => $expression_id,
-	'library' => $req['library']
-));
-
 return handle_request('relationalExpression', array(
-	'id' => $expression_id
+	'id' => $expression_id,
+	'lang' => $req['lang'],
+	'library' => $req['library']
 ));

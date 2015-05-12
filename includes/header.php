@@ -18,7 +18,7 @@ header('Content-Type: text/html; charset=utf-8;');
 	
 	<!-- Stylesheets -->
 	<!-- bootstrap-2.0.1.css -->
-	<link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
 	<!-- style.css -->
 	<link rel="stylesheet" type="text/css" href="//<?php echo WEBAPPROOT.'/includes/css/style.css'; ?>" />
 </head>
@@ -100,6 +100,10 @@ header('Content-Type: text/html; charset=utf-8;');
 							<button type="button" class="btn btn-default" id="add-ieml-record">
 								<span class="glyphicon glyphicon-plus"></span>
 								<span data-lang-switch="add_record"><?= trans_phrase('add_record', $lang) ?></span>
+							</button>
+							<button type="button" class="btn btn-default" id="add-ieml-usl">
+								<span class="glyphicon glyphicon-plus"></span>
+								<span data-lang-switch="add_usl"><?= trans_phrase('add_usl', $lang) ?></span>
 							</button>
 						</div>
 						<div class="pull-right">

@@ -84,14 +84,6 @@
 	margin-right: 0;
 }
 
-.editor-proper.only-script > *::after {
-	content: " /";
-}
-
-.editor-proper.only-script > *:last-child::after {
-	content: none;
-}
-
 .editor-garbage {
 	position: absolute;
 	right: 10px;
@@ -105,32 +97,22 @@
 	background-color: #DDD;
 }
 
-.list-view-wrap .editor-drawer {
-	display: none;
-	visibility: hidden;
+.contentzone.editor-in {
+	padding-bottom: 310px;
 }
 
-.list-view-wrap.editor-in .editor-drawer {
+.editor-in .editor-drawer {
 	display: block;
 	visibility: visible;
 }
 
-.list-view-wrap .table {
-	width: 100%;
-}
-
-.list-view-wrap.editor-in .table {
-	width: 50%;
-	float: right;
-}
-
 .editor-drawer {
 	position: fixed;
-	left: 0;
-	width: 48%;
 	background-color: #FFF;
 	z-index: 2;
-	margin-left: 14px;
+	left: 5px;
+	right: 5px;
+	bottom: 0;
 }
 
 .editor {
@@ -139,7 +121,7 @@
 }
 
 .editor-proper {
-	height: 270px;
+	height: 125px;
 	padding: 10px;
 }
 
@@ -157,11 +139,11 @@
 	padding: 10px;
 }
 
-.editor-example > .row {
+.editor-example > .row .row {
 	margin-bottom: 10px;
 }
 
-.editor-example > .row:last-child {
+.editor-example > .row .row:last-child {
 	margin-bottom: 0;
 }
 

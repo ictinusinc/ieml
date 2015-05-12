@@ -328,7 +328,8 @@ class Conn {
 	//misc functions-----------------------------------------------
 	
 	public static function dbError() {
-		echo "<pre>MySQL Error: ".print_r(mysqli_error(self::$staticHandle), true)."\n"."Last query:\n".self::$lastQuery."</pre>\n";
+		echo '<pre>' . 'MySQL Error: ' . mysqli_error(self::$staticHandle) . '</pre>' . "\n";
+		echo '<pre>' . 'Last query:' . "\n" . self::$lastQuery . '</pre>' . "\n";
 		die('Dead.');
 	}
 	

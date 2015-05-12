@@ -83,11 +83,6 @@
 			$this.removeClass('only-script');
 			$content_type.find('[data-lang-switch="proposition_phrase"]').bshow();
 		}
-
-		// IEMLApp.submit({
-		// 	'a': 'validateExpression',
-		// 	'expression': IEMLApp.construct_editor_array($children)
-		// });
 	};
 
 	IEMLApp.construct_editor_array = function(elements) {
@@ -97,8 +92,10 @@
 
 		return elements.get()
 			.reduce(function(acc, el, i) {
-				if (i > 0 && only_script) { acc.push('/'); }
-				acc.push( $(el).data('script-val') );
+				acc.push({
+					'expression': $(el).data('script-val'),
+					'id': $(el).data('script-id')
+				});
 
 				return acc;
 			}, []);
@@ -197,10 +194,20 @@
 			if (isNaN(parseInt(path_last, 10))) {
 				IEMLApp.submit({ 'a': 'expression', 'library': IEMLApp.library, 'lang': IEMLApp.lang, 'exp': path_last });
 			} else {
-				IEMLApp.submit({ 'a': 'expression', 'library': IEMLApp.library, 'lang': IEMLApp.lang, 'id': path_last });
+				IEMLApp.submit({
+					'a': 'expression',
+					'library': IEMLApp.library,
+					'lang': IEMLApp.lang,
+					'id': path_last
+				});
 			}
 		} else if (settings.mode == 'rel-view') {
-			IEMLApp.submit({ 'a': 'relationalExpression', 'library': IEMLApp.library, 'id': path_last });
+			IEMLApp.submit({
+				'a': 'relationalExpression',
+				'library': IEMLApp.library,
+				'lang': IEMLApp.lang,
+				'id': path_last
+			});
 		} else {
 			switch_to_list();
 		}
@@ -352,7 +359,13 @@
 		var state_call = obj_size(prev_state.data) === 0 ? IEMLApp.replaceState : IEMLApp.pushState;
 		
 		if (rvars) {
-			if (rvars.a == 'getUserLibraries') {
+			if (rvars.a == 'duplicate') {
+				IEMLApp.fetch(rvars, function(responseData) {
+					if (responseData.result != 'error') {
+						$('[data-result-id="' + rvars.id + '"]').after(formatResultRow(responseData));
+					}
+				});
+			} else if (rvars.a == 'getUserLibraries') {
 				IEMLApp.fetch(rvars, function(responseData) {
 					if (responseData.result != 'error') {
 						IEMLApp.userLibraries = responseData;
@@ -446,7 +459,10 @@
 						$('.ieml-validation-result, .result-error-icon').bhide();
 					}
 
-					$('[data-result-id="' + responseData.rel_id + '"][data-expression-type="relational"]').get(0).outerHTML = formatResultRow(responseData);
+					var $existing_row = $('[data-result-id="' + responseData.id + '"][data-expression-type="relational"]');
+					if ($existing_row.length > 0) {
+						$existing_row.get(0).outerHTML = formatResultRow(responseData);
+					}
 
 					IEMLApp.recieveVisualExpression(responseData);
 				});
@@ -463,7 +479,7 @@
 					//trigger list reload
 					$('#search-form').trigger('submit');
 					
-					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars.lang, 'library-' + rvars.library, 'rel-view', responseData.rel_id]));
+					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars.lang, 'library-' + rvars.library, 'rel-view', responseData.id]));
 					
 					IEMLApp.recieveVisualExpression(responseData);
 				});
@@ -473,7 +489,7 @@
 
 					$('#search-form #search-library-select').val(IEMLApp.library);
 
-					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars.lang, 'library-' + IEMLApp.library, 'rel-view', responseData.rel_id]));
+					state_call(IEMLApp.cons_state(rvars, responseData), '', cons_url([rvars.lang, 'library-' + IEMLApp.library, 'rel-view', responseData.id]));
 					
 					IEMLApp.recieveVisualExpression(responseData);
 				});
@@ -485,7 +501,7 @@
 				});
 			} else if (rvars.a == 'deleteVisualExpression') {
 				IEMLApp.fetch(rvars, function(responseData) {
-					$('[data-result-id="' + rvars.rel_id + '"][data-expression-type="relational"]').remove();
+					$('[data-result-id="' + rvars.id + '"][data-expression-type="relational"]').remove();
 				});
 			} else if (rvars.a == 'deleteExpressionFromLibrary') {
 				IEMLApp.fetch(rvars, function(responseData) {
@@ -563,31 +579,21 @@
 		}
 		
 		switch_to_list();
-
-		if (reqObj && IEMLApp.userLibraries && reqObj.library) {
-			var selected_option = IEMLApp.userLibraries.filter(function(el) {
-				return el.pkLibrary == reqObj.library;
-			})[0];
-
-			IEMLApp.library = reqObj.library;
-
-			if (IEMLApp.user && selected_option && selected_option.fkUser == IEMLApp.user.pkUser) {
-				enable_editor();
-			}
-		}
+		show_editor();
 	};
 	
 	IEMLApp.receiveExpression = function (responseData) {
 		IEMLApp.lastRetrievedData = responseData;
 		
 		fillForm(responseData);
+		show_editor();
 	};
 
 	IEMLApp.recieveVisualExpression = function(responseData) {
 		fillEditor(responseData);
 
 		switch_to_list();
-		enable_editor();
+		show_editor();
 	};
 	
 	IEMLApp.receiveUserList = function (responseData) {
@@ -626,7 +632,7 @@
 	}
 	
 	function reset_views() {
-		$('.list-view-wrap').removeClass('editor-in');
+		$('.editor-drawer').bhide();
 		$('.ieml-validation-result').bhide();
 
 		$('.edit-buttons-wrap').bhide();
@@ -644,6 +650,7 @@
 	
 	function switch_to_view(view) {
 		reset_views();
+
 		$('#' + view + '-view-container').bshow();
 	}
 	
@@ -660,8 +667,8 @@
 		$('#ieml-view-index').bshow();
 	}
 	
-	function enable_editor() {
-		$('.list-view-wrap').addClass('editor-in');
+	function show_editor() {
+		$('.editor-drawer').bshow();
 	}
 
 	function switch_to_list() {
@@ -850,36 +857,39 @@
 
 		var plus_ = $('[data-script-val="+"]').eq(0);
 		var times_ = $('[data-script-val="*"]').eq(0);
-		var empty_ = $('[data-script-val="E:"]').eq(0);
+		var lparen_ = $('[data-script-val="("]').eq(0);
+		var rparen_ = $('[data-script-val=")"]').eq(0);
+		var lbracket_ = $('[data-script-val="["]').eq(0);
+		var rbracket_ = $('[data-script-val="]"]').eq(0);
+
 		var children = info.children;
 		var $editor = $('.editor-proper');
-		var $link = $('.editor-short');
+		// var $link = $('.editor-short');
 
-		var short_url_domain = 'ieml.org';
+		// var short_url_domain = 'ieml.org';
 
-		$link.attr('href', '//' + short_url_domain + '/' + info.shortUrl);
-		$link.html(short_url_domain + '/' + info.shortUrl);
+		// $link.attr('href', '//' + short_url_domain + '/' + info.shortUrl);
+		// $link.html(short_url_domain + '/' + info.shortUrl);
 
-		$('.editor-drawer [name="rel-id"]').val(info.rel_id);
+		$('.editor-drawer [name="rel-id"]').val(info.id);
 		$('.editor-example-input').val(info.example);
 
-		if (children) {
+		if (children)
+		{
 			var i, $inplace_el, child;
-			for (i = 0; i < children.length; i++) {
-				child = children[i];
-
-				if (i > 0) {
-					if (info.enumCompositionType == '+') {
-						$editor.append(plus_.clone());
-					} else if (info.enumCompositionType == '*') {
-						$editor.append(times_.clone());
-					}
+			for (i = 0; i < children.length; i++)
+			{
+				if (children[i].expression === '*')
+				{
+					$inplace_el = times_.clone();
 				}
-
-				if (["E:", "E:.", "E:.-", "E:.-'", "E:.-',", "E:.-',_", "E:.-',_;"].indexOf(child.expression) > -1) {
-					$inplace_el = empty_.clone();
-				} else {
-					$inplace_el = $(formatDraggableScript(child));
+				else if (children[i].expression === '+')
+				{
+					$inplace_el = plus_.clone();
+				}
+				else
+				{
+					$inplace_el = $(formatDraggableScript(children[i]));
 				}
 
 				$editor.append($inplace_el);
@@ -934,8 +944,8 @@
 						'<div class="' + (el.enumEnabled == 'N' ? 'hidden ' : '') + 'cell_wrap' + '">' +
 							'<a href="/ajax.php?id=' + el.id + '&a=searchDictionary" data-exp="' + el.expression + '" data-id="' + el.id + '" class="editExp">' +
 								'<span class="cell_expression">' + el.expression + '</span>' +
-								(null !== el.example ?  '<span class="cell_example">' +
-									el.example +
+								(null !== el.example ? '<span class="cell_example">' +
+									formatDraggableScript(el) +
 								'</span>' : '') +
 							'</a>' +
 						'</div>';
@@ -975,6 +985,16 @@
 			}
 			
 			$('#ieml-table-span').html(str);
+
+			Array.prototype.forEach.call(document.querySelectorAll('#ieml-table-span .cell_example'), function(el) {
+				Sortable.create(el, $.extend({
+					'group': {
+						'name': IEMLApp.sortableGroup,
+						'pull': 'clone',
+						'put': false
+					}
+				}, IEMLApp.sortableOptions));
+			});
 		} else {
 			$('#ieml-table-span').empty();
 		}
@@ -1057,20 +1077,9 @@
 					'data-exp="' + obj.expression + '"' +
 					'data-id="' + obj.id + '"' +
 					'class="btn btn-default ' + (obj.enumExpressionType == 'relational' ? 'editRelExp' : 'editExp') + '"><span class="glyphicon glyphicon-pencil"></span></button>' +
-				(relative_libraries.length > 0 ?
-					'<div class="btn-group">' +
-						'<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">' +
-							'<span class="glyphicon glyphicon-plus">&nbsp;</span><span class="caret"></span>' +
-						'</button>' +
-						'<ul class="dropdown-menu" role="menu">' +
-							array_map(relative_libraries, function(i, lib) {
-								return '<li><a href="javascript:void(0);" class="addExpressionToLibrary"' + 
-								'data-exp-id="' + obj.id + '"' +
-								'data-lib-id="' + lib.pkLibrary + '">' + lib.strName + '</a></li>';
-							}) +
-						'</ul>' +
-					'</div>'
-				: '') +
+				'<button type="button"' +
+					'data-id="' + obj.id + '"' +
+					'class="btn btn-default duplicateExp"><span class="glyphicon glyphicon-duplicate"></span></button>' +
 				(obj.enumExpressionType == 'relational' ? '<button type="button"' +
 					'data-id="' + obj.id + '"' +
 					'class="btn btn-default delRelExp"><span class="glyphicon glyphicon-trash"></span></button>'
@@ -1080,11 +1089,18 @@
 					'class="btn btn-default removeExpFromList"><span class="glyphicon glyphicon-remove"></span></button>'
 				: '') +
 			'</td>' +
-			'</tr>';
+		'</tr>';
 	}
 
 	function formatDraggableScript(obj) {
-		return '<div class="draggable" data-script-val="' + obj.expression + '" data-is-script="true">' + (obj.example ? obj.example : '') + '</div>';
+		return '<div class="draggable" ' +
+			(obj.id ? 'data-script-id="' + obj.id + '" ' : '') +
+			'data-script-val="' + obj.expression + '" data-is-script="true">' +
+				(obj.example === null || typeof obj.example == "undefined" ?
+					obj.expression :
+					obj.example
+				) +
+			'</div>';
 	}
 	
 	function formatUserRow(user) {
@@ -1189,7 +1205,7 @@
 			IEMLApp.submit(form_data);
 			
 			return false;
-		}).on('change', '#search-library-select, #search-class-select, #search-library-select', function() {
+		}).on('change', '#search-layer-select, #search-class-select, #search-library-select', function() {
 			$('#search-form').trigger('submit');
 		}).on('change', '#iemlEnumShowTable', function() {
 			var info = IEMLApp.lastRetrievedData;
@@ -1213,6 +1229,14 @@
 						.attr('rowspan', parseInt(info.render_vertical_head_length, 10) + 1).attr('colspan', info.render_horizontal_head_length);
 				}
 			}
+		}).on('click', '.duplicateExp', function() {
+			IEMLApp.submit({
+				'a': 'duplicate',
+				'id': $(this).data('id'),
+				'lang': IEMLApp.lang
+			});
+
+			return false;
 		}).on('click', '.editExp', function() {
 			var $this = $(this);
 			
@@ -1230,7 +1254,8 @@
 			
 			IEMLApp.submit({
 				'a': 'relationalExpression',
-				'id': $this.data('id')
+				'id': $this.data('id'),
+				'lang': IEMLApp.lang
 			});
 			
 			return false;
@@ -1242,7 +1267,7 @@
 		}).on('change', '#filter-results-wrap [name="filter-results"]', function() {
 			$('#search-form').trigger('submit');
 		}).on('click', '#add-ieml-record', function() {
-			IEMLApp.lastRetrievedData = { 'expression': '', 'example': '', 'enumCategory': 'N', 'enumShowEmpties': 'N' };
+			IEMLApp.lastRetrievedData = { 'expression': '', 'example': '', 'enumCategory': 'N', 'enumShowEmpties': 'N', 'etymology': '' };
 			fillForm(IEMLApp.lastRetrievedData);
 			
 			readToWrite();
@@ -1251,6 +1276,10 @@
 
 			$('#add-ieml-record').bhide();
 			
+			return false;
+		}).on('click', '#add-ieml-usl', function() {
+			$('.editor-drawer').bshow();
+
 			return false;
 		}).on('click', '#ieml-desc-result-save', function() {
 			writeToRead();
@@ -1411,25 +1440,27 @@
 			var reqVars = {
 				'editor_array': IEMLApp.construct_editor_array($editor.children()),
 				'lang': $('#search-lang-select').val(),
-				'library': $('#search-library-select').val(),
+				'library': IEMLApp.userLibraries[0].pkLibrary,
 				'example': $('.editor-example-input').val()
 			};
 
 			if (existing_id) {
 				reqVars.a = 'editVisualExpression';
-				reqVars.rel_id = existing_id;
+				reqVars.id = existing_id;
 			} else {
 				reqVars.a = 'newVisualExpression';
 			}
 
 			IEMLApp.submit(reqVars);
-		}).on('click', '.editor-cancel', function() {
+		}).on('click', '.editor-clear', function() {
+			$('.editor-drawer').bhide();
+
 			clearEditor();
 		}).on('click', '.delRelExp', function() {
 			var $this = $(this);
 
 			showConfirmDialog('Are you sure?', function() {
-				IEMLApp.submit({ 'a': 'deleteVisualExpression', 'rel_id': $this.data('id') });
+				IEMLApp.submit({ 'a': 'deleteVisualExpression', 'id': $this.data('id') });
 			});
 		}).on('click', '.removeExpFromList', function() {
 			var $this = $(this);

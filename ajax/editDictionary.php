@@ -1,15 +1,19 @@
 <?php
 
 $lang = strtolower($req['lang']);
+$is_visual = $req['enumVisual'];
 
-$parse_res = IEMLParser::AST_or_FAIL($req['exp']);
+$parser = new IEMLParser();
+$parser->visual_expression = $is_visual;
+$parse_res = $parser->parseAllStrings($req['exp']);
 
-if ($parse_res['resultCode'] == 0) {
+if (!$parse_res->hasException() && !$parse_res->hasError()) {
 	$oldState = Conn::queryArray("
 		SELECT
 			pkExpressionPrimary AS id, strExpression as expression, enumCategory
 		FROM expression_primary
 		WHERE pkExpressionPrimary = ".goodInt($req['id']));
+
 	$oldExample = Conn::queryArrays("
 		SELECT pkExpressionData
 		FROM expression_data
@@ -49,15 +53,16 @@ if ($parse_res['resultCode'] == 0) {
 		SET
 			enumCategory = '".goodString($req['enumCategory'])."',
 			strExpression = '".goodString($req['exp'])."',
-			intSetSize = ".$parse_res['AST']->getSize().",
-			intLayer = ".$parse_res['AST']->getLayer().",
-			strFullBareString = '".goodString($parse_res['AST']->fullExpand()->bareStr())."',
+			intSetSize = ".$parse_res->AST()->getSize().",
+			intLayer = ".$parse_res->AST()->getLayer().",
+			strFullBareString = '".goodString($parse_res->AST()->fullExpand()->bareStr())."',
 			enumClass = '".goodString(IEMLParser::getClass($req['exp']))."',
 			enumShowEmpties = '".goodString($req['enumShowEmpties'])."',
 			enumCompConc = '".invert_bool($req['iemlEnumComplConcOff'], 'Y', 'N')."',
 			strEtymSwitch = '".invert_bool($req['iemlEnumSubstanceOff'], 'Y', 'N')
 							.invert_bool($req['iemlEnumAttributeOff'], 'Y', 'N')
-							.invert_bool($req['iemlEnumModeOff'], 'Y', 'N')."'
+							.invert_bool($req['iemlEnumModeOff'], 'Y', 'N')."',
+			enumVisual = '" . ($req['enumVisual'] ? 'Y' : 'N') . "'
 		WHERE pkExpressionPrimary = ".goodInt($req['id']));
 
 	if ($ret['enumCategory'] == 'Y' && $oldState['enumCategory'] == 'N') {

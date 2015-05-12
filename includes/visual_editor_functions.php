@@ -2,35 +2,268 @@
 
 require_once(APPROOT.'/includes/ieml_parser/IEMLParser.class.php');
 
-function insert_relation($parent, $rel_id, $order) {
-	Conn::queryArrays('
-		INSERT INTO relational_expression_tree
-			(fkParentRelation, fkRelationalExpression, intOrder)
+function insert_primary($parent, $id, $order)
+{
+	Conn::query('
+		INSERT INTO expression_primary_array
+			(
+				fkExpressionPrimaryParent,
+				intIndex,
+				fkExpressionPrimaryChild,
+				enumOperator
+			)
 		VALUES
-			(' . $parent . ', ' . $rel_id . ', ' . $order . ')
+			(
+				' . $parent . ',
+				' . $order . ',
+				' . $id . ',
+				NULL
+			)
 	');
 }
 
-function insert_primary($parent, $id, $order) {
-	Conn::queryArrays('
-		INSERT INTO relational_expression_tree
-			(fkParentRelation, fkExpressionPrimary, intOrder)
+function insert_operator($parent, $op, $order)
+{
+	Conn::query('
+		INSERT INTO expression_primary_array
+			(
+				fkExpressionPrimaryParent,
+				intIndex,
+				fkExpressionPrimaryChild,
+				enumOperator
+			)
 		VALUES
-			(' . $parent . ', ' . $id . ', ' . $order . ')
+			(
+				' . $parent . ',
+				' . $order . ',
+				NULL,
+				\'' . $op . '\'
+			)
 	');
 }
 
-function promo_str_to_layer($expr, $from_layer, $to_layer) {
+function promo_str_to_layer($expr, $from_layer, $to_layer)
+{
 	$LAYER_MARKERS = array(':', '.', '-', "'", ',', '_', ';');
 
-	for ($i = $from_layer + 1; $i <= $to_layer && $i < count($LAYER_MARKERS); $i++) {
+	for ($i = $from_layer + 1; $i <= $to_layer && $i < count($LAYER_MARKERS); $i++)
+	{
 		$expr .= $LAYER_MARKERS[$i];
 	}
 
 	return $expr;
 }
 
-function process_editor_array($editor_array) {
+function index_of_matching_bracket($array, $offset, $bracket_type = '(')
+{
+	static $MATCHING_PAREN = array(
+		'(' => ')',
+		'[' => ']'
+	);
+	$nest_level = 0;
+
+	for ($i = $offset; $i < count($array); $i++)
+	{
+		$expression = $array[$i]['expression'];
+		if ($expression == $bracket_type)
+		{
+			$nest_level++;
+		}
+		else if ($expression == $MATCHING_PAREN[$bracket_type])
+		{
+			$nest_level--;
+
+			if ($nest_level == 0)
+			{
+				return $i;
+			}
+		}
+	}
+
+	return NULL;
+}
+
+function order_subexpression($editor_array)
+{
+	$sortables = array();
+	$subexpression_size = 0;
+	$is_mul = FALSE;
+
+	for ($i = 0; $i < count($editor_array); $i++)
+	{
+		$editor_expression = $editor_array[$i];
+
+		if ($editor_expression['expression'] == '(' || $editor_expression['expression'] == '[')
+		{
+			$index_of_matching_paren =
+				index_of_matching_bracket($editor_array, $i, $editor_expression['expression']);
+
+			list($ordered_subexpression, $size) = order_subexpression(array_slice(
+				$editor_array, $i + 1, $index_of_matching_paren - $i - 1
+			));
+
+			array_splice(
+				$editor_array,
+				$i + 1,
+				$index_of_matching_paren - $i - 1,
+				$ordered_subexpression
+			);
+
+			$sortables[] = array(
+				'size' => $size,
+				'item' => array_slice(
+					$editor_array, $i, $index_of_matching_paren - $i + 1
+				),
+			);
+
+			$i += count($ordered_subexpression);
+		}
+		else if (isset($editor_expression['id']))
+		{
+			$expression_ast = (new IEMLParser())
+				->parseAllStrings($editor_expression['expression'])
+				->AST();
+
+			$sortables[] = array(
+				'size' => $expression_ast->getSize(),
+				'item' => array($editor_expression)
+			);
+		}
+		else if ($editor_expression['expression'] == '*')
+		{
+			$is_mul = TRUE;
+		}
+	}
+
+	foreach ($sortables as $s) { $subexpression_size += $s['size']; }
+
+	if ($is_mul)
+	{
+		return array($editor_array, $subexpression_size);
+	}
+
+	usort($sortables, function($a, $b) {
+		return $a['size'] - $b['size'];
+	});
+
+	$j = 0;
+	for ($i = 0; $i < count($editor_array); $i++)
+	{
+		$editor_expression = $editor_array[$i];
+
+		if ($editor_expression['expression'] == '(' || $editor_expression['expression'] == '[')
+		{	
+			$index_of_matching_paren =
+				index_of_matching_bracket($editor_array, $i, $editor_expression['expression']);
+
+			array_splice($editor_array, $i, $index_of_matching_paren - $i + 1, $sortables[$j++]['item']);
+
+			$i += count($sortables[$j-1]['item']);
+		}
+		else if (isset($editor_expression['id']))
+		{
+			array_splice($editor_array, $i, 1, $sortables[$j++]['item']);
+		}
+	}
+
+	return array($editor_array, $subexpression_size);
+}
+
+function promote_subexpression($editor_array)
+{
+	$highest_layer = NULL;
+	$layers = array();
+
+	for ($i = 0; $i < count($editor_array); $i++)
+	{
+		$editor_expression = $editor_array[$i];
+		$expression = $editor_expression['expression'];
+		$layer = NULL;
+
+		if ($expression == '(' || $expression == '[')
+		{
+			$index_of_matching_paren =
+				index_of_matching_bracket($editor_array, $i, $expression);
+
+			list($promoted_subexpression, $layer) = promote_subexpression(array_slice(
+				$editor_array, $i + 1, $index_of_matching_paren - $i - 1
+			));
+
+			array_splice($editor_array, $i + 1, $index_of_matching_paren - $i - 1, $promoted_subexpression);
+
+			$i += count($promoted_subexpression);
+		}
+		else if (isset($editor_expression['id']))
+		{
+			$layer = (new IEMLParser())
+				->parseAllStrings($expression)
+				->AST()
+				->getLayer();
+		}
+
+		if (isset($layer))
+		{
+			$layers[] = $layer;
+
+			if ($expression == '[')
+			{
+				$layer += 1;
+			}
+
+			if (!$highest_layer || $layer > $highest_layer)
+			{
+				$highest_layer = $layer;
+			}
+		}
+	}
+
+	$j = 0;
+	for ($i = 0; $i < count($editor_array); $i++)
+	{
+		$editor_expression = $editor_array[$i];
+		$expression = $editor_expression['expression'];
+
+		if ($expression == '(' || $expression == '[')
+		{
+			$index_of_matching_paren = 
+				index_of_matching_bracket($editor_array, $i, $expression);
+			$layer = $layers[$j++];
+
+			if ($layer < $highest_layer)
+			{
+				array_splice(
+					$editor_array,
+					$index_of_matching_paren + 1,
+					0,
+					array(array('expression' => promo_str_to_layer('', $layer, $highest_layer)))
+				);
+			}
+
+			$i += $index_of_matching_paren - $i;
+		}
+		else if (isset($editor_expression['id']))
+		{
+			$layer = $layers[$j++];
+
+			if ($layer < $highest_layer)
+			{
+				array_splice(
+					$editor_array,
+					$i + 1,
+					0,
+					array(array('expression' => promo_str_to_layer('', $layer, $highest_layer)))
+				);
+
+				$i++;
+			}
+		}
+	}
+
+	return array($editor_array, $highest_layer);
+}
+
+function process_editor_array($editor_array)
+{
 	if (count($editor_array) == 0) {
 		return array(
 			'result' => 'error',
@@ -38,150 +271,26 @@ function process_editor_array($editor_array) {
 		);
 	}
 
-	//preprocess to gather some basic information about what's sent over
-	$composition_type = NULL;
-	$int_highest_layer = NULL;
-	$int_layer = NULL;
-	$operator_count = 0;
-	$insertables = array();
-	foreach ($editor_array as $el) {
-		if ($el == '+' || $el == '*' || $el == '/') {
-			$composition_type = $el;
-			$operator_count++;
-		} else if ($composition_type != '/') {
-			$script_lookup = Conn::queryArray('SELECT * FROM expression_primary WHERE strExpression = \'' . goodString($el) . '\'');
-
-			if ($script_lookup) {
-				$int_highest_layer = max($int_highest_layer, $script_lookup['intLayer']);
-			} else {
-				$relational_lookup = Conn::queryArray('SELECT * FROM relational_expression WHERE vchExpression = \'' . goodString($el) . '\'');
-
-				if ($relational_lookup) {
-					$int_highest_layer = max($int_highest_layer, $relational_lookup['intLayer']);
-				} else {
-					return array(
-						'result' => 'error',
-						'error' => '"' . $el . '" does not exist in the database.'
-					);
-				}
-			}
-		}
-	}
-
-	if ($composition_type == '+') {
-		$int_layer = $int_highest_layer;
-	} else if ($composition_type != '/') {
-		$int_layer = $int_highest_layer + 1;
-	}
-
-	if (is_null($composition_type)) {
-		return array(
-			'result' => 'error',
-			'error' => 'Unable to compose an expression with no composition operator.'
-		);
-	}
-
-	//run through the array again to check if everything's good
-	foreach ($editor_array as $el) {
-		if ($el == 'E' && is_null($int_highest_layer)) {
-			return array(
-				'result' => 'error',
-				'error' => 'Unable to infer the layer number of an expression containing E.'
-			);
-		} else if (($el == '+' || $el == '*' || $el == '/') && $composition_type != $el) {
-			return array(
-				'result' => 'error',
-				'error' => 'Unable to compose expression using multiple types of operators.'
-			);
-		}
-	}
-
-	foreach ($editor_array as $el) {
-		if (!($el == '+' || $el == '*' || $el == '/')) {
-			$script_lookup = Conn::queryArray('SELECT * FROM expression_primary WHERE strExpression = \'' . goodString($el) . '\'');
-
-			if ($script_lookup) {
-				$parser_result = IEMLParser::AST_or_FAIL($script_lookup['strExpression']);
-
-				//Surround additive expression with parens. if necessary
-				if ($parser_result['resultCode'] == 0 
-					&& $parser_result['AST']->child(0)->type() == IEMLNodeType::$ADD) {
-					$script_lookup['strExpression'] = '(' . $script_lookup['strExpression'] . ')';
-				}
-
-				$insertables[] = $script_lookup;
-			} else {
-				$relational_lookup = Conn::queryArray('SELECT *, vchExpression as strExpression FROM relational_expression WHERE vchExpression = \'' . goodString($el) . '\'');
-
-				if ($relational_lookup) {
-					$insertables[] = $relational_lookup;
-				}
-			}
-		}
-	}
-
-	if ($composition_type == '*') {
-		if (count($insertables) > 3) {
-			//check for max of 3 parts of a multiplication expression
-			return array(
-				'result' => 'error',
-				'error' => 'Unable to save multiplication expression with more than 3 parts.'
-			);
-		} else if (count($insertables) > 1) {
-			//check for dangling empty at the end of the expression
-			$last_item = $insertables[count($insertables) - 1];
-
-			if ($last_item['strExpression'] == 'E:') {
-				return array(
-					'result' => 'error',
-					'error' => 'Illegal to have dangling "Empty" at the end of the expression.'
-				);
-			}
-		}
-	}
-
-	if (count($insertables) == 0) {
-		//check for pointless expression
-		return array(
-			'result' => 'error',
-			'error' => 'Unable to save empty expression.'
-		);
-	} else if (count($insertables) != $operator_count + 1) {
-		//check for an expression with an invalid number of expressions
-		return array(
-			'result' => 'error',
-			'error' => 'Unable to save expression with an invalid number of operators.'
-		);
-	}
-
-	//run through insertables, to compose expression as string and check for errors
 	$str_expression = '';
-	foreach ($insertables as $i => &$to_insert) {
-		if (($composition_type == '*' || $composition_type == '+')
-			&& $to_insert['intLayer'] != $int_highest_layer) {
-			$to_insert['strExpression'] = promo_str_to_layer($to_insert['strExpression'],
-				$to_insert['intLayer'], $int_highest_layer);
-		}
+	list($ordered_editor_array, ) = order_subexpression($editor_array);
+	list($promoted_editor_array, ) = promote_subexpression($ordered_editor_array);
 
-		if ($i > 0 && ($composition_type == '+' || $composition_type == '/')) {
-			$str_expression .= ' ' . $composition_type . ' ';
-		}
+	foreach ($promoted_editor_array as $editor_expression)
+	{
+		$expression = $editor_expression['expression'];
 
-		$str_expression .= $to_insert['strExpression'];
-	}
-	//cover with brackets if we're adding expressions greater than layer 0
-	if ($int_layer > 0 && $composition_type == '+') {
-		$str_expression = '(' . $str_expression . ')';
-	}
-	//append layer marker if we're adding/multiplying
-	if ($composition_type == '*') {
-		$str_expression .= IEMLParser::$LAYER_STRINGS[$int_layer];
+		if ($expression === '+')
+		{
+			$str_expression .= ' ' . $expression . ' ';
+		}
+		else if ($expression != '*')
+		{
+			$str_expression .= $expression;
+		}
 	}
 
 	return array(
-		'insertables' => $insertables,
 		'str_expression' => $str_expression,
-		'composition_type' => $composition_type,
-		'int_layer' => $int_layer
+		'processed_array' => $ordered_editor_array
 	);
 }

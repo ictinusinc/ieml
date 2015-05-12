@@ -141,17 +141,20 @@ class IEMLASTNode {
 		switch ($this->type()) {
 			case IEMLNodeType::$ROOT:
 			case IEMLNodeType::$MUL:
-				for ($i=0; $i<$this->childCount(); $i++) {
+				for ($i = 0; $i < $this->childCount(); $i++) {
 					$ret .= $this->child($i)->__reconstructString();
 				}
 				break;
 			case IEMLNodeType::$ADD:
-				for ($i=0; $i<$this->childCount(); $i++) {
-					$ret .= ($i>0?'+':'').$this->child($i)->__reconstructString();
+				for ($i = 0; $i < $this->childCount(); $i++) {
+					$ret .= ($i > 0 ? '+' : '') . $this->child($i)->__reconstructString();
 				}
 				break;
 			case IEMLNodeType::$PAREN:
-				$ret .= '('.$this->child(0)->__reconstructString().')';
+				$ret .= '(' . $this->child(0)->__reconstructString() . ')';
+				break;
+			case IEMLNodeType::$SQBRACKET:
+				$ret .= '[' . $this->child(0)->__reconstructString() . ']';
 				break;
 			case IEMLNodeType::$ATOM:
 			case IEMLNodeType::$VOWEL:
@@ -162,14 +165,14 @@ class IEMLASTNode {
 
 				$layer_string = IEMLParser::$LAYER_STRINGS[$this->getLayer()];
 
-				for ($i=0; $i<$this->childCount(); $i++) {
-					$ret .= $this->child($i)->__reconstructString().$layer_string;
+				for ($i = 0; $i < $this->childCount(); $i++) {
+					$ret .= $this->child($i)->__reconstructString() . $layer_string;
 				}
 
 				break;
 			default:
 				//ruh roh
-				throw new Exception('Invalid AST node type "'.$this->type().'"');
+				throw new Exception('Invalid AST node type "' . $this->type() . '"');
 				break;
 		}
 

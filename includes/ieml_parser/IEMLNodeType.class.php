@@ -9,7 +9,8 @@ class IEMLNodeType {
 		$ATOM = 4,
 		$VOWEL = 5,
 		$PAREN = 6,
-		$CATEGORY = 7;
+		$CATEGORY = 7,
+		$SQBRACKET = 8;
 	
 	public static function toString($type) {
 		switch ($type) {
@@ -29,6 +30,8 @@ class IEMLNodeType {
 				return 'PAREN';
 			case IEMLNodeType::$CATEGORY:
 				return 'CATEGORY';
+			case IEMLNodeType::$SQBRACKET:
+				return 'SQBRACKET';
 			default:
 				throw new Exception('No such type: "'.$type.'"');
 		}

@@ -10,7 +10,7 @@
 	<!-- jquery.form -->
 	<script type="text/javascript" src="//<?= WEBAPPROOT.'/includes/js/libs/jquery.form-3.34.0.js' ?>"></script>
 	<!-- bootstrap -->
-	<script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 	<!-- functions.js -->
 	<script type="text/javascript" src="//<?= WEBAPPROOT.'/includes/js/functions.js' ?>"></script>
 	<!-- Sortable -->
