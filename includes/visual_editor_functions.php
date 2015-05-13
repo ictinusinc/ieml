@@ -163,6 +163,8 @@ function order_subexpression($editor_array)
 		else if (isset($editor_expression['id']))
 		{
 			array_splice($editor_array, $i, 1, $sortables[$j++]['item']);
+
+			$i += count($sortables[$j-1]['item']);
 		}
 	}
 
