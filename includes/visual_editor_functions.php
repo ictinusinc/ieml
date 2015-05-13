@@ -266,13 +266,6 @@ function promote_subexpression($editor_array)
 
 function process_editor_array($editor_array)
 {
-	if (count($editor_array) == 0) {
-		return array(
-			'result' => 'error',
-			'error' => 'No array to process, nothing to do.'
-		);
-	}
-
 	$str_expression = '';
 	list($ordered_editor_array, ) = order_subexpression($editor_array);
 	list($promoted_editor_array, ) = promote_subexpression($ordered_editor_array);
@@ -294,5 +287,61 @@ function process_editor_array($editor_array)
 	return array(
 		'str_expression' => $str_expression,
 		'processed_array' => $ordered_editor_array
+	);
+}
+
+function process_categorical_array($cat_array)
+{
+	// an empty array is an error
+	if (count($cat_array) == 0) {
+		return array(
+			'result' => 'error',
+			'error' => 'No array to process, nothing to do.'
+		);
+	}
+
+	// declaring variables at the top of our function like good little programmers
+	$editor_arrays = array();
+	$current_array = array();
+	$str_expression_array = array();
+	$processed_array_array = array();
+	$final_processed_array = array();
+
+	foreach ($cat_array as $cat_expression)
+	{
+		if ($cat_expression['expression'] == '/')
+		{
+			$editor_arrays[] = $current_array;
+			$current_array = array();
+		}
+		else
+		{
+			$current_array[] = $cat_expression;
+		}
+	}
+	$editor_arrays[] = $current_array;
+
+	foreach ($editor_arrays as $editor_array) {
+		$processed = process_editor_array($editor_array);
+
+		$str_expression_array[] = $processed['str_expression'];
+		$processed_array_array[] = $processed['processed_array'];
+	}
+
+	for ($i = 0; $i < count($processed_array_array); $i++)
+	{
+		$processed_array = $processed_array_array[$i];
+
+		if ($i > 0)
+		{
+			$final_processed_array[] = array('expression' => '/');
+		}
+
+		$final_processed_array = array_merge($final_processed_array, $processed_array);
+	}
+
+	return array(
+		'str_expression' => implode(' / ', $str_expression_array),
+		'processed_array' => $final_processed_array
 	);
 }

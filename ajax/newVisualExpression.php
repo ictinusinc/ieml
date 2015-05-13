@@ -1,7 +1,7 @@
 <?php
 
 $editor_array = $req['editor_array'];
-$processed_result = process_editor_array($editor_array);
+$processed_result = process_categorical_array($editor_array);
 
 if ($processed_result['result'] == 'error') {
 	return $processed_result;
@@ -17,6 +17,10 @@ $insert_request = handle_request('newDictionary', array(
 	'enumShowEmpties' => 'N',
 	'descriptor' => ''
 ));
+
+if ($insert_request['result'] == 'error') {
+	return $insert_request;
+}
 
 $expression_id = $insert_request['id'];
 

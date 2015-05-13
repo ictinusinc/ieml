@@ -1,7 +1,7 @@
 <?php
 
 $editor_array = $req['editor_array'];
-$processed_result = process_editor_array($editor_array);
+$processed_result = process_categorical_array($editor_array);
 $expression_id = $req['id'];
 
 if ($processed_result['result'] == 'error') {
@@ -21,6 +21,10 @@ $insert_request = handle_request('editDictionary', array(
 	'iemlEnumComplConcOff' => 'Y',
 	'iemlEnumSubstanceOff' => 'Y'
 ));
+
+if ($insert_request['result'] == 'error') {
+	return $insert_request;
+}
 
 Conn::query('
 	DELETE FROM expression_primary_array

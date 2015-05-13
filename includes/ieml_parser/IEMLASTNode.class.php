@@ -147,7 +147,7 @@ class IEMLASTNode {
 				break;
 			case IEMLNodeType::$ADD:
 				for ($i = 0; $i < $this->childCount(); $i++) {
-					$ret .= ($i > 0 ? '+' : '') . $this->child($i)->__reconstructString();
+					$ret .= ($i > 0 ? ' + ' : '') . $this->child($i)->__reconstructString();
 				}
 				break;
 			case IEMLNodeType::$PAREN:
@@ -167,6 +167,12 @@ class IEMLASTNode {
 
 				for ($i = 0; $i < $this->childCount(); $i++) {
 					$ret .= $this->child($i)->__reconstructString() . $layer_string;
+				}
+
+				break;
+			case IEMLNodeType::$CATEGORY:
+				for ($i = 0; $i < $this->childCount(); $i++) {
+					$ret .= ($i > 0 ? ' / ' : '') . $this->child($i)->__reconstructString();
 				}
 
 				break;
