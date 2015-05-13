@@ -80,7 +80,7 @@ function index_of_matching_bracket($array, $offset, $bracket_type = '(')
 		}
 	}
 
-	return NULL;
+	return $i + 1; // TODO: throw exception here or something
 }
 
 function order_subexpression($editor_array)
