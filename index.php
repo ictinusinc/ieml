@@ -264,14 +264,14 @@ require_once(APPROOT.'/includes/header.php');
 							<div class="col-md-4">
 								<span class="content-type"><span data-lang-switch="proposition_phrase"><?= trans_phrase('proposition_phrase', $lang); ?></span><span class="hidden" data-lang-switch="text_usl"><?= trans_phrase('text_usl', $lang); ?></span></span>
 							</div>
-							<div class="col-md-6 draggable-list">
-								<div class="draggable" data-script-val="+"><span class="glyphicon glyphicon-plus"></span></div>
-								<div class="draggable" data-script-val="*"><span class="glyphicon glyphicon-remove"></span></div>
-								<div class="draggable" data-script-val="("><strong>(</strong></div>
-								<div class="draggable" data-script-val=")"><strong>)</strong></div>
-								<div class="draggable" data-script-val="["><strong>[</strong></div>
-								<div class="draggable" data-script-val="]"><strong>]</strong></div>
-								<div class="draggable" data-script-val="/"><strong>/</strong></div>
+							<div class="col-md-6">
+								<span class="draggable-list"><div class="draggable" data-script-val="+"><span class="glyphicon glyphicon-plus"></span></div></span>
+								<span class="draggable-list"><div class="draggable" data-script-val="*"><span class="glyphicon glyphicon-remove"></span></div></span>
+								<span class="draggable-list"><div class="draggable" data-script-val="("><strong>(</strong></div></span>
+								<span class="draggable-list"><div class="draggable" data-script-val=")"><strong>)</strong></div></span>
+								<span class="draggable-list"><div class="draggable" data-script-val="["><strong>[</strong></div></span>
+								<span class="draggable-list"><div class="draggable" data-script-val="]"><strong>]</strong></div></span>
+								<span class="draggable-list"><div class="draggable" data-script-val="/"><strong>/</strong></div></span>
 							</div>
 						</div>
 					</div>

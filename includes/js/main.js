@@ -1498,14 +1498,16 @@
 				IEMLApp.onSort($(evt.target));
 			}
 		}, IEMLApp.sortableOptions));
-		
-		Sortable.create(document.querySelector('.editor-head .draggable-list'), $.extend({
-			'group': {
-				'name': IEMLApp.sortableGroup,
-				'pull': 'clone',
-				'put': false
-			}
-		}, IEMLApp.sortableOptions));
+
+		Array.prototype.forEach.call(document.querySelectorAll('.editor-head .draggable-list'), function(el) {
+			Sortable.create(el, $.extend({
+				'group': { 
+					'name': IEMLApp.sortableGroup,
+					'pull': 'clone',
+					'put': false
+				}
+			}, IEMLApp.sortableOptions));
+		});
 
 		IEMLApp.user = _SESSION.user;
 		if (IEMLApp.user)
