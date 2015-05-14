@@ -33,7 +33,7 @@ function expression_sort_cmp($a, $b) {
 	$b_effective_layer = isset($b['intLayer']) ? $b['intLayer'] : -1;
 
 	if ($a_effective_layer != $b_effective_layer) {
-		return $a_eff_layer - $b_eff_layer;
+		return $a_effective_layer - $b_effective_layer;
 	}
 
 	if ($a['intSetSize'] != $b['intSetSize']) {
