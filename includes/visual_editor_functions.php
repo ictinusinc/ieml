@@ -120,7 +120,8 @@ function order_subexpression($editor_array)
 		}
 		else if (isset($editor_expression['id']))
 		{
-			$expression_ast = (new IEMLParser())
+			$php_53_sucks = new IEMLParser();
+			$expression_ast = $php_53_sucks
 				->parseAllStrings($editor_expression['expression'])
 				->AST();
 
@@ -197,7 +198,8 @@ function promote_subexpression($editor_array)
 		}
 		else if (isset($editor_expression['id']))
 		{
-			$layer = (new IEMLParser())
+			$php_53_sucks = new IEMLParser();
+			$layer = $php_53_sucks
 				->parseAllStrings($expression)
 				->AST()
 				->getLayer();
