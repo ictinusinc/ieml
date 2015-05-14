@@ -30,6 +30,13 @@ define('SESSIONTABLE', 'sessions');
 
 $lang = ((array_key_exists('lang', $_REQUEST) && strtolower($_REQUEST['lang']) == 'fr') ? 'FR' : 'EN');
 
+
+	
+function error_to_exception($severity, $message, $filename, $lineno)
+{
+	throw new ParseException('Fatal Error '.$severity.' in "'.$filename.'":'.$lineno.' "'.$message.'"', 7);
+}
+
 function pre_dump() {
     ob_start();
     echo '<pre>' . "\n"; call_user_func_array('var_dump', func_get_args()); echo '</pre>' . "\n";

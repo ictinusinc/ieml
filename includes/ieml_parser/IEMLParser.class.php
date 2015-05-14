@@ -36,11 +36,6 @@ class IEMLParser
 		'h' => 'B:U:', 'c' => 'B:A:', 'k' => 'B:S:', 'm' => 'B:B:', 'n' => 'B:T:',
 		'p' => 'T:U:', 'x' => 'T:A:', 'd' => 'T:S:', 'f' => 'T:B:', 'l' => 'T:T:'
 	);
-	
-	public static function handleErrors($severity, $message, $filename, $lineno)
-	{
-		throw new ParseException('Fatal Error '.$severity.' in "'.$filename.'":'.$lineno.' "'.$message.'"', 7);
-	}
 
 	public static function bareLexicoCompare($a, $b)
 	{
@@ -142,7 +137,7 @@ class IEMLParser
 	
 	public function parseAllStrings($string)
 	{
-		set_error_handler('IEMLParser::handleErrors');
+		set_error_handler('error_to_exception');
 		
 		$ret = NULL;
 		

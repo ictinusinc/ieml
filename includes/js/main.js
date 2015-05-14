@@ -632,7 +632,6 @@
 	}
 	
 	function reset_views() {
-		$('.editor-drawer').bhide();
 		$('.ieml-validation-result').bhide();
 
 		$('.edit-buttons-wrap').bhide();
@@ -667,7 +666,13 @@
 		$('#ieml-view-index').bshow();
 	}
 	
+	function hide_editor() {
+		$('.contentzone').removeClass('editor-in');
+		$('.editor-drawer').bhide();
+	}
+
 	function show_editor() {
+		$('.contentzone').addClass('editor-in');
 		$('.editor-drawer').bshow();
 	}
 
@@ -1278,7 +1283,7 @@
 			
 			return false;
 		}).on('click', '#add-ieml-usl', function() {
-			$('.editor-drawer').bshow();
+			show_editor();
 
 			return false;
 		}).on('click', '#ieml-desc-result-save', function() {
@@ -1453,7 +1458,7 @@
 
 			IEMLApp.submit(reqVars);
 		}).on('click', '.editor-clear', function() {
-			$('.editor-drawer').bhide();
+			hide_editor();
 
 			clearEditor();
 		}).on('click', '.delRelExp', function() {
