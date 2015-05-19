@@ -759,10 +759,14 @@
 		var diagonal_html = '';
 		var etymology_html = '';
 		
-		if (rel) {
-			if (rel.contained && rel.contained.length > 0) {
-				for (var i = 0; i < rel.contained.length; i++) {
-					if (rel.contained[i].desc) {
+		if (rel)
+		{
+			if (rel.contained && rel.contained.length > 0)
+			{
+				for (var i = 0; i < rel.contained.length; i++)
+				{
+					if (rel.contained[i].desc)
+					{
 						contained_html += '<li>' + format_single_relation(rel.contained[i]) + '</li>';
 					}
 					
@@ -770,8 +774,10 @@
 					if (concurrent_rel.length > 0) {
 						concurrent_html += '<div class="concurring-relation col-md-6"><span class="concurring-relation-text"><strong>In relation to "' + format_single_relation(rel.contained[i]) + '"</strong></span><ul class="unstyled relation-list">';
 
-						for (var j=0; j<concurrent_rel.length; j++) {
-							if (concurrent_rel[j].desc) {
+						for (var j = 0; j < concurrent_rel.length; j++)
+						{
+							if (concurrent_rel[j].desc)
+							{
 								concurrent_html += '<li>' + format_single_relation(concurrent_rel[j]) + '</li>';
 							}
 						}
@@ -780,45 +786,61 @@
 				}
 			}
 
-			if (contained_html.length > 0) {
+			if (contained_html.length > 0)
+			{
 				contained_html = '<ul class="unstyled relation-list">' + contained_html + '</ul>';
-			} else {
+			}
+			else
+			{
 				contained_html = '<p>None.</p>';
 			}
 			
-			if (rel.containing && rel.containing.length > 0) {
+			if (rel.containing && rel.containing.length > 0)
+			{
 				containing_html += '<ul class="unstyled relation-list">';
-				for (var k=0; k<rel.containing.length; k++) {
+				for (var k = 0; k < rel.containing.length; k++)
+				{
 					if (rel.containing[k].desc) {
 						containing_html += '<li>' + format_single_relation(rel.containing[k]) + '</li>';
 					}
 				}
 				containing_html += '</ul>';
-			} else {
+			}
+			else
+			{
 				containing_html = '<p>None.</p>';
 			}
 			
-			if (concurrent_html.length > 0) {
+			if (concurrent_html.length > 0)
+			{
 				concurrent_html = '<div class="row">' + concurrent_html + '</div>';
-			} else {
+			}
+			else
+			{
 				concurrent_html = '<p>None.</p>';
 			}
 			
 			complementary_html = format_single_relation(rel.complementary);
-			if (complementary_html.length === 0) {
+			if (complementary_html.length === 0)
+			{
 				complementary_html = 'None.';
 			}
 			complementary_html = '<p>' + complementary_html + '</p>';
 			
-			if (rel.diagonal && rel.diagonal.length > 0) {
+			if (rel.diagonal && rel.diagonal.length > 0)
+			{
 				diagonal_html += '<ul class="unstyled relation-list">';
-				for (var l=0; l<rel.diagonal.length; l++) {
-					if (rel.diagonal[l].desc) {
+				for (var l = 0; l < rel.diagonal.length; l++)
+				{
+					if (rel.diagonal[l].desc)
+					{
 						diagonal_html += '<li>' + format_single_relation(rel.diagonal[l]) + '</li>';
 					}
 				}
 				diagonal_html += '</ul>';
-			} else {
+			}
+			else
+			{
 				diagonal_html = '<p>None.</p>';
 			}
 		}
@@ -937,12 +959,24 @@
 		
 		window.__req_info = info;
 		
-		if (info.tables) {
+		if (info.tables)
+		{
+			var relationHtml = {
+				'contained': '',
+				'containing': '',
+				'concurrent': '',
+				'complementary': '',
+				'diagonal': ''
+			};
+
+			var tables = info.tables;
 			var str = '';
-			var render_callback = function(el) {
+			var render_callback = function(el)
+			{
 				var out = '';
 				
-				if (el.id) {
+				if (el.id)
+				{
 					out +=
 						'<div class="' + (el.enumEnabled == 'N' ? 'hidden ' : '') + 'cell_wrap' + '">' +
 							'<a href="/ajax.php?id=' + el.id + '&a=searchDictionary" data-exp="' + el.expression + '" data-id="' + el.id + '" class="editExp">' +
@@ -952,44 +986,71 @@
 								'</span>' : '') +
 							'</a>' +
 						'</div>';
-				} else {
+				}
+				else
+				{
 					out += '<div><a href="javascript:void(0);" class="createEmptyExp">' + el.expression + '</a></div>';
 				}
 				
 				return out;
 			};
 			
-			for (var i=0; i<info.tables.length; i++) {
-				for (var j=0; j<info.tables[i].length; j++) {
-					info.tables[i][j].table.ver_header_depth = info.tables[i][j].edit_vertical_head_length;
-					info.tables[i][j].table.hor_header_depth = info.tables[i][j].edit_horizontal_head_length;
-					info.tables[i][j].table.length = info.tables[i][j].length;
-					info.tables[i][j].table.height = info.tables[i][j].height;
-					info.tables[i][j].table.top = {'expression': 'top', 'example': 'decriptor', 'id': undefined};
-				}
-				
-				if (info.tables[i].length > 1) {
-					str +='<table class="relation"><tbody>';
-					
-					for (var k=0; k<info.tables[i].length; k++) {
-						if (k > 0) {
-							str +='<tr><td class="table-concat-seperator" colspan="' + (parseInt(info.tables[i][k].table.length, 10) + parseInt(info.tables[i][k].table.hor_header_depth, 10)) + '"></td></tr>';
-						}
+			for (var i = 0; i < tables.length; i++)
+			{
+				var related_tables = tables[i];
+
+				for (var n = 0; n < related_tables.length; n++)
+				{
+					var leftover_tables = related_tables[n];
+
+					for (var j = 0; j < leftover_tables.length; j++)
+					{
+						var rel_info = format_relations(leftover_tables[j]);
 						
-						str += ieml_render_table_body(info.tables[i][k].table, render_callback);
+						relationHtml.contained += rel_info.contained;
+						relationHtml.containing += rel_info.containing;
+						relationHtml.concurrent += rel_info.concurrent;
+						relationHtml.complementary += rel_info.complementary;
+						relationHtml.diagonal += rel_info.diagonal;
+
+						leftover_tables[j].table.ver_header_depth = leftover_tables[j].edit_vertical_head_length;
+						leftover_tables[j].table.hor_header_depth = leftover_tables[j].edit_horizontal_head_length;
+						leftover_tables[j].table.length = leftover_tables[j].length;
+						leftover_tables[j].table.height = leftover_tables[j].height;
+						leftover_tables[j].table.top = leftover_tables.top;
 					}
 					
-					str += '</tbody></table>';
-				} else {
-					str += ieml_render_table(info.tables[i][0].table, render_callback);
+					if (leftover_tables.length > 1)
+					{
+						str +='<table class="relation"><tbody>';
+						
+						for (var k = 0; k < leftover_tables.length; k++)
+						{
+							var concat_tables = leftover_tables[k];
+
+							if (k > 0)
+							{
+								str +='<tr><td class="table-concat-seperator" colspan="' + (parseInt(concat_tables.table.length, 10) + parseInt(concat_tables.table.hor_header_depth, 10)) + '"></td></tr>';
+							}
+							
+							str += ieml_render_table_body(concat_tables.table, render_callback);
+						}
+						
+						str += '</tbody></table>';
+					}
+					else
+					{
+						str += ieml_render_table(leftover_tables[0].table, render_callback);
+					}
+					
+					str += '<hr />';
 				}
-				
-				str += '<hr />';
 			}
 			
 			$('#ieml-table-span').html(str);
 
-			Array.prototype.forEach.call(document.querySelectorAll('#ieml-table-span .cell_example'), function(el) {
+			Array.prototype.forEach.call(document.querySelectorAll('#ieml-table-span .cell_example'), function(el)
+			{
 				Sortable.create(el, $.extend({
 					'group': {
 						'name': IEMLApp.sortableGroup,
@@ -998,56 +1059,39 @@
 					}
 				}, IEMLApp.sortableOptions));
 			});
-		} else {
-			$('#ieml-table-span').empty();
-		}
-		
-		$('#iemlEnumShowTable').prop('checked', info.enumShowEmpties == 'Y').trigger('change');
-		
-		$('#iemlEnumComplConcOff').prop('checked', info.iemlEnumComplConcOff == 'Y').trigger('change');
-		if (info.iemlEnumComplConcOff == 'Y') {
-			$('#ieml-complementary-section').bhide();
-		} else {
-			$('#ieml-complementary-section').bshow();
-		}
-		$('#iemlEnumSubstanceOff').prop('checked', info.iemlEnumSubstanceOff == 'Y').trigger('change');
-		$('#iemlEnumAttributeOff').prop('checked', info.iemlEnumAttributeOff == 'Y').trigger('change');
-		$('#iemlEnumModeOff').prop('checked', info.iemlEnumModeOff == 'Y').trigger('change');
-		
-		if (info.tables) {
-			var relationHtml = {
-				'contained': '',
-				'containing': '',
-				'concurrent': '',
-				'complementary': '',
-				'diagonal': ''
-			};
-			
-			for (var l=0; l<info.tables.length; l++) {
-				for (var m=0; m<info.tables[l].length; m++) {
-					var rel_info = format_relations(info.tables[l][m]);
-					
-					relationHtml.contained += rel_info.contained;
-					relationHtml.containing += rel_info.containing;
-					relationHtml.concurrent += rel_info.concurrent;
-					relationHtml.complementary += rel_info.complementary;
-					relationHtml.diagonal += rel_info.diagonal;
-				}
-			}
 			
 			$('#ieml-contained-wrap').bshow().html(relationHtml.contained);
 			$('#ieml-containing-wrap').bshow().html(relationHtml.containing);
 			$('#ieml-concurrent-wrap').bshow().html(relationHtml.concurrent);
 			$('#ieml-complementary-wrap').bshow().html(relationHtml.complementary);
 			$('#ieml-diagonal-wrap').bshow().html(relationHtml.diagonal);
-		} else {
+		}
+		else
+		{
+			$('#ieml-table-span').empty();
 			$('#ieml-contained-wrap, #ieml-containing-wrap, #ieml-concurrent-wrap, #ieml-complementary-wrap').bhide();
 		}
+		
+		$('#iemlEnumShowTable').prop('checked', info.enumShowEmpties == 'Y').trigger('change');
+		
+		$('#iemlEnumComplConcOff').prop('checked', info.iemlEnumComplConcOff == 'Y').trigger('change');
+		if (info.iemlEnumComplConcOff == 'Y')
+		{
+			$('#ieml-complementary-section').bhide();
+		}
+		else
+		{
+			$('#ieml-complementary-section').bshow();
+		}
+		$('#iemlEnumSubstanceOff').prop('checked', info.iemlEnumSubstanceOff == 'Y').trigger('change');
+		$('#iemlEnumAttributeOff').prop('checked', info.iemlEnumAttributeOff == 'Y').trigger('change');
+		$('#iemlEnumModeOff').prop('checked', info.iemlEnumModeOff == 'Y').trigger('change');
 		
 		var etymology_html = format_etymology(info);
 		$('#ieml-etymology-wrap').bshow().html(etymology_html || '<p>None.</p>');
 		
-		if (info.debug) {
+		if (info.debug)
+		{
 			console.log('Debug from server: ', info.debug);
 		}
 		

@@ -78,27 +78,43 @@ function getTableForElement($ret, $goodID, $options) {
 			);
 		}
 	}
+
+	$grouped_tables = array();
+	for ($i = 0; $i < count($table_head_query); $i++)
+	{
+		$grouped_tables[$table_head_query[$i]['id']][] = $table_head_query[$i];
+	}
+	$grouped_tables = array_values($grouped_tables);
 	
-	$ret['tables'] = array();
-	
-	for ($i=0; $i<count($table_head_query); $i++) {
-		$formatted_sub = format_table_for($table_head_query[$i], $ret, $top, $options);
-	
-		$formatted_sub['height'] = $table_head_query[$i]['intHeight'];
-		$formatted_sub['length'] = $table_head_query[$i]['intWidth'];
+	$related_tables = array();
+	for ($i = 0; $i < count($grouped_tables); $i++)
+	{
+		$tables_for_expression = $grouped_tables[$i];
+		$leftovers_for_expression = array();
+
+		for ($j = 0; $j < count($tables_for_expression); $j++)
+		{
+			$leftover_index = $tables_for_expression[$j]['intLeftoverIndex'];
+			$concat_index = $tables_for_expression[$j]['intConcatIndex'];
+
+			$formatted_sub = format_table_for($tables_for_expression[$j], $ret, $tables_for_expression[$j], $options);
 		
-		if (array_key_exists($table_head_query[$i]['intLeftoverIndex'], $ret['tables'])) {
-			$ret['tables'][$table_head_query[$i]['intLeftoverIndex']][$table_head_query[$i]['intConcatIndex']] = $formatted_sub;
-		} else {
-			$ret['tables'][$table_head_query[$i]['intLeftoverIndex']] = array($table_head_query[$i]['intConcatIndex'] => $formatted_sub);
+			$formatted_sub['height'] = $tables_for_expression[$j]['intHeight'];
+			$formatted_sub['length'] = $tables_for_expression[$j]['intWidth'];
+			
+			$leftovers_for_expression[$leftover_index][$concat_index] = $formatted_sub;
 		}
+
+		$related_tables[] = $leftovers_for_expression;
 	}
 	
-	$ret['tables'] = array_values($ret['tables']);
-	for ($i=0; $i<count($ret['tables']); $i++) {
-		$ret['tables'][$i] = array_values($ret['tables'][$i]);
+	$related_tables = array_values($related_tables);
+	for ($i = 0; $i < count($related_tables); $i++)
+	{
+		$related_tables[$i] = array_values($related_tables[$i]);
 	}
 
+	$ret['tables'] = $related_tables;
 	$ret['etymology'] = get_etymology($ret, $lang);
 	
 	return $ret;
@@ -162,7 +178,8 @@ function fetch_descriptor_for_expression_id($id, $lang) {
 	return '';
 }
 
-function format_table_for($table_head_query, $query_exp, $top, $options) {
+function format_table_for($table_head_query, $query_exp, $top, $options)
+{
 	$ret = array();
 	$lang = strtolower($options['lang']);
 	
@@ -213,6 +230,7 @@ function format_table_for($table_head_query, $query_exp, $top, $options) {
 	
 	$ret['pkTable2D'] = $table_head_query['pkTable2D'];
 	$ret['enumShowEmpties'] = $query_exp['enumShowEmpties'];
+	$ret['top'] = $top;
 	
 	$ret['relations'] = gen_exp_relations($query_exp, $top['expression'], $table_info);
 	
