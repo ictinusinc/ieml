@@ -579,14 +579,12 @@
 		}
 		
 		switch_to_list();
-		show_editor();
 	};
 	
 	IEMLApp.receiveExpression = function (responseData) {
 		IEMLApp.lastRetrievedData = responseData;
 		
 		fillForm(responseData);
-		show_editor();
 	};
 
 	IEMLApp.recieveVisualExpression = function(responseData) {
