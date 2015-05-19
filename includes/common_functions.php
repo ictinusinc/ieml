@@ -10,7 +10,7 @@ function getTableForElement($ret, $goodID, $options) {
 		$table_head_query = Conn::queryArrays("
 			SELECT
 				pkTable2D, intWidth, intHeight, intHorHeaderDepth, intVerHeaderDepth,
-				prim.strExpression as expression, sublang.strExample as example, jsonTableLogic,
+				prim.strExpression as expression, sublang.strExample as example,
 				t2d.fkExpression as id, intLeftoverIndex, intConcatIndex
 			FROM table_2d_id t2d
 			JOIN expression_primary prim ON t2d.fkExpression = prim.pkExpressionPrimary
@@ -28,7 +28,7 @@ function getTableForElement($ret, $goodID, $options) {
 		$table_head_query = Conn::queryArrays("
 			SELECT
 				t2d.pkTable2D, t2d.intWidth, t2d.intHeight, t2d.intHorHeaderDepth, t2d.intVerHeaderDepth,
-				prim.strExpression AS expression, sublang.strExample AS example, t2d.jsonTableLogic,
+				prim.strExpression AS expression, sublang.strExample AS example,
 				prim.pkExpressionPrimary as id,
 				t2d.intLeftoverIndex, t2d.intConcatIndex
 			FROM table_2d_id t2d
@@ -45,11 +45,11 @@ function getTableForElement($ret, $goodID, $options) {
 			AND t2dref.strCellExpression = '".goodString($ret['expression'])."'");
 		
 		$related_tables = array();
-		for ($i=0; $i<count($table_head_query); $i++) {
+		for ($i = 0; $i < count($table_head_query); $i++) {
 			array_append($related_tables, Conn::queryArrays("
 				SELECT
 					t2d.pkTable2D, t2d.intWidth, t2d.intHeight, t2d.intHorHeaderDepth, t2d.intVerHeaderDepth,
-					prim.strExpression AS expression, sublang.strExample AS example, t2d.jsonTableLogic,
+					prim.strExpression AS expression, sublang.strExample AS example,
 					prim.pkExpressionPrimary as id,
 					t2d.intLeftoverIndex, t2d.intConcatIndex
 				FROM table_2d_id t2d
@@ -194,7 +194,6 @@ function format_table_for($table_head_query, $query_exp, $top, $options) {
 	$flat_assoc[$top['expression']] = $top;
 	
 	$table_info = reconstruct_table_info($top, $table_head_query, $table_body_query);
-	$table_info['post_raw_table'] = json_decode($table_head_query['jsonTableLogic'], TRUE);
 	
 	$empty_head_count = IEML_count_empty_col($table_info, function($a) use ($flat_assoc) {
 		return !isset($flat_assoc[$a[0]['expression']]);

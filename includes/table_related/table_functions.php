@@ -270,16 +270,26 @@ function IEML_save_table($key_id, $table, $leftover_index, $con_index) {
 	
 	Conn::query("
 		INSERT INTO table_2d_id 
-			(fkExpression, intWidth, intHeight, intHorHeaderDepth, intVerHeaderDepth, jsonTableLogic, intLeftoverIndex, intConcatIndex)
+			(
+				fkExpression,
+				intWidth,
+				intHeight,
+				intHorHeaderDepth,
+				intVerHeaderDepth,
+				intLeftoverIndex,
+				intConcatIndex
+			)
 		VALUES
-			(".$key_id.", "
-				.$tab_info['length'].", "
-				.$tab_info['height'].", "
-				.$tab_info['hor_header_depth'].", "
-				.$tab_info['ver_header_depth'].", '"
-				.goodString(json_encode($table['post_raw_table']))."', "
+			(
+				".$key_id.", "
+				.$tab_info['length'].","
+				.$tab_info['height'].","
+				.$tab_info['hor_header_depth'].","
+				.$tab_info['ver_header_depth'].","
 				.goodInt($leftover_index).","
-				.goodInt($con_index).")");
+				.goodInt($con_index)."
+			)
+	");
 			
 	$key['new_id'] = Conn::getId();
 	
@@ -536,8 +546,6 @@ function reconstruct_table_info($top, $head, $body_query) {
 	
 	return $key;
 }
-
-
 
 function get_exp_position_in_table($exp, &$tab_info)
 {
