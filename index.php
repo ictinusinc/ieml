@@ -292,7 +292,7 @@ require_once(APPROOT.'/includes/header.php');
 						</div>
 						<div class="col-md-2">
 							<input type="hidden" name="rel-id" />
-							<button type="button" class="btn btn-default editor-clear" data-lang-switch="clear"><?= trans_phrase('clear', $lang); ?></button>
+							<button type="button" class="btn btn-default editor-clear" data-lang-switch="cancel"><?= trans_phrase('cancel', $lang); ?></button>
 							<button type="button" class="btn btn-default editor-save" data-lang-switch="save"><?= trans_phrase('save', $lang); ?></button>
 						</div>
 					</div>
