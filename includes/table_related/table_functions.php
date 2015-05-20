@@ -577,7 +577,8 @@ function get_exp_position_in_table($exp, &$tab_info)
 	return NULL;
 }
 
-function gen_contained($exp_info, &$table) {
+function gen_contained($exp_info, &$table)
+{
 	$contained = array();
 
 	if ($exp_info['expression'] != $table['top']['expression'])
@@ -585,17 +586,22 @@ function gen_contained($exp_info, &$table) {
 		$contained[] = $table['top'];
 	}
 
-	if ($exp_info['enumElementType'] == 'header') {
+	if ($exp_info['enumElementType'] == 'header')
+	{
 		$i = $exp_info['enumHeaderType'] == 'hor' ? 0 : 1;
 
-		for ($j=$exp_info['intHeaderLevel']+1; $j<count($table['headers'][$i]); $i++) {
+		for ($j = $exp_info['intHeaderLevel'] + 1; $j < count($table['headers'][$i]); $i++)
+		{
 			$head_acc = 0;
 
-			for ($k=0; $k<count($table['headers'][$i][$j]); $k++) {
-				if ($head_acc <= $exp_info['intPosInTable']) {
+			for ($k = 0; $k < count($table['headers'][$i][$j]); $k++)
+			{
+				if ($head_acc <= $exp_info['intPosInTable'])
+				{
 					$head_acc += $table['headers'][$i][$j][$k][0]['intSpan'];
 
-					if ($exp_info['intPosInTable'] < $head_acc) {
+					if ($exp_info['intPosInTable'] < $head_acc)
+					{
 						$contained[] = $table['headers'][$i][$j][$k][0];
 
 						break;
@@ -603,25 +609,34 @@ function gen_contained($exp_info, &$table) {
 				}
 			}
 		}
-		
-	} else if ($exp_info['enumElementType'] == 'element') {
-		for ($i=0; $i<count($table['headers']); $i++) {
+	}
+	else if ($exp_info['enumElementType'] == 'element')
+	{
+		for ($i = 0; $i < count($table['headers']); $i++)
+		{
 			$comp_var = NULL;
 
-			if ($i == 0) {
+			if ($i == 0)
+			{
 				$comp_var = $exp_info['intPosInTable'];
-			} else {
+			}
+			else
+			{
 				$comp_var = $exp_info['intHeaderLevel'];
 			}
 
-			for ($j=0; $j<count($table['headers'][$i]); $j++) {
+			for ($j = 0; $j < count($table['headers'][$i]); $j++)
+			{
 				$body_acc = 0;
 
-				for ($k=0; $k<count($table['headers'][$i][$j]); $k++) {
-					if ($body_acc <= $comp_var) {
+				for ($k = 0; $k < count($table['headers'][$i][$j]); $k++)
+				{
+					if ($body_acc <= $comp_var)
+					{
 						$body_acc += $table['headers'][$i][$j][$k][0]['intSpan'];
 
-						if ($comp_var < $body_acc) {
+						if ($comp_var < $body_acc)
+						{
 							$contained[] = $table['headers'][$i][$j][$k][0];
 
 							break;
@@ -635,22 +650,33 @@ function gen_contained($exp_info, &$table) {
 	return $contained;
 }
 
-function gen_containing_body($exp_info, &$table) {
+function gen_containing_body($exp_info, &$table)
+{
 	$containing = array();
 
-	if ($exp_info['enumElementType'] == 'header') {
-		if ($exp_info['enumHeaderType'] == 'hor') {
-			for ($j=0; $j<count($table['body']); $j++) {
-				for ($k=0; $k<count($table['body'][$j]); $k++) {
-					if ($exp_info['intPosInTable'] <= $j && $j < $exp_info['intPosInTable'] + $exp_info['intSpan']) {
+	if ($exp_info['enumElementType'] == 'header')
+	{
+		if ($exp_info['enumHeaderType'] == 'hor')
+		{
+			for ($j = 0; $j < count($table['body']); $j++)
+			{
+				for ($k = 0; $k < count($table['body'][$j]); $k++)
+				{
+					if ($exp_info['intPosInTable'] <= $j && $j < $exp_info['intPosInTable'] + $exp_info['intSpan'])
+					{
 						$containing[] = $table['body'][$j][$k];
 					}
 				}
 			}
-		} else {
-			for ($j=0; $j<count($table['body']); $j++) {
-				for ($k=0; $k<count($table['body'][$j]); $k++) {
-					if ($exp_info['intPosInTable'] <= $k && $k < $exp_info['intPosInTable'] + $exp_info['intSpan']) {
+		}
+		else
+		{
+			for ($j = 0; $j < count($table['body']); $j++)
+			{
+				for ($k = 0; $k < count($table['body'][$j]); $k++)
+				{
+					if ($exp_info['intPosInTable'] <= $k && $k < $exp_info['intPosInTable'] + $exp_info['intSpan'])
+					{
 						$containing[] = $table['body'][$j][$k];
 					}
 				}
@@ -661,16 +687,21 @@ function gen_containing_body($exp_info, &$table) {
 	return $containing;
 }
 
-function gen_containing($exp_info, &$table) {
+function gen_containing($exp_info, &$table)
+{
 	$containing = gen_containing_body($exp_info, $table);
 
-	if ($exp_info['enumElementType'] == 'header') {
+	if ($exp_info['enumElementType'] == 'header')
+	{
 		$i = $exp_info['enumHeaderType'] == 'hor' ? 0 : 1;
 
-		for ($j=count($exp_info['intHeaderLevel'])-1; $j>=0; $j--) {
-			for ($k=0; $k<count($table['headers'][$i][$j]); $k++) {
+		for ($j = count($exp_info['intHeaderLevel'])-1; $j >= 0; $j--)
+		{
+			for ($k = 0; $k < count($table['headers'][$i][$j]); $k++)
+			{
 				if ($exp_info['intPosInTable'] <= $table['headers'][$i][$j][$k][0]['intPosInTable']
-					&& $table['headers'][$i][$j][$k][0]['intPosInTable'] < $exp_info['intPosInTable'] + $exp_info['intSpan']) {
+					&& $table['headers'][$i][$j][$k][0]['intPosInTable'] < $exp_info['intPosInTable'] + $exp_info['intSpan'])
+				{
 					$containing[] = $table['headers'][$i][$j][$k][0];
 				}
 			}
@@ -680,17 +711,20 @@ function gen_containing($exp_info, &$table) {
 	return $containing;
 }
 
-function gen_concurrent($contained, &$table) {
+function gen_concurrent($contained, &$table)
+{
 	$concurrent = array();
 
-	for ($i=0; $i<count($contained); $i++) {
+	for ($i = 0; $i < count($contained); $i++)
+	{
 		$concurrent[$contained[$i]['expression']] = gen_containing_body($contained[$i], $table);
 	}
 
 	return $concurrent;
 }
 
-function gen_complementary($exp) {
+function gen_complementary($exp)
+{
 	global $lvl_to_sym;
 
 	$complementary = NULL;
@@ -712,18 +746,23 @@ function gen_complementary($exp) {
 	return $complementary;
 }
 
-function gen_diagonal($info, &$table) {
+function gen_diagonal($info, &$table)
+{
 	$diagonal = array();
 	$expression_in_diagonal = false;
 
 	$body = $table['body'];
 
-	for ($i = 0; $i < min(count($body), count($body[0])); $i++) {
+	for ($i = 0; $i < min(count($body), count($body[0])); $i++)
+	{
 		$current_expression = $body[$i][$i];
 
-		if ($info['expression'] != $current_expression['expression']) {
+		if ($info['expression'] != $current_expression['expression'])
+		{
 			$diagonal[] = $current_expression;
-		} else {
+		}
+		else
+		{
 			$expression_in_diagonal = true;
 		}
 	}
@@ -731,14 +770,20 @@ function gen_diagonal($info, &$table) {
 	return $expression_in_diagonal ? $diagonal : array();
 }
 
-function extract_recursive_prop($arr, $prop) {
+function extract_recursive_prop($arr, $prop)
+{
 	$ret = array();
 
-	if (is_array($arr)){
-		if (array_key_exists($prop, $arr)) {
+	if (is_array($arr))
+	{
+		if (array_key_exists($prop, $arr))
+		{
 			$ret[] = $arr[$prop];
-		} else {
-			foreach ($arr as $val) {
+		}
+		else
+		{
+			foreach ($arr as $val)
+			{
 				array_append($ret, call_user_func(__FUNCTION__, $val, $prop));
 			}
 		}
@@ -747,10 +792,12 @@ function extract_recursive_prop($arr, $prop) {
 	return $ret;
 }
 
-function gen_exp_relations($exp, $top, &$table) {
+function gen_exp_relations($exp, $top, &$table)
+{
 	$ret = NULL;
 
-	if ($exp['expression'] == $top) {
+	if ($exp['expression'] == $top)
+	{
 		$ret = array(
 			'complementary' => gen_complementary($exp['expression']),
 			'contained' => array(),
@@ -759,10 +806,13 @@ function gen_exp_relations($exp, $top, &$table) {
 		);
 		$ret['containing'] = array_flatten(extract_recursive_prop($table['headers'], 'expression'));
 		array_append($ret['containing'], array_flatten(extract_recursive_prop($table['body'], 'expression')));
-	} else {
+	}
+	else
+	{
 		$info = get_exp_position_in_table($exp['expression'], $table);
 
-		if ($info) {
+		if ($info)
+		{
 			$ret = array(
 				'complementary' => gen_complementary($exp['expression']),
 				'contained' => gen_contained($info, $table),

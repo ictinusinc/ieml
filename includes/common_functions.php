@@ -1,11 +1,13 @@
 <?php
 
-function getTableForElement($ret, $goodID, $options) {
+function get_table_for_element($ret, $goodID, $options)
+{
 	$table_head_query = NULL;
 	$top = NULL;
 	$lang = strtolower($options['lang']);
 
-	if ($ret['enumCategory'] == 'Y') {
+	if ($ret['enumCategory'] == 'Y')
+	{
 		//if we're dealing with a key, retrieve it accordingly
 		$table_head_query = Conn::queryArrays("
 			SELECT
@@ -23,7 +25,9 @@ function getTableForElement($ret, $goodID, $options) {
 				ON sublang.fkExpressionPrimary = t2d.fkExpression
 			WHERE t2d.enumDeleted = 'N' AND fkExpression = ".$goodID);
 		$top = $ret;
-	} else {
+	}
+	else
+	{
 		//otherwise we're dealing with a non-key, so have to do some joins
 		$table_head_query = Conn::queryArrays("
 			SELECT
@@ -45,7 +49,8 @@ function getTableForElement($ret, $goodID, $options) {
 			AND t2dref.strCellExpression = '".goodString($ret['expression'])."'");
 		
 		$related_tables = array();
-		for ($i = 0; $i < count($table_head_query); $i++) {
+		for ($i = 0; $i < count($table_head_query); $i++)
+		{
 			array_append($related_tables, Conn::queryArrays("
 				SELECT
 					t2d.pkTable2D, t2d.intWidth, t2d.intHeight, t2d.intHorHeaderDepth, t2d.intVerHeaderDepth,
@@ -70,7 +75,8 @@ function getTableForElement($ret, $goodID, $options) {
 		
 		array_append($table_head_query, $related_tables);
 		
-		if (count($table_head_query) > 0) {
+		if (count($table_head_query) > 0)
+		{
 			$top = array(
 				'expression' => $table_head_query[0]['expression'],
 				'example' => $table_head_query[0]['example'],
@@ -120,15 +126,18 @@ function getTableForElement($ret, $goodID, $options) {
 	return $ret;
 }
 
-function fetch_example_for_expression_id($id, $lang) {
+function fetch_example_for_expression_id($id, $lang)
+{
 	$example_query = Conn::queryArrays('
 		SELECT strExample as example, strLanguageISO6391
 		FROM expression_data
 		WHERE fkExpressionPrimary = ' . $id . '
 	');
 
-	foreach ($example_query as $example) {
-		if (strcasecmp($example['strLanguageISO6391'], $lang) == 0) {
+	foreach ($example_query as $example)
+	{
+		if (strcasecmp($example['strLanguageISO6391'], $lang) == 0)
+		{
 			return $example['example'];
 		}
 	}
@@ -136,7 +145,8 @@ function fetch_example_for_expression_id($id, $lang) {
 	return '';
 }
 
-function fetch_info_for_expression($expression, $lang) {
+function fetch_info_for_expression($expression, $lang)
+{
 	$example_query = Conn::queryArrays('
 		SELECT
 			strExample as example,
@@ -149,8 +159,10 @@ function fetch_info_for_expression($expression, $lang) {
 
 	$ret = NULL;
 
-	foreach ($example_query as $example) {
-		if (strcasecmp($example['strLanguageISO6391'], $lang) == 0) {
+	foreach ($example_query as $example)
+	{
+		if (strcasecmp($example['strLanguageISO6391'], $lang) == 0)
+		{
 			$ret = array(
 				'exp' => $expression,
 				'example' => $example['example'],
@@ -162,15 +174,18 @@ function fetch_info_for_expression($expression, $lang) {
 	return $ret;
 }
 
-function fetch_descriptor_for_expression_id($id, $lang) {
+function fetch_descriptor_for_expression_id($id, $lang)
+{
 	$example_query = Conn::queryArrays('
 		SELECT strDescriptor as descriptor, strLanguageISO6391
 		FROM expression_data
 		WHERE fkExpressionPrimary = ' . $id . '
 	');
 
-	foreach ($example_query as $example) {
-		if (strcasecmp($example['strLanguageISO6391'], $lang) == 0) {
+	foreach ($example_query as $example)
+	{
+		if (strcasecmp($example['strLanguageISO6391'], $lang) == 0)
+		{
 			return $example['descriptor'];
 		}
 	}
@@ -200,19 +215,22 @@ function format_table_for($table_head_query, $query_exp, $top, $options)
 		AND   prim.strExpression IN (".implode(',', array_map(function($a) { return "'".goodString($a['expression'])."'"; }, $table_body_query)).")");
 
 	//fetch examples for expressions
-	foreach ($exp_query as &$expression) {
+	foreach ($exp_query as &$expression)
+	{
 		$expression['example'] = fetch_example_for_expression_id($expression['id'], $lang);
 	}
 	
 	$flat_assoc = array();
-	for ($i=0; $i<count($exp_query); $i++) {
+	for ($i=0; $i<count($exp_query); $i++)
+	{
 		$flat_assoc[$exp_query[$i]['expression']] = $exp_query[$i];
 	}
 	$flat_assoc[$top['expression']] = $top;
 	
 	$table_info = reconstruct_table_info($top, $table_head_query, $table_body_query);
 	
-	$empty_head_count = IEML_count_empty_col($table_info, function($a) use ($flat_assoc) {
+	$empty_head_count = IEML_count_empty_col($table_info, function($a) use ($flat_assoc)
+	{
 		return !isset($flat_assoc[$a[0]['expression']]);
 	});
 	
@@ -236,9 +254,12 @@ function format_table_for($table_head_query, $query_exp, $top, $options)
 	
 	//get expression relations
 	
-	$ret['relations'] = postproc_exp_relations($ret['relations'], function($el) use ($flat_assoc, $lang) {
-		if (is_array($el)) {
-			if (isset($el['expression'])) {
+	$ret['relations'] = postproc_exp_relations($ret['relations'], function($el) use ($flat_assoc, $lang)
+	{
+		if (is_array($el))
+		{
+			if (isset($el['expression']))
+			{
 				$assoc_expression = $flat_assoc[$el['expression']];
 
 				return array(
@@ -246,12 +267,17 @@ function format_table_for($table_head_query, $query_exp, $top, $options)
 					'desc' => $assoc_expression['example'],
 					'id' => $assoc_expression['id']
 				);
-			} else {
+			}
+			else
+			{
 				$ret = array();
 
-				if (isset($el['expression'])) {
+				if (isset($el['expression']))
+				{
 					$ret['exp'] = array($el['expression'], 1);
-				} else {
+				}
+				else
+				{
 					$ret['exp'] = NULL;
 				}
 				$ret['id'] = NULL;
@@ -259,8 +285,11 @@ function format_table_for($table_head_query, $query_exp, $top, $options)
 
 				return $ret;
 			}
-		} else if (is_string($el)) {
-			if (isset($flat_assoc[$el])) {
+		}
+		else if (is_string($el))
+		{
+			if (isset($flat_assoc[$el]))
+			{
 				$assoc_expression = $flat_assoc[$el];
 
 				return array(
@@ -268,7 +297,9 @@ function format_table_for($table_head_query, $query_exp, $top, $options)
 					'desc' => $assoc_expression['example'],
 					'id' => $assoc_expression['id']
 				);
-			} else {
+			}
+			else
+			{
 				$db_info = fetch_info_for_expression($el, $lang);
 
 				if ($db_info)
@@ -300,12 +331,15 @@ function format_table_for($table_head_query, $query_exp, $top, $options)
 		'headers' => $table_info['headers'],
 		'body' => $table_info['body']
 	), function($el) use ($flat_assoc) {
-		if (isset($flat_assoc[$el['expression']])) {
+		if (isset($flat_assoc[$el['expression']]))
+		{
 			$flat_element = $flat_assoc[$el['expression']];
 
 			$el['id'] = $flat_element['id'];
 			$el['example'] = $flat_element['example'];
-		} else {
+		}
+		else
+		{
 			$el['id'] = NULL;
 			$el['example'] = NULL;
 		}
@@ -316,7 +350,8 @@ function format_table_for($table_head_query, $query_exp, $top, $options)
 	return $ret;
 }
 
-function get_etymology($query_exp, $lang) {
+function get_etymology($query_exp, $lang)
+{
 	//get expression etymology
 	$temp_etym = gen_etymology($query_exp['expression']);
 	
@@ -337,27 +372,36 @@ function get_etymology($query_exp, $lang) {
 				ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
 			WHERE enumDeleted = 'N'
 			AND   prim.strExpression IN (".implode(',', array_map(function($a) { return "'".goodString($a)."'"; }, $temp_etym)).")");
-	} else {
+	}
+	else
+	{
 		throw new Exception('Unable to retrieve etymology for expression: "' . $query_exp['expression'] . '"');
 	}
 	
 	$flat_assoc = array();
-	for ($i=0; $i<count($etym_query); $i++) {
+	for ($i=0; $i<count($etym_query); $i++)
+	{
 		$flat_assoc[$etym_query[$i]['expression']] = $etym_query[$i];
 	}
 	
 	//do some post-processing on the etymological array, to get some use preferences and API info out
-	$temp_etym = array_map(function($el) use ($flat_assoc) {
-		if (array_key_exists($el, $flat_assoc)) {
+	$temp_etym = array_map(function($el) use ($flat_assoc)
+	{
+		if (array_key_exists($el, $flat_assoc))
+		{
 			return array('exp' => $el, 'desc' => $flat_assoc[$el]['example'], 'id' => $flat_assoc[$el]['id']);
-		} else {
+		}
+		else
+		{
 			return array('exp' => $el, 'desc' => NULL, 'id' => NULL);
 		}
 	}, $temp_etym);
 	
 	$etymology = array();
-	for ($i=0; $i<count($temp_etym); $i++) {
-		if ($query_exp['strEtymSwitch'][$i] == 'Y') {
+	for ($i = 0; $i < count($temp_etym); $i++)
+	{
+		if ($query_exp['strEtymSwitch'][$i] == 'Y')
+		{
 				$etymology[] = $temp_etym[$i];
 		}
 	}

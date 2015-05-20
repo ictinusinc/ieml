@@ -281,7 +281,7 @@ function handle_request($action, $req)
 
 				$ret['descriptor'] = fetch_descriptor_for_expression_id($goodID, $lang);
 				
-				$ret = getTableForElement($ret, $ret['id'], $req);
+				$ret = get_table_for_element($ret, $ret['id'], $req);
 				
 				$request_ret = $ret;
 			} else {

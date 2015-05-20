@@ -9,7 +9,8 @@ $parser = new IEMLParser();
 $parser->visual_expression = $is_visual;
 $parse_res = $parser->parseAllStrings($req['exp']);
 
-if (!$parse_res->hasException() && !$parse_res->hasError()) {
+if (!$parse_res->hasException() && !$parse_res->hasError())
+{
 	$set_size = $parse_res->AST()->getSize();
 	$layer = $parse_res->AST()->getLayer();
 	$bare_str = $parse_res->AST()->fullExpand()->bareStr();
@@ -25,8 +26,10 @@ if (!$parse_res->hasException() && !$parse_res->hasError()) {
 		AND strFullBareString = \'' . $clean_bare_str . '\'
 	');
 
-	if (!$existing_expression || $existing_expression && $existing_expression['enumDeleted'] == 'Y') {
-		if ($existing_expression) {
+	if (!$existing_expression || $existing_expression && $existing_expression['enumDeleted'] == 'Y')
+	{
+		if ($existing_expression)
+		{
 			Conn::query('
 				DELETE IGNORE FROM expression_primary
 				WHERE pkExpressionPrimary = ' . $existing_expression['id'] . '
@@ -94,19 +97,24 @@ if (!$parse_res->hasException() && !$parse_res->hasError()) {
 			'library' => $req['library']
 		));
 		
-		if ($req['enumCategory'] == 'Y') {
+		if ($req['enumCategory'] == 'Y')
+		{
 			ensure_table_for_key($ret);
 		}
 		
-		$ret = getTableForElement($ret, goodInt($ret['id']), $req);
-	} else {
+		$ret = get_table_for_element($ret, goodInt($ret['id']), $req);
+	}
+	else
+	{
 		$ret = array(
 			'result' => 'error',
 			'resultCode' => 1,
 			'error' => 'Duplicate expression.'
 		);
 	}
-} else {
+}
+else
+{
 	$ret = array(
 		'result' => 'error',
 		'resultCode' => 1,

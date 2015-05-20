@@ -69,7 +69,7 @@ if (!$parse_res->hasException() && !$parse_res->hasError()) {
 		ensure_table_for_key($ret);
 	}
 	
-	$ret = getTableForElement($ret, goodInt($ret['id']), $req);
+	$ret = get_table_for_element($ret, goodInt($ret['id']), $req);
 } else {
 	$ret = array(
 		'result' => 'error',
