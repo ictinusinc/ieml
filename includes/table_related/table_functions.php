@@ -581,11 +581,6 @@ function gen_contained($exp_info, &$table)
 {
 	$contained = array();
 
-	if ($exp_info['expression'] != $table['top']['expression'])
-	{
-		$contained[] = $table['top'];
-	}
-
 	if ($exp_info['enumElementType'] == 'header')
 	{
 		$i = $exp_info['enumHeaderType'] == 'hor' ? 0 : 1;
@@ -820,10 +815,6 @@ function gen_exp_relations($exp, $top, &$table)
 				'diagonal' => gen_diagonal($info, $table)
 			);
 			$ret['concurrent'] = gen_concurrent($ret['contained'], $table);
-
-			//echo '$ret: '.pre_print($ret);
-		} else {
-			// throw new Exception('Couldn\'t find element "'.$exp['expression'].'" in table.');
 		}
 	}
 	

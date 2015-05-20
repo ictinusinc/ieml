@@ -250,11 +250,48 @@ function format_table_for($table_head_query, $query_exp, $top, $options)
 	$ret['enumShowEmpties'] = $query_exp['enumShowEmpties'];
 	$ret['top'] = $top;
 	
-	$ret['relations'] = gen_exp_relations($query_exp, $top['expression'], $table_info);
+	//add top as a vertical header
+	$table_info['headers'][1][] = array(array(array(
+		'example' => $top['example'],
+		'enumElementType' => "header",
+		'enumEnabled' => "Y",
+		'enumHeaderType' => "ver",
+		'expression' => $top['expression'],
+		'id' => $top['id'],
+		'intSpan' => (int)$table_info['length']
+	), (int)$table_info['length']));
 	
-	//get expression relations
+	$ret['relations'] = get_processed_relations($query_exp, $top, $table_info, $flat_assoc, $lang);
 	
-	$ret['relations'] = postproc_exp_relations($ret['relations'], function($el) use ($flat_assoc, $lang)
+	$ret['table'] = IEML_postprocess_table(array(
+		'headers' => $table_info['headers'],
+		'body' => $table_info['body']
+	), function($el) use ($flat_assoc)
+	{
+		if (isset($flat_assoc[$el['expression']]))
+		{
+			$flat_element = $flat_assoc[$el['expression']];
+
+			$el['id'] = $flat_element['id'];
+			$el['example'] = $flat_element['example'];
+		}
+		else
+		{
+			$el['id'] = NULL;
+			$el['example'] = NULL;
+		}
+		
+		return $el;
+	});
+	
+	return $ret;
+}
+
+function get_processed_relations($query_exp, $top, $table_info, $flat_assoc, $lang)
+{
+	$relations = gen_exp_relations($query_exp, $top['expression'], $table_info);
+	
+	$relations = postproc_exp_relations($relations, function($el) use ($flat_assoc, $lang)
 	{
 		if (is_array($el))
 		{
@@ -315,39 +352,8 @@ function format_table_for($table_head_query, $query_exp, $top, $options)
 
 		return array('exp' => array($el, 1), 'desc' => NULL, 'id' => NULL);
 	});
-	
-	//add top as a vertical header
-	$table_info['headers'][1][] = array(array(array(
-		'example' => $top['example'],
-		'enumElementType' => "header",
-		'enumEnabled' => "Y",
-		'enumHeaderType' => "ver",
-		'expression' => $top['expression'],
-		'id' => $top['id'],
-		'intSpan' => (int)$table_info['length']
-	), (int)$table_info['length']));
-	
-	$ret['table'] = IEML_postprocess_table(array(
-		'headers' => $table_info['headers'],
-		'body' => $table_info['body']
-	), function($el) use ($flat_assoc) {
-		if (isset($flat_assoc[$el['expression']]))
-		{
-			$flat_element = $flat_assoc[$el['expression']];
 
-			$el['id'] = $flat_element['id'];
-			$el['example'] = $flat_element['example'];
-		}
-		else
-		{
-			$el['id'] = NULL;
-			$el['example'] = NULL;
-		}
-		
-		return $el;
-	});
-	
-	return $ret;
+	return $relations;
 }
 
 function get_etymology($query_exp, $lang)
