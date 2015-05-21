@@ -729,20 +729,28 @@
 		return {'layer':layer, 'gram':gram};
 	}
 
-	function format_single_relation(info) {
+	function format_single_relation(info)
+	{
 		var ret = '';
 
-		if (info.id) {
+		if (info.id)
+		{
 			ret += '<a href="/ajax.php?id=' + info.id + '&a=searchDictionary" data-exp="' + info.exp + '" data-id="' + info.id + '" class="editExp">';
 
-			if (info.desc) {
+			if (info.desc)
+			{
 				ret += info.desc + ' (' + info.exp[0] + ')';
-			} else {
+			} else
+			{
 				ret += info.exp[0];
 			}
-		} else if (info.exp[0]) {
+		}
+		else if (info.exp[0])
+		{
 			ret += '<a href="javascript:void(0);" class="createEmptyExp">' + info.exp[0];
-		} else {
+		}
+		else
+		{
 			return '';
 		}
 
@@ -750,99 +758,123 @@
 		return ret;
 	}
 	
-	function format_relations(info) {
-		var rel = info.relations;
+	function format_relations(tables)
+	{
 		var contained_html = '';
 		var containing_html = '';
 		var concurrent_html = '';
 		var complementary_html = '';
 		var diagonal_html = '';
 		var etymology_html = '';
-		
-		if (rel)
-		{
-			if (rel.contained && rel.contained.length > 0)
-			{
-				for (var i = 0; i < rel.contained.length; i++)
-				{
-					if (rel.contained[i].desc)
-					{
-						contained_html += '<li>' + format_single_relation(rel.contained[i]) + '</li>';
-					}
-					
-					var concurrent_rel = rel.concurrent[rel.contained[i].exp[0]];
-					if (concurrent_rel.length > 0) {
-						concurrent_html += '<div class="concurring-relation col-md-6"><span class="concurring-relation-text"><strong>In relation to "' + format_single_relation(rel.contained[i]) + '"</strong></span><ul class="unstyled relation-list">';
 
-						for (var j = 0; j < concurrent_rel.length; j++)
+		for (var m = 0; m < tables.length; m++)
+		{
+			var related_tables = tables[m];
+
+			for (var n = 0; n < related_tables.length; n++)
+			{
+				var leftover_tables = related_tables[n];
+
+				for (var o = 0; o < leftover_tables.length; o++)
+				{
+					var concerete_table = leftover_tables[o];
+					var rel = concerete_table.relations;
+		
+					if (rel)
+					{
+						complementary_html = format_single_relation(rel.complementary);
+
+						if (rel.contained && rel.contained.length > 0)
 						{
-							if (concurrent_rel[j].desc)
+							for (var i = 0; i < rel.contained.length; i++)
 							{
-								concurrent_html += '<li>' + format_single_relation(concurrent_rel[j]) + '</li>';
+								if (rel.contained[i].desc)
+								{
+									contained_html += '<li>' + format_single_relation(rel.contained[i]) + '</li>';
+								}
+								
+								var concurrent_rel = rel.concurrent[rel.contained[i].exp[0]];
+								if (concurrent_rel.length > 0) {
+									concurrent_html += '<div class="concurring-relation col-md-6"><span class="concurring-relation-text"><strong>In relation to "' + format_single_relation(rel.contained[i]) + '"</strong></span><ul class="unstyled relation-list">';
+
+									for (var j = 0; j < concurrent_rel.length; j++)
+									{
+										if (concurrent_rel[j].desc)
+										{
+											concurrent_html += '<li>' + format_single_relation(concurrent_rel[j]) + '</li>';
+										}
+									}
+									concurrent_html += '</ul></div>';
+								}
 							}
 						}
-						concurrent_html += '</ul></div>';
+						
+						if (rel.containing && rel.containing.length > 0)
+						{
+							for (var k = 0; k < rel.containing.length; k++)
+							{
+								if (rel.containing[k].desc)
+								{
+									containing_html += '<li>' + format_single_relation(rel.containing[k]) + '</li>';
+								}
+							}
+						}
+						
+						if (rel.diagonal && rel.diagonal.length > 0)
+						{
+							for (var l = 0; l < rel.diagonal.length; l++)
+							{
+								if (rel.diagonal[l].desc)
+								{
+									diagonal_html += '<li>' + format_single_relation(rel.diagonal[l]) + '</li>';
+								}
+							}
+						}
 					}
 				}
 			}
+		}
+						
+		if (complementary_html.length === 0)
+		{
+			complementary_html = 'None.';
+		}
+		complementary_html = '<p>' + complementary_html + '</p>';
 
-			if (contained_html.length > 0)
-			{
-				contained_html = '<ul class="unstyled relation-list">' + contained_html + '</ul>';
-			}
-			else
-			{
-				contained_html = '<p>None.</p>';
-			}
-			
-			if (rel.containing && rel.containing.length > 0)
-			{
-				containing_html += '<ul class="unstyled relation-list">';
-				for (var k = 0; k < rel.containing.length; k++)
-				{
-					if (rel.containing[k].desc) {
-						containing_html += '<li>' + format_single_relation(rel.containing[k]) + '</li>';
-					}
-				}
-				containing_html += '</ul>';
-			}
-			else
-			{
-				containing_html = '<p>None.</p>';
-			}
-			
-			if (concurrent_html.length > 0)
-			{
-				concurrent_html = '<div class="row">' + concurrent_html + '</div>';
-			}
-			else
-			{
-				concurrent_html = '<p>None.</p>';
-			}
-			
-			complementary_html = format_single_relation(rel.complementary);
-			if (complementary_html.length === 0)
-			{
-				complementary_html = 'None.';
-			}
-			complementary_html = '<p>' + complementary_html + '</p>';
-			
-			if (rel.diagonal && rel.diagonal.length > 0)
-			{
-				diagonal_html += '<ul class="unstyled relation-list">';
-				for (var l = 0; l < rel.diagonal.length; l++)
-				{
-					if (rel.diagonal[l].desc)
-					{
-						diagonal_html += '<li>' + format_single_relation(rel.diagonal[l]) + '</li>';
-					}
-				}
-				diagonal_html += '</ul>';
-			}
-			else
-			{
-				diagonal_html = '<p>None.</p>';
-			}
+		if (diagonal_html.length > 0)
+		{
+			diagonal_html = '<ul class="unstyled relation-list">' + diagonal_html + '</ul>';
+		}
+		else
+		{
+			diagonal_html = '<p>None.</p>';
+		}
+
+		if (contained_html.length > 0)
+		{
+			contained_html = '<ul class="unstyled relation-list">' + contained_html + '</ul>';
+		}
+		else
+		{
+			contained_html = '<p>None.</p>';
+		}
+
+		if (containing_html.length > 0)
+		{
+			containing_html = '<ul class="unstyled relation-list">' + containing_html + '</ul>';
+		}
+		else
+		{
+			containing_html = '<p>None.</p>';
+		}
+						
+		if (concurrent_html.length > 0)
+		{
+			concurrent_html = '<div class="row">' + concurrent_html + '</div>';
+		}
+		else
+		{
+			concurrent_html = '<p>None.</p>';
 		}
 		
 		return {
@@ -854,14 +886,21 @@
 		};
 	}
 	
-	function format_etymology(info) {
+	function format_etymology(info)
+	{
 		var etym = info.etymology;
 		var ret = '';
 		
-		for (var i = 0; i < etym.length; i++) {
-			if (etym[i].id && etym[i].id.length > 0 && etym[i].exp && etym[i].exp.length > 0 && etym[i].desc && etym[i].desc.length > 0) {
+		for (var i = 0; i < etym.length; i++)
+		{
+			if (etym[i].id && etym[i].id.length > 0 &&
+				etym[i].exp && etym[i].exp.length > 0 &&
+				etym[i].desc && etym[i].desc.length > 0)
+			{
 				ret += '<li><a href="/ajax.php?id=' + etym[i].id + '&a=searchDictionary" data-exp="' + etym[i].exp + '" data-id="' + etym[i].id + '" class="editExp">' + etym[i].desc + ' (' + etym[i].exp + ')</a></li>';
-			} else {
+			}
+			else
+			{
 				ret += '<li><a href="javascript:void(0);" class="createEmptyExp">' + etym[i].exp + '</a></li>';
 			}
 		}
@@ -869,7 +908,8 @@
 		return ret ? '<ul class="unstyled etymology">' + ret + '</ul>' : '';
 	}
 
-	function clearEditor() {
+	function clearEditor()
+	{
 		$('.editor-proper').empty();
 		$('.editor-example-input').val('');
 		$('.editor-drawer [name="rel-id"]').val(null);
@@ -877,7 +917,8 @@
 		$('.editor-short').attr('href', '').html('');
 	}
 
-	function fillEditor(info) {
+	function fillEditor(info)
+	{
 		clearEditor();
 
 		var plus_ = $('[data-script-val="+"]').eq(0);
@@ -961,14 +1002,6 @@
 		
 		if (info.tables)
 		{
-			var relationHtml = {
-				'contained': '',
-				'containing': '',
-				'concurrent': '',
-				'complementary': '',
-				'diagonal': ''
-			};
-
 			var tables = info.tables;
 			var str = '';
 			var render_callback = function(el)
@@ -994,6 +1027,14 @@
 				
 				return out;
 			};
+
+			var rel_info = format_relations(tables);
+			
+			$('#ieml-contained-wrap').bshow().html(rel_info.contained);
+			$('#ieml-containing-wrap').bshow().html(rel_info.containing);
+			$('#ieml-concurrent-wrap').bshow().html(rel_info.concurrent);
+			$('#ieml-complementary-wrap').bshow().html(rel_info.complementary);
+			$('#ieml-diagonal-wrap').bshow().html(rel_info.diagonal);
 			
 			for (var i = 0; i < tables.length; i++)
 			{
@@ -1005,14 +1046,6 @@
 
 					for (var j = 0; j < leftover_tables.length; j++)
 					{
-						var rel_info = format_relations(leftover_tables[j]);
-						
-						relationHtml.contained += rel_info.contained;
-						relationHtml.containing += rel_info.containing;
-						relationHtml.concurrent += rel_info.concurrent;
-						relationHtml.complementary += rel_info.complementary;
-						relationHtml.diagonal += rel_info.diagonal;
-
 						leftover_tables[j].table.ver_header_depth = leftover_tables[j].edit_vertical_head_length;
 						leftover_tables[j].table.hor_header_depth = leftover_tables[j].edit_horizontal_head_length;
 						leftover_tables[j].table.length = leftover_tables[j].length;
@@ -1059,12 +1092,6 @@
 					}
 				}, IEMLApp.sortableOptions));
 			});
-			
-			$('#ieml-contained-wrap').bshow().html(relationHtml.contained);
-			$('#ieml-containing-wrap').bshow().html(relationHtml.containing);
-			$('#ieml-concurrent-wrap').bshow().html(relationHtml.concurrent);
-			$('#ieml-complementary-wrap').bshow().html(relationHtml.complementary);
-			$('#ieml-diagonal-wrap').bshow().html(relationHtml.diagonal);
 		}
 		else
 		{
