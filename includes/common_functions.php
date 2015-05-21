@@ -5,10 +5,13 @@ function get_table_for_element($ret, $goodID, $options)
 	$table_head_query = NULL;
 	$top = NULL;
 	$lang = strtolower($options['lang']);
+	$goodExpression = goodString($ret['expression']);
 
 	if ($ret['enumCategory'] == 'Y')
 	{
-		//if we're dealing with a key, retrieve it accordingly
+		$top = $ret;
+
+		// if we're dealing with a key, retrieve it accordingly
 		$table_head_query = Conn::queryArrays("
 			SELECT
 				pkTable2D, intWidth, intHeight, intHorHeaderDepth, intVerHeaderDepth,
@@ -20,21 +23,39 @@ function get_table_for_element($ret, $goodID, $options)
 				(
 					SELECT fkExpressionPrimary, strExample
 					FROM expression_data
-					WHERE strLanguageISO6391 = '".goodString($lang)."'
+					WHERE strLanguageISO6391 = '" . goodString($lang) . "'
 				) sublang
 				ON sublang.fkExpressionPrimary = t2d.fkExpression
-			WHERE t2d.enumDeleted = 'N' AND fkExpression = ".$goodID);
-		$top = $ret;
+			WHERE t2d.enumDeleted = 'N' AND fkExpression = " . $goodID
+		);
+
+		// also check if the key is an element of a table somewhere
+		array_append($table_head_query, Conn::queryArrays("
+			SELECT
+				pkTable2D, intWidth, intHeight, intHorHeaderDepth, intVerHeaderDepth,
+				prim.strExpression as expression, sublang.strExample as example,
+				t2d.fkExpression as id, intLeftoverIndex, intConcatIndex
+			FROM table_2d_id t2d
+			JOIN expression_primary prim ON t2d.fkExpression = prim.pkExpressionPrimary
+			JOIN table_2d_ref t2dref ON pkTable2D = fkTable2D
+			LEFT JOIN
+				(
+					SELECT fkExpressionPrimary, strExample
+					FROM expression_data
+					WHERE strLanguageISO6391 = '" . goodString($lang) . "'
+				) sublang
+				ON sublang.fkExpressionPrimary = t2d.fkExpression
+			WHERE t2d.enumDeleted = 'N' AND prim.enumDeleted = 'N'
+			AND t2dref.strCellExpression = '" . $goodExpression . "'"
+		));
 	}
 	else
 	{
-		//otherwise we're dealing with a non-key, so have to do some joins
 		$table_head_query = Conn::queryArrays("
 			SELECT
 				t2d.pkTable2D, t2d.intWidth, t2d.intHeight, t2d.intHorHeaderDepth, t2d.intVerHeaderDepth,
 				prim.strExpression AS expression, sublang.strExample AS example,
-				prim.pkExpressionPrimary as id,
-				t2d.intLeftoverIndex, t2d.intConcatIndex
+				prim.pkExpressionPrimary as id, t2d.intLeftoverIndex, t2d.intConcatIndex
 			FROM table_2d_id t2d
 			JOIN expression_primary prim ON prim.pkExpressionPrimary = t2d.fkExpression
 			JOIN table_2d_ref t2dref ON fkTable2D = pkTable2D
@@ -42,12 +63,14 @@ function get_table_for_element($ret, $goodID, $options)
 				(
 					SELECT fkExpressionPrimary, strExample
 					FROM expression_data
-					WHERE strLanguageISO6391 = '".goodString($lang)."'
+					WHERE strLanguageISO6391 = '" . goodString($lang) . "'
 				) sublang
 				ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
 			WHERE t2d.enumDeleted = 'N' AND prim.enumDeleted = 'N'
-			AND t2dref.strCellExpression = '".goodString($ret['expression'])."'");
+			AND t2dref.strCellExpression = '" . $goodExpression . "'
+		");
 		
+		// get all related tables (leftover tables/concatenations)
 		$related_tables = array();
 		for ($i = 0; $i < count($table_head_query); $i++)
 		{
@@ -55,21 +78,20 @@ function get_table_for_element($ret, $goodID, $options)
 				SELECT
 					t2d.pkTable2D, t2d.intWidth, t2d.intHeight, t2d.intHorHeaderDepth, t2d.intVerHeaderDepth,
 					prim.strExpression AS expression, sublang.strExample AS example,
-					prim.pkExpressionPrimary as id,
-					t2d.intLeftoverIndex, t2d.intConcatIndex
+					prim.pkExpressionPrimary as id, t2d.intLeftoverIndex, t2d.intConcatIndex
 				FROM table_2d_id t2d
 				JOIN expression_primary prim ON prim.pkExpressionPrimary = t2d.fkExpression
 				LEFT JOIN
 					(
 						SELECT fkExpressionPrimary, strExample
 						FROM expression_data
-						WHERE strLanguageISO6391 = '".goodString($lang)."'
+						WHERE strLanguageISO6391 = '" . goodString($lang) . "'
 					) sublang
 					ON sublang.fkExpressionPrimary = prim.pkExpressionPrimary
 				WHERE t2d.enumDeleted = 'N' AND prim.enumDeleted = 'N'
-				AND t2d.fkExpression = ".$table_head_query[$i]['id']."
-				AND t2d.intLeftoverIndex = ".$table_head_query[$i]['intLeftoverIndex']."
-				AND t2d.intConcatIndex != ".$table_head_query[$i]['intConcatIndex']."
+				AND t2d.fkExpression = " . $table_head_query[$i]['id'] . "
+				AND t2d.intLeftoverIndex = " . $table_head_query[$i]['intLeftoverIndex'] . "
+				AND t2d.intConcatIndex != " . $table_head_query[$i]['intConcatIndex'] . "
 			"));
 		}
 		
@@ -221,7 +243,7 @@ function format_table_for($table_head_query, $query_exp, $top, $options)
 	}
 	
 	$flat_assoc = array();
-	for ($i=0; $i<count($exp_query); $i++)
+	for ($i = 0; $i < count($exp_query); $i++)
 	{
 		$flat_assoc[$exp_query[$i]['expression']] = $exp_query[$i];
 	}

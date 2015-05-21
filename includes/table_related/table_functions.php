@@ -585,21 +585,28 @@ function gen_contained($exp_info, &$table)
 	{
 		$i = $exp_info['enumHeaderType'] == 'hor' ? 0 : 1;
 
-		for ($j = $exp_info['intHeaderLevel'] + 1; $j < count($table['headers'][$i]); $i++)
+		for ($i = 0; $i < 2; $i++)
 		{
-			$head_acc = 0;
-
-			for ($k = 0; $k < count($table['headers'][$i][$j]); $k++)
+			for ($j = $exp_info['intHeaderLevel'] + 1; $j < count($table['headers'][$i]); $j++)
 			{
-				if ($head_acc <= $exp_info['intPosInTable'])
+				$head_acc = 0;
+
+				for ($k = 0; $k < count($table['headers'][$i][$j]); $k++)
 				{
-					$head_acc += $table['headers'][$i][$j][$k][0]['intSpan'];
+					$header_check = $table['headers'][$i][$j][$k][0];
 
-					if ($exp_info['intPosInTable'] < $head_acc)
+					if ($head_acc <= $exp_info['intPosInTable'])
 					{
-						$contained[] = $table['headers'][$i][$j][$k][0];
+						$head_acc += $header_check['intSpan'];
 
-						break;
+						if ($header_check['intSpan'] == $table['length'] ||
+							$exp_info['enumHeaderType'] == $header_check['enumHeaderType'] &&
+							$exp_info['intPosInTable'] < $head_acc)
+						{
+							$contained[] = $header_check;
+
+							break;
+						}
 					}
 				}
 			}
@@ -609,16 +616,9 @@ function gen_contained($exp_info, &$table)
 	{
 		for ($i = 0; $i < count($table['headers']); $i++)
 		{
-			$comp_var = NULL;
-
-			if ($i == 0)
-			{
-				$comp_var = $exp_info['intPosInTable'];
-			}
-			else
-			{
+			$comp_var = $i == 0 ?
+				$comp_var = $exp_info['intPosInTable'] : 
 				$comp_var = $exp_info['intHeaderLevel'];
-			}
 
 			for ($j = 0; $j < count($table['headers'][$i]); $j++)
 			{
@@ -690,7 +690,7 @@ function gen_containing($exp_info, &$table)
 	{
 		$i = $exp_info['enumHeaderType'] == 'hor' ? 0 : 1;
 
-		for ($j = count($exp_info['intHeaderLevel'])-1; $j >= 0; $j--)
+		for ($j = count($exp_info['intHeaderLevel']) - 1; $j >= 0; $j--)
 		{
 			for ($k = 0; $k < count($table['headers'][$i][$j]); $k++)
 			{
@@ -729,7 +729,8 @@ function gen_complementary($exp)
 	
 	$etym = \IEML_ExpParse\fetch_etymology_from_AST($AST);
 
-	if (count($etym) == 2) {
+	if (count($etym) == 2)
+	{
 		$highest_layer = \IEML_ExpParse\highest_LAYER_AST($AST);
 
 		$complementary = 
@@ -821,21 +822,27 @@ function gen_exp_relations($exp, $top, &$table)
 	return $ret;
 }
 
-function postproc_exp_relations(&$rel, $callback) {
-	for ($i=0; $i<count($rel['contained']); $i++) {
+function postproc_exp_relations(&$rel, $callback)
+{
+	for ($i=0; $i<count($rel['contained']); $i++)
+	{
 		$rel['contained'][$i] = call_user_func($callback, $rel['contained'][$i]);
 	}
 
-	for ($i=0; $i<count($rel['containing']); $i++) {
+	for ($i=0; $i<count($rel['containing']); $i++)
+	{
 		$rel['containing'][$i] = call_user_func($callback, $rel['containing'][$i]);
 	}
 
-	for ($i=0; $i<count($rel['diagonal']); $i++) {
+	for ($i=0; $i<count($rel['diagonal']); $i++)
+	{
 		$rel['diagonal'][$i] = call_user_func($callback, $rel['diagonal'][$i]);
 	}
 
-	foreach($rel['concurrent'] as $exp => $con_list) {
-		for($i=0; $i<count($rel['concurrent'][$exp]); $i++) {
+	foreach($rel['concurrent'] as $exp => $con_list)
+	{
+		for($i=0; $i<count($rel['concurrent'][$exp]); $i++)
+		{
 			$rel['concurrent'][$exp][$i] = call_user_func($callback, $rel['concurrent'][$exp][$i]);
 		}
 	}
@@ -845,17 +852,22 @@ function postproc_exp_relations(&$rel, $callback) {
 	return $rel;
 }
 
-function gen_etymology($exp) {
+function gen_etymology($exp)
+{
 	$tokens = \IEML_ExpParse\str_to_tokens($exp);
 	$AST = \IEML_ExpParse\tokens_to_AST($tokens);
 	
 	$etym = \IEML_ExpParse\fetch_etymology_from_AST($AST);
 	
 	$ret = array();
-	for ($i=0; $i<count($etym); $i++) {
-		if ($etym[$i]['internal'] == FALSE) {
+	for ($i=0; $i<count($etym); $i++)
+	{
+		if ($etym[$i]['internal'] == FALSE)
+		{
 			$ret[] = $etym[$i]['value'][0]['value'].':';
-		} else {
+		}
+		else
+		{
 			$ret[] = \IEML_ExpParse\AST_original_str($etym[$i], $exp);
 		}
 	}
