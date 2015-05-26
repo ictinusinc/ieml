@@ -224,9 +224,11 @@ function format_table_for($table_head_query, $query_exp, $top, $options)
 	$table_body_query = Conn::queryArrays("
 		SELECT
 			ref.intPosInTable, ref.enumElementType, ref.enumHeaderType, ref.intSpan,
-			ref.intHeaderLevel, ref.pkTable2DRef AS refID, ref.enumEnabled, ref.strCellExpression as expression
+			ref.intHeaderLevel, ref.pkTable2DRef AS refID, ref.enumEnabled,
+			ref.strCellExpression as expression
 		FROM table_2d_ref ref
-		WHERE fkTable2D = ".$table_head_query['pkTable2D']."");
+		WHERE fkTable2D = " . $table_head_query['pkTable2D'] . "
+	");
 
 	//fetch expression data about elements in the table
 	$exp_query = Conn::queryArrays("
@@ -234,7 +236,10 @@ function format_table_for($table_head_query, $query_exp, $top, $options)
 			pkExpressionPrimary as id, prim.strExpression as expression
 		FROM expression_primary prim
 		WHERE prim.enumDeleted = 'N'
-		AND   prim.strExpression IN (".implode(',', array_map(function($a) { return "'".goodString($a['expression'])."'"; }, $table_body_query)).")");
+		AND   prim.strExpression IN (" . implode(',', array_map(function($a) {
+			return "'" . goodString($a['expression']) . "'";
+		}, $table_body_query)) . ")
+	");
 
 	//fetch examples for expressions
 	foreach ($exp_query as &$expression)

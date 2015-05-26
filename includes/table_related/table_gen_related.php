@@ -2,42 +2,60 @@
 
 require_once('IEMLVarArr.class.php');
 
-function IEML_gen_var($AST) {
+function IEML_gen_var($AST)
+{
 	$out = array();
 	
 	if ($AST['internal']) {
-		if ($AST['value']['type'] == 'LAYER') {
+		if ($AST['value']['type'] == 'LAYER')
+		{
 			$out = IEML_gen_var($AST['children'][0]);
 			
-			for ($i=0; $i<count($out); $i++) {
-				$out[$i] = $out[$i].$AST['value']['value'];
+			for ($i = 0; $i < count($out); $i++)
+			{
+				$out[$i] = $out[$i] . $AST['value']['value'];
 			}
-		} else if ($AST['value']['type'] == 'MUL') {
-			for ($i=0; $i<count($AST['children']); $i++) {
+		}
+		else if ($AST['value']['type'] == 'MUL')
+		{
+			for ($i = 0; $i < count($AST['children']); $i++)
+			{
 				$sub = IEML_gen_var($AST['children'][$i]);
 				
-				if (count($sub) > 0) {
+				if (count($sub) > 0)
+				{
 					$new_out = array();
-					for ($j=0; $j<count($sub); $j++) {
-						if (count($out) > 0) {
-							for ($k=0; $k<count($out); $k++) {
+					for ($j = 0; $j < count($sub); $j++)
+					{
+						if (count($out) > 0)
+						{
+							for ($k = 0; $k < count($out); $k++)
+							{
 								$new_out[] = $out[$k].$sub[$j];
 							}
-						} else {
+						}
+						else 
+						{
 							$new_out[] = $sub[$j];
 						}
 					}
 					$out = $new_out;
 				}
 			}
-		} else if ($AST['value']['type'] == 'PLUS') {
-			for ($i=0; $i<count($AST['children']); $i++) {
+		}
+		else if ($AST['value']['type'] == 'PLUS')
+		{
+			for ($i = 0; $i < count($AST['children']); $i++)
+			{
 				array_append($out, IEML_gen_var($AST['children'][$i]));
 			}
 		}
-	} else {
+	}
+	else
+	{
 		$str = '';
-		for ($i=0; $i<count($AST['value']); $i++) {
+		for ($i=0; $i<count($AST['value']); $i++)
+		{
 			$str .= $AST['value'][$i]['value'].':';
 		}
 		$out[] = $str;
@@ -46,12 +64,16 @@ function IEML_gen_var($AST) {
 	return $out;
 }
 
-function IEML_prepend_tree($tree, $pre, $post) {
-	if (array_key_exists('head', $tree)) {
-		for ($i=0; $i<count($tree['head']); $i++) {
+function IEML_prepend_tree($tree, $pre, $post)
+{
+	if (array_key_exists('head', $tree))
+	{
+		for ($i = 0; $i < count($tree['head']); $i++)
+		{
 			$tree['head'][$i][0] = $pre.$tree['head'][$i][0].$post;
 			
-			if (array_key_exists('rest', $tree)) {
+			if (array_key_exists('rest', $tree))
+			{
 				$tree['rest'][$i] = IEML_prepend_tree($tree['rest'][$i], $pre, $post);
 			}
 		}
@@ -130,23 +152,34 @@ function IEML_right_append_tables($tables) {
 	return $out;
 }
 
-function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
+function IEML_gen_header($AST, $exp, $pre = "", $post = "")
+{
 	$out = NULL;
 	
 	//the total number of things which can be varied, in all subtrees
 	$num_var = IEML_count_num_var($AST);
+
+	echo pre_dump('num_var', $num_var);
 	
 	//if only a single variable needs to be varied, simply create a vertical column of it
-	if ($num_var == 1) {
+	if ($num_var == 1)
+	{
 		$out = array(array('body' => array_2d_transpose(array(IEML_gen_var($AST)))));
-	} else if ($num_var >= 2) {
+	}
+	else if ($num_var >= 2)
+	{
 		//the number of parts of the current AST tree which has elements to be varied
 		$num_parts_in_lev = IEML_get_num_parts_in_lev($AST);
+
+		echo pre_dump('num_parts_in_lev', $num_parts_in_lev);
 		
 		//if the current AST node has only a single child, look into it
-		if ($num_parts_in_lev == 1) {
+		if ($num_parts_in_lev == 1)
+		{
 			$out = IEML_gen_header($AST, $exp, $pre, $post);
-		} else {
+		}
+		else
+		{
 			/*
 				$tally_part_varied = parts of the current AST node that should be varied
 				$prime_tpv = parts of the current AST node that should NOT be varied
@@ -155,51 +188,86 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "") {
 			list($tally_part_varied, $prime_tpv, $tpv_out_str) = IEML_tally_part_varied($AST, $exp, $pre, $post);
 
 			$tpv_len = count($tally_part_varied);
+
+			echo pre_dump('tpv_len', $tpv_len);
+			echo pre_dump('tally_part_varied[count(tally_part_varied) - 1]', $tally_part_varied[count($tally_part_varied) - 1]);
+			echo pre_dump('prime_tpv', $prime_tpv);
+			echo pre_dump('tpv_out_str', $tpv_out_str);
 			
 			//if there's only one thing to vary at the current AST level
 			//but more than one parts at the current AST level, just return the single thing to vary
-			if ($tpv_len != $num_parts_in_lev && $tpv_len == 1) {
+			if ($tpv_len != $num_parts_in_lev && $tpv_len == 1)
+			{
 				return IEML_gen_header($tally_part_varied[0], $exp, $pre.$tpv_out_str[0][0], $tpv_out_str[0][1].$post);
 			}
 			
 			$sub_heads = array();
 			$out = array();
 			
-			for ($i=0; $i<$tpv_len; $i++) {
+			for ($i = 0; $i < $tpv_len; $i++)
+			{
 				$cvinst = IEMLVarArr::instanceFromAST($tally_part_varied[$i], $exp);
 				$variations = $cvinst->generateHeaderVariations();
 				$temp_subs = array();
 				
-				for ($j=0; $j<count($variations)-1; $j++) {
-					$temp_subs[] = array($variations[$j]->IEML_vary_header(0, $variations[$j]->lastIndex()), $tpv_out_str[$i][0], $tpv_out_str[$i][1]);
+				for ($j = 0; $j < count($variations) - 1; $j++) 
+				{
+					$temp_subs[] = array(
+						$variations[$j]->IEML_vary_header(0, $variations[$j]->lastIndex()),
+						$tpv_out_str[$i][0],
+						$tpv_out_str[$i][1]
+					);
 				}
 				
 				$sub_heads[] = $temp_subs;
 			}
 
-			if (count($sub_heads) == 2) {
-				for ($i=0; $i<count($sub_heads[0]); $i++) {
-					for ($j=0; $j<count($sub_heads[1]); $j++) {
+			echo pre_dump('count(sub_heads)', count($sub_heads));
+			echo pre_dump('sub_heads[count(sub_heads) - 1]', $sub_heads[count($sub_heads) - 1]);
+
+			if (count($sub_heads) == 2)
+			{
+				for ($i = 0; $i < count($sub_heads[0]); $i++)
+				{
+					for ($j = 0; $j < count($sub_heads[1]); $j++)
+					{
 						$out[] = IEML_combine_headers($sub_heads[0][$i], $sub_heads[1][$j]);
 					}
 				}
-			} else if (count($sub_heads) == 3) {
+			}
+			else if (count($sub_heads) == 3)
+			{
 				$third_seme = array();
-				
-				for ($k=0; $k<count($sub_heads[2]); $k++) {
+
+				for ($k = 0; $k < count($sub_heads[2]); $k++)
+				{
 					$lowest = IEML_collect_lowest_headers($sub_heads[2][$k][0]);
 					
-					for ($i=0; $i<count($lowest); $i++) {
-						$third_seme[] = array($lowest[$i], $sub_heads[2][$k][1], $sub_heads[2][$k][2]);
+					for ($i = 0; $i < count($lowest); $i++)
+					{
+						$third_seme[] = array(
+							$lowest[$i],
+							$sub_heads[2][$k][1],
+							$sub_heads[2][$k][2]
+						);
 					}
 				}
-					
-				for ($i=0; $i<count($sub_heads[0]); $i++) {
-					for ($j=0; $j<count($sub_heads[1]); $j++) {
+
+				echo pre_dump('third_seme', $third_seme);
+				
+				for ($i = 0; $i < count($sub_heads[0]); $i++)
+				{
+					for ($j = 0; $j < count($sub_heads[1]); $j++)
+					{
 						$table_buffer = array();
 						
-						for ($k=0; $k<count($third_seme); $k++) {
-							$table_buffer[] = IEML_combine_headers($sub_heads[0][$i], array($sub_heads[1][$j][0], $sub_heads[1][$j][1], $third_seme[$k][0].$third_seme[$k][2]));
+						for ($k = 0; $k < count($third_seme); $k++)
+						{
+							$table_buffer[] = IEML_combine_headers($sub_heads[0][$i], array(
+								$sub_heads[1][$j][0],
+								$sub_heads[1][$j][1],
+								$third_seme[$k][0] . $third_seme[$k][2]
+							));
 						}
 						
 						$out[] = IEML_right_append_tables($table_buffer);

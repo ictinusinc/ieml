@@ -12,15 +12,20 @@ require_once(APPROOT . '/includes/URLShortener.class.php');
 //point debug output to nowhere
 Devlog::output_stream(NULL);
 
-function ensure_table_for_key($key) {
-	Conn::query("DELETE FROM table_2d_id WHERE fkExpression = ".goodInt($key['id'])); //relations will auto delete dependent rows
+function ensure_table_for_key($key)
+{
+	// relations will auto delete dependent rows
+	Conn::query("DELETE FROM table_2d_id WHERE fkExpression = ".goodInt($key['id']));
 	
 	$key['table_info'] = IEML_gen_table_info($key['expression']);
 	
 	$key['concats'] = IEML_concat_complex_tables($key['table_info']);
+
 	
-	for ($i=0; $i<count($key['concats']); $i++) {
-		for ($j=0; $j<count($key['concats'][$i]); $j++) {
+	for ($i = 0; $i < count($key['concats']); $i++)
+	{
+		for ($j = 0; $j < count($key['concats'][$i]); $j++)
+		{
 			IEML_save_table($key['id'], $key['concats'][$i][$j], $i, $j);
 		}
 	}

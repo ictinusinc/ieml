@@ -16,63 +16,80 @@ class IEMLVarArr {
 	    )
 	);
 	
-	public function __construct() {
+	public function __construct()
+	{
 		$this->arr = array();
 		$this->post = '';
 	}
 	
-	public function pushElement($el) {
-		if (is_array($el)) {
+	public function pushElement($el)
+	{
+		if (is_array($el))
+		{
 			$this->arr[] = array($this->post, $el);
 			$this->post = '';
-		} else {
+		}
+		else
+		{
 			$this->post .= $el;
 		}
 	}
 	
-	public function setCompleteElement($n, $el) {
+	public function setCompleteElement($n, $el)
+	{
 		$this->arr[$n] = $el;
 	}
 	
-	public function setArrayFor($n, $el) {
+	public function setArrayFor($n, $el)
+	{
 		$this->arr[$n][1] = $el;
 	}
 	
-	public function setStringFor($n, $el) {
+	public function setStringFor($n, $el)
+	{
 		$this->arr[$n][0] = $el;
 	}
 	
-	public function pushCompleteElement($el) {
+	public function pushCompleteElement($el)
+	{
 		$this->arr[] = $el;
 	}
 	
-	public function getCompleteElement($n) {
+	public function getCompleteElement($n)
+	{
 		return $this->arr[$n];
 	}
 	
-	public function stringFor($n) {
+	public function stringFor($n)
+	{
 		return $this->arr[$n][0];
 	}
-	public function arrayFor($n) {
+	public function arrayFor($n)
+	{
 		return $this->arr[$n][1];
 	}
 	
-	public function length() {
+	public function length()
+	{
 		return count($this->arr);
 	}
 	
-	public function lastIndex() {
+	public function lastIndex()
+	{
 		return $this->length()-1;
 	}
 	
-	public function getPost() {
+	public function getPost()
+	{
 		return $this->post;
 	}
 	
-	public function __toString() {
+	public function __toString()
+	{
 		$str = '';
 		
-		for ($i=0; $i<$this->length(); $i++) {
+		for ($i=0; $i<$this->length(); $i++)
+		{
 			$i_arr = $this->arrayFor($i);
 			
 			$str .= '('.$this->stringFor($i).'['.$i_arr[1].'])';
@@ -83,17 +100,19 @@ class IEMLVarArr {
 		return $str;
 	}
 	
-	public function toString() {
+	public function toString()
+	{
 		return $this->__toString();
 	}
 	
-	public function toPrettyString($cur = 0, $last = NULL) {
+	public function toPrettyString($cur = 0, $last = NULL)
+	{
 		$str = '';
 		
 		for ($i = $cur; $i <= (isset($last) ? $last : $this->lastIndex()); $i++) {
 			$i_arr = $this->arrayFor($i);
 			
-			$str .= $this->stringFor($i).$i_arr[1];
+			$str .= $this->stringFor($i) . $i_arr[1];
 		}
 		
 		$str .= $this->getPost();
@@ -101,10 +120,12 @@ class IEMLVarArr {
 		return $str;
 	}
 	
-	public static function instanceFromVarArr($cvinst) {
+	public static function instanceFromVarArr($cvinst)
+	{
 		$instance = new IEMLVarArr();
 		
-		for ($i=0; $i<$cvinst->length(); $i++) {
+		for ($i = 0; $i < $cvinst->length(); $i++)
+		{
 			$instance->pushCompleteElement($cvinst->getCompleteElement($i));
 		}
 		
@@ -121,15 +142,23 @@ class IEMLVarArr {
 	 * @param mixed $exp the original expression that the AST was generated from
 	 * @return an array as described in this function's description
 	 */
-	public function fromAST($AST, $exp) {
-		if ($AST['type'] == 'L0PLUS') {
+	public function fromAST($AST, $exp)
+	{
+		if ($AST['type'] == 'L0PLUS')
+		{
 			$this->pushElement(array(IEML_gen_var($AST), \IEML_ExpParse\AST_original_str($AST, $exp)));
-		} else if ($AST['internal']) {
-			if ($AST['value']['type'] == 'MUL') {
-				for ($i=0; $i<count($AST['children']); $i++) {
+		}
+		else if ($AST['internal'])
+		{
+			if ($AST['value']['type'] == 'MUL')
+			{
+				for ($i=0; $i<count($AST['children']); $i++)
+				{
 					$this->fromAST($AST['children'][$i], $exp);
 				}
-			} else if ($AST['value']['type'] == 'LAYER') {
+			}
+			else if ($AST['value']['type'] == 'LAYER')
+			{
 				$this->fromAST($AST['children'][0], $exp);
 				$this->pushElement($AST['value']['value']);
 			} else if ($AST['value']['type'] == 'PLUS') {
@@ -149,39 +178,47 @@ class IEMLVarArr {
 		}
 	}
 	
-	public static function instanceFromAST($AST, $exp) {
+	public static function instanceFromAST($AST, $exp)
+	{
 		$instance = new IEMLVarArr();
 		$instance->fromAST($AST, $exp);
 		
 		return $instance;
 	}
 	
-	public function generateHeaderVariations() {
+	public function generateHeaderVariations()
+	{
 		return $this->__generateHeaderVariations(0, $this->lastIndex(), new IEMLVarArr());
 	}
 	
-	private function __generateHeaderVariations($cur, $last, $pre) {
+	private function __generateHeaderVariations($cur, $last, $pre)
+	{
 		$coll_cvarr = array();
 		
-		if ($cur <= $last) {
-			for ($i=0; $i<=$last-$cur+1; $i++) {
+		if ($cur <= $last)
+		{
+			for ($i = 0; $i <= $last - $cur + 1; $i++)
+			{
 				$pre_arr = IEMLVarArr::instanceFromVarArr($pre);
 				
-				for ($j=0; $j<$i; $j++) {
+				for ($j = 0; $j<$i; $j++) {
 					$j_arr = $this->arrayFor($cur+$j);
 					
 					$pre_arr->pushElement($this->stringFor($cur+$j));
 					$pre_arr->pushElement($j_arr[1]);
 				}
 				
-				if ($cur+$i <= $last) {
-					$pre_arr->pushElement($this->stringFor($cur+$j));
-					$pre_arr->pushElement($this->arrayFor($cur+$j));
+				if ($cur + $i <= $last)
+				{
+					$pre_arr->pushElement($this->stringFor($cur + $j));
+					$pre_arr->pushElement($this->arrayFor($cur + $j));
 				}
 				
-				array_append($coll_cvarr, $this->__generateHeaderVariations($cur+$i+1, $last, $pre_arr));
+				array_append($coll_cvarr, $this->__generateHeaderVariations($cur + $i + 1, $last, $pre_arr));
 			}
-		} else {
+		}
+		else
+		{
 			$pre->pushElement($this->getPost());
 			
 			$coll_cvarr[] = $pre;
@@ -191,26 +228,32 @@ class IEMLVarArr {
 	}
 	
 	
-	public function IEML_vary_header($cur, $last, $pre = '', $post = '') {
+	public function IEML_vary_header($cur, $last, $pre = '', $post = '')
+	{
 		$out = NULL;
 	
-		if ($cur <= $last) {
+		if ($cur <= $last)
+		{
 			$out = array('head' => array(), 'rest' => array());
 			$sub_post = $this->toPrettyString($cur+1, $last);
 			$cur_arr = $this->arrayFor($cur);
 			
-			if (array_key_exists($cur_arr[1], IEMLVarArr::$IEML_toVary)) {
+			if (array_key_exists($cur_arr[1], IEMLVarArr::$IEML_toVary))
+			{
 				$sub_heads = IEMLVarArr::$IEML_toVary[$cur_arr[1]];
 				
-				for ($i=0; $i<count($sub_heads); $i++) {
+				for ($i = 0; $i < count($sub_heads); $i++)
+				{
 					$temp_sub_cvarr = IEMLVarArr::instanceFromVarArr($this);
 					$temp_sub_cvarr->setArrayFor($cur, $sub_heads[$i]);
 	
 					$sub = $temp_sub_cvarr->IEML_vary_header($temp_sub_cvarr, $cur, $last, $pre, $post);
 	
 					$span = 0;
-					if (array_key_exists('head', $sub)) {
-						for ($j=0; $j<count($sub['head']); $j++) {
+					if (array_key_exists('head', $sub))
+					{
+						for ($j=0; $j<count($sub['head']); $j++)
+						{
 							$span += $sub['head'][$j][1];
 						}
 					}
@@ -218,16 +261,22 @@ class IEMLVarArr {
 					$out['head'][] = array($pre.$sub_heads[$i][1].$sub_post.$post, max(1, $span));
 					$out['rest'][] = $sub;
 				}
-			} else {
-				for ($i=0; $i<count($cur_arr[0]); $i++) {
+			}
+			else
+			{
+				for ($i=0; $i<count($cur_arr[0]); $i++)
+				{
 					$sub = $this->IEML_vary_header($cur+1, $last, $pre.$this->stringFor($cur).$cur_arr[0][$i], $post);
 					
 					$span = 0;
-					if (NULL !== $sub) {
+					if (NULL !== $sub)
+					{
 						$out['rest'][] = $sub;
 	
-						if (array_key_exists('head', $sub)) {
-							for ($j=0; $j<count($sub['head']); $j++) {
+						if (array_key_exists('head', $sub))
+						{
+							for ($j=0; $j<count($sub['head']); $j++)
+							{
 								$span += $sub['head'][$j][1];
 							}
 						}
@@ -238,7 +287,9 @@ class IEMLVarArr {
 			}
 		
 			if (isset($out) && array_key_exists('rest', $out) && count($out['rest']) == 0) unset($out['rest']);
-		} else {
+		}
+		else
+		{
 			//we've gone past the end, so just ignore
 		}
 	
