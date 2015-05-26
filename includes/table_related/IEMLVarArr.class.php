@@ -161,18 +161,14 @@ class IEMLVarArr {
 			{
 				$this->fromAST($AST['children'][0], $exp);
 				$this->pushElement($AST['value']['value']);
-			} else if ($AST['value']['type'] == 'PLUS') {
-				$this->pushElement('(');
-				for ($i=0; $i<count($AST['children']); $i++) {
-					if ($i > 0) {
-						$this->pushElement($AST['value']['value']);
-					}
-					// $this->pushElement( IEML_gen_var($AST['children'][$i]) );
-					$this->fromAST($AST['children'][$i], $exp);
-				}
-				$this->pushElement(')');
 			}
-		} else {
+			else if ($AST['value']['type'] == 'PLUS')
+			{
+				$this->pushElement(array(IEML_gen_var($AST), \IEML_ExpParse\AST_original_str($AST, $exp)));
+			}
+		}
+		else
+		{
 			$gen_call = IEML_gen_var($AST);
 			$this->pushElement($gen_call[0]);
 		}
