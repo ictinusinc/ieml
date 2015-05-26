@@ -320,19 +320,6 @@ function handle_request($action, $req)
 			
 			break;
 			
-		case 'deleteVisualExpression':
-			$asserts_ret = assert_arr(array('id'), $req);
-
-			if (TRUE === $asserts_ret) {
-				Conn::query("UPDATE relational_expression SET enumDeleted = 'Y' WHERE pkRelationalExpression = ".goodInt($req['id']));
-				
-				$request_ret = array('result' => 'success');
-			} else {
-				$request_ret = assert_format($asserts_ret);
-			}
-			
-			break;
-			
 		case 'editDictionary':
 			$asserts_ret = assert_arr(array('enumCategory', 'exp', 'example', 'descriptor', 'lang', 'id', 'enumShowEmpties', 'iemlEnumComplConcOff', 'iemlEnumSubstanceOff'), $req);
 

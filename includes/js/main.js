@@ -499,10 +499,6 @@
 					
 					$('[data-result-id="' + rvars.id + '"][data-expression-type="basic"]').remove();
 				});
-			} else if (rvars.a == 'deleteVisualExpression') {
-				IEMLApp.fetch(rvars, function(responseData) {
-					$('[data-result-id="' + rvars.id + '"][data-expression-type="relational"]').remove();
-				});
 			} else if (rvars.a == 'deleteExpressionFromLibrary') {
 				IEMLApp.fetch(rvars, function(responseData) {
 					$('[data-result-id="' + rvars.id + '"][data-expression-type="basic"]').remove();
@@ -1534,7 +1530,7 @@
 			var $this = $(this);
 
 			showConfirmDialog('Are you sure?', function() {
-				IEMLApp.submit({ 'a': 'deleteVisualExpression', 'id': $this.data('id') });
+				IEMLApp.submit({ 'a': 'deleteDictionary', 'id': $this.data('id') });
 			});
 		}).on('click', '.removeExpFromList', function() {
 			var $this = $(this);
