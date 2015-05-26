@@ -158,8 +158,6 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "")
 	
 	//the total number of things which can be varied, in all subtrees
 	$num_var = IEML_count_num_var($AST);
-
-	echo pre_dump('num_var', $num_var);
 	
 	//if only a single variable needs to be varied, simply create a vertical column of it
 	if ($num_var == 1)
@@ -170,8 +168,6 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "")
 	{
 		//the number of parts of the current AST tree which has elements to be varied
 		$num_parts_in_lev = IEML_get_num_parts_in_lev($AST);
-
-		echo pre_dump('num_parts_in_lev', $num_parts_in_lev);
 		
 		//if the current AST node has only a single child, look into it
 		if ($num_parts_in_lev == 1)
@@ -188,11 +184,6 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "")
 			list($tally_part_varied, $prime_tpv, $tpv_out_str) = IEML_tally_part_varied($AST, $exp, $pre, $post);
 
 			$tpv_len = count($tally_part_varied);
-
-			echo pre_dump('tpv_len', $tpv_len);
-			echo pre_dump('tally_part_varied[count(tally_part_varied) - 1]', $tally_part_varied[count($tally_part_varied) - 1]);
-			echo pre_dump('prime_tpv', $prime_tpv);
-			echo pre_dump('tpv_out_str', $tpv_out_str);
 			
 			//if there's only one thing to vary at the current AST level
 			//but more than one parts at the current AST level, just return the single thing to vary
@@ -222,8 +213,6 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "")
 				$sub_heads[] = $temp_subs;
 			}
 
-			echo pre_dump('count(sub_heads)', count($sub_heads));
-			echo pre_dump('sub_heads[count(sub_heads) - 1]', $sub_heads[count($sub_heads) - 1]);
 
 			if (count($sub_heads) == 2)
 			{
@@ -252,8 +241,6 @@ function IEML_gen_header($AST, $exp, $pre = "", $post = "")
 						);
 					}
 				}
-
-				echo pre_dump('third_seme', $third_seme);
 				
 				for ($i = 0; $i < count($sub_heads[0]); $i++)
 				{
