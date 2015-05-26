@@ -483,8 +483,11 @@
 					
 					IEMLApp.recieveVisualExpression(responseData);
 				});
-			} else if (rvars.a == 'relationalExpression') {
-				IEMLApp.fetch(rvars, function(responseData) {
+			}
+			else if (rvars.a == 'relationalExpression')
+			{
+				IEMLApp.fetch(rvars, function(responseData)
+				{
 					IEMLApp.library = responseData.fkLibrary[0];
 
 					$('#search-form #search-library-select').val(IEMLApp.library);
@@ -493,15 +496,30 @@
 					
 					IEMLApp.recieveVisualExpression(responseData);
 				});
-			} else if (rvars.a == 'deleteDictionary') {
-				IEMLApp.fetch(rvars, function(responseData) {
+			}
+			else if (rvars.a == 'deleteDictionary')
+			{
+				IEMLApp.fetch(rvars, function(responseData)
+				{
 					History.back();
 					
-					$('[data-result-id="' + rvars.id + '"][data-expression-type="basic"]').remove();
+					$('[data-result-id="' + rvars.id + '"]').remove();
 				});
-			} else if (rvars.a == 'deleteExpressionFromLibrary') {
-				IEMLApp.fetch(rvars, function(responseData) {
-					$('[data-result-id="' + rvars.id + '"][data-expression-type="basic"]').remove();
+			}
+			else if (rvars.a == 'deleteVisualExpression')
+			{
+				rvars.a = 'deleteDictionary';
+
+				IEMLApp.fetch(rvars, function(responseData)
+				{
+					$('[data-result-id="' + rvars.id + '"]').remove();
+				});
+			}
+			else if (rvars.a == 'deleteExpressionFromLibrary')
+			{
+				IEMLApp.fetch(rvars, function(responseData)
+				{
+					$('[data-result-id="' + rvars.id + '"]').remove();
 				});
 			} else if (rvars.a == 'validateExpression') {
 				if (rvars.expression.length === 0) {
