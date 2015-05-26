@@ -243,7 +243,7 @@ class IEMLVarArr {
 					$temp_sub_cvarr = IEMLVarArr::instanceFromVarArr($this);
 					$temp_sub_cvarr->setArrayFor($cur, $sub_heads[$i]);
 	
-					$sub = $temp_sub_cvarr->IEML_vary_header($temp_sub_cvarr, $cur, $last, $pre, $post);
+					$sub = $temp_sub_cvarr->IEML_vary_header($cur, $last, $pre, $post);
 	
 					$span = 0;
 					if (array_key_exists('head', $sub))
