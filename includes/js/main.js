@@ -340,8 +340,7 @@
 		IEMLApp.ongoingRequestCount++;
 
 		showLoadingIndicator();
-
-		$.getJSON(api_offset, rvars)
+		$.post(api_offset, rvars, null, 'json')
 			.done(function() {
 				callback.apply(null, arguments);
 
