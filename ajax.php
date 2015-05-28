@@ -254,7 +254,7 @@ function handle_request($action, $req)
 							FROM library_to_expression
 							WHERE fkExpressionPrimary = pkExpressionPrimary
 							GROUP BY fkExpressionPrimary
-						) AS fkLibrary, 'basic' AS enumExpressionType,
+						) AS fkLibrary, IF(enumVisual = 'Y', 'relational', 'basic') AS enumExpressionType,
 
 						prim.enumShowEmpties,
 						prim.enumCompConc,

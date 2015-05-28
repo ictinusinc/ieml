@@ -1171,8 +1171,8 @@
 					'data-id="' + obj.id + '"' +
 					'class="btn btn-default delRelExp"><span class="glyphicon glyphicon-trash"></span></button>'
 				: '') +
-				(obj.enumExpressionType == 'basic' && current_lib_in_user_libs ? '<button type="button"' +
-					'data-id="' + obj.id + '"' +
+				(obj.enumExpressionType == 'basic' && IEMLApp.library !== 1 && current_lib_in_user_libs ?
+					'<button type="button"' + 'data-id="' + obj.id + '"' +
 					'class="btn btn-default removeExpFromList"><span class="glyphicon glyphicon-remove"></span></button>'
 				: '') +
 			'</td>' +
@@ -1273,45 +1273,66 @@
 		$('.edit-only').bhide();
 	}
 
-	function showLoadingIndicator() {
+	function showLoadingIndicator()
+	{
 		$('.globalLoading').bshow();
 	}
 
-	function hideLoadingIndicator() {
+	function hideLoadingIndicator()
+	{
 		$('.globalLoading').bhide();
 	}
 	
-	$(function() {
+	$(function()
+	{
 		$(window).on('popstate', IEMLApp.popstateCallback);
 		
-		$(document).on('submit', '#search-form', function() {
+		$(document).on('submit', '#search-form', function()
+		{
 			var form_data = form_arr_to_map($(this).serializeArray());
-			if ($('[name="filter-results"][value="keys"]').is(':checked')) {
+
+			if ($('[name="filter-results"][value="keys"]').is(':checked'))
+			{
 				form_data.keys = 'keys';
 			}
+
+			IEMLApp.library = form_data.library || IEMLApp.library;
+
 			IEMLApp.submit(form_data);
 			
 			return false;
-		}).on('change', '#search-layer-select, #search-class-select, #search-library-select', function() {
+		}).on('change', '#search-layer-select, #search-class-select, #search-library-select', function()
+		{
 			$('#search-form').trigger('submit');
-		}).on('change', '#iemlEnumShowTable', function() {
+		}).on('change', '#iemlEnumShowTable', function()
+		{
 			var info = IEMLApp.lastRetrievedData;
 			
-			if($('#iemlEnumShowTable').is(':checked')) {
+			if($('#iemlEnumShowTable').is(':checked'))
+			{
 				$('.nonExistentCell').bshow();
 				$('table.relation tr.empty_head_tr, table.relation td.empty_head_tr_td').bshow();
-				if (info.edit_vertical_head_length <= 0 && info.edit_horizontal_head_length <= 0) {
+				if (info.edit_vertical_head_length <= 0 && info.edit_horizontal_head_length <= 0)
+				{
 					$('table.relation td.empty_cell').bhide();
-				} else {
+				}
+				else
+				{
 					$('table.relation td.empty_cell').bshow()
 						.attr('rowspan', parseInt(info.edit_vertical_head_length, 10) + 1).attr('colspan', info.edit_horizontal_head_length);
 				}
-			} else {
+			}
+			else
+			{
 				$('.nonExistentCell').bhide();
 				$('table.relation tr.empty_head_tr, table.relation td.empty_head_tr_td').bhide();
-				if (info.render_vertical_head_length <= 0 && info.render_horizontal_head_length <= 0) {
+
+				if (info.render_vertical_head_length <= 0 && info.render_horizontal_head_length <= 0)
+				{
 					$('table.relation td.empty_cell').bhide();
-				} else {
+				}
+				else
+				{
 					$('table.relation td.empty_cell').bshow()
 						.attr('rowspan', parseInt(info.render_vertical_head_length, 10) + 1).attr('colspan', info.render_horizontal_head_length);
 				}
@@ -1400,7 +1421,7 @@
 			reqVars.iemlEnumSubstanceOff = $('#iemlEnumSubstanceOff').is(':checked') ? $('#iemlEnumSubstanceOff').val() : 'N';
 			reqVars.iemlEnumAttributeOff = $('#iemlEnumAttributeOff').is(':checked') ? $('#iemlEnumAttributeOff').val() : 'N';
 			reqVars.iemlEnumModeOff = $('#iemlEnumModeOff').is(':checked') ? $('#iemlEnumModeOff').val() : 'N';
-			
+
 			IEMLApp.submit(reqVars);
 			
 			return false;
@@ -1547,7 +1568,7 @@
 			var $this = $(this);
 
 			showConfirmDialog('Are you sure?', function() {
-				IEMLApp.submit({ 'a': 'deleteDictionary', 'id': $this.data('id') });
+				IEMLApp.submit({ 'a': 'deleteVisualExpression', 'id': $this.data('id') });
 			});
 		}).on('click', '.removeExpFromList', function() {
 			var $this = $(this);

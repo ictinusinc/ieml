@@ -98,7 +98,7 @@
 }
 
 .contentzone.editor-in {
-	padding-bottom: 220px;
+	padding-bottom: 270px;
 }
 
 .editor-in .editor-drawer {
@@ -121,7 +121,7 @@
 }
 
 .editor-proper {
-	height: 125px;
+	height: 175px;
 	padding: 10px;
 	overflow-y: scroll;
 }

@@ -197,7 +197,8 @@ class IEMLVarArr {
 			{
 				$pre_arr = IEMLVarArr::instanceFromVarArr($pre);
 				
-				for ($j = 0; $j<$i; $j++) {
+				for ($j = 0; $j < $i; $j++)
+				{
 					$j_arr = $this->arrayFor($cur+$j);
 					
 					$pre_arr->pushElement($this->stringFor($cur+$j));
