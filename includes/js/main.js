@@ -1181,7 +1181,7 @@
 					'data-id="' + obj.id + '"' +
 					'class="btn btn-default delRelExp"><span class="glyphicon glyphicon-trash"></span></button>'
 				: '') +
-				(obj.enumExpressionType == 'basic' && IEMLApp.library !== 1 && current_lib_in_user_libs ?
+				(obj.enumExpressionType == 'basic' && IEMLApp.library != 1 && current_lib_in_user_libs ?
 					'<button type="button"' + 'data-id="' + obj.id + '"' +
 					'class="btn btn-default removeExpFromList"><span class="glyphicon glyphicon-remove"></span></button>'
 				: '') : '') +
@@ -1301,7 +1301,7 @@
 		{
 			var form_data = form_arr_to_map($(this).serializeArray());
 
-			if ($('[name="filter-results"][value="keys"]').is(':checked'))
+			if ($('[name="filter-results"][value="keys"]').is(':checked') && IEMLApp.library != 1)
 			{
 				form_data.keys = 'keys';
 			}
