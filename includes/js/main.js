@@ -352,15 +352,20 @@
 			});
 	};
 	
-	IEMLApp.submit = function (rvars) {
+	IEMLApp.submit = function (rvars)
+	{
 		var prev_state = History.getState();
 		
 		var state_call = obj_size(prev_state.data) === 0 ? IEMLApp.replaceState : IEMLApp.pushState;
 		
-		if (rvars) {
-			if (rvars.a == 'duplicate') {
-				IEMLApp.fetch(rvars, function(responseData) {
-					if (responseData.result != 'error') {
+		if (rvars)
+		{
+			if (rvars.a == 'duplicate')
+			{
+				IEMLApp.fetch(rvars, function(responseData)
+				{
+					if (responseData.result != 'error' && responseData.fkLibrary[0] == IEMLApp.library)
+					{
 						$('[data-result-id="' + rvars.id + '"]').after(formatResultRow(responseData));
 					}
 				});
@@ -689,7 +694,12 @@
 
 	function switch_to_list() {
 		reset_views();
-		$('#filter-results-wrap').bshow();
+
+		if (IEMLApp.library == 1)
+		{
+			$('#filter-results-wrap').bshow();
+		}
+
 		$('#list-view-container').bshow();
 	}
 	
@@ -1159,22 +1169,22 @@
 			'data-expression-type="' + obj.enumExpressionType + '">' +
 			'<td>' + obj.expression + '</td>' +
 			'<td>' + formatDraggableScript(obj) + '</td>' +
-			'<td>' +
+			'<td>' + (IEMLApp.user ?
 				'<button type="button"' +
 					'data-exp="' + obj.expression + '"' +
 					'data-id="' + obj.id + '"' +
 					'class="btn btn-default ' + (obj.enumExpressionType == 'relational' ? 'editRelExp' : 'editExp') + '"><span class="glyphicon glyphicon-pencil"></span></button>' +
-				'<button type="button"' +
+				(obj.enumExpressionType == 'relational' ? '<button type="button"' +
 					'data-id="' + obj.id + '"' +
 					'class="btn btn-default duplicateExp"><span class="glyphicon glyphicon-duplicate"></span></button>' +
-				(obj.enumExpressionType == 'relational' ? '<button type="button"' +
+				'<button type="button"' +
 					'data-id="' + obj.id + '"' +
 					'class="btn btn-default delRelExp"><span class="glyphicon glyphicon-trash"></span></button>'
 				: '') +
 				(obj.enumExpressionType == 'basic' && IEMLApp.library !== 1 && current_lib_in_user_libs ?
 					'<button type="button"' + 'data-id="' + obj.id + '"' +
 					'class="btn btn-default removeExpFromList"><span class="glyphicon glyphicon-remove"></span></button>'
-				: '') +
+				: '') : '') +
 			'</td>' +
 		'</tr>';
 	}
@@ -1341,7 +1351,8 @@
 			IEMLApp.submit({
 				'a': 'duplicate',
 				'id': $(this).data('id'),
-				'lang': IEMLApp.lang
+				'lang': IEMLApp.lang,
+				'library': IEMLApp.userLibraries[0].pkLibrary
 			});
 
 			return false;
@@ -1372,9 +1383,11 @@
 			IEMLApp.switch_lang($(this).val(), window.History.getState().data);
 			
 			return false;
-		}).on('change', '#filter-results-wrap [name="filter-results"]', function() {
+		}).on('change', '#filter-results-wrap [name="filter-results"]', function()
+		{
 			$('#search-form').trigger('submit');
-		}).on('click', '#add-ieml-record', function() {
+		}).on('click', '#add-ieml-record', function()
+		{
 			IEMLApp.lastRetrievedData = { 'expression': '', 'example': '', 'enumCategory': 'N', 'enumShowEmpties': 'N', 'etymology': '' };
 			fillForm(IEMLApp.lastRetrievedData);
 			

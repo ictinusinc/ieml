@@ -127,10 +127,15 @@ function handle_request($action, $req)
 				Conn::query("
 					INSERT INTO library_to_expression
 						(fkExpressionPrimary, fkLibrary)
-					SELECT
-						" . $newID . " as fkExpressionPrimary, fkLibrary
-					FROM library_to_expression
-					WHERE fkExpressionPrimary = " . $goodID . "
+					" . ($req['library'] ? "
+						VALUES
+							(" . $newID . ", " . $req['library'] . ")
+						" : "
+						SELECT
+							" . $newID . " as fkExpressionPrimary, fkLibrary
+						FROM library_to_expression
+						WHERE fkExpressionPrimary = " . $goodID . "
+					" ) . "
 				");
 
 				$request_ret = handle_request('expression', array(
