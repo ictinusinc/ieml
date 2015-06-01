@@ -1301,12 +1301,12 @@
 		{
 			var form_data = form_arr_to_map($(this).serializeArray());
 
+			IEMLApp.library = form_data.library || IEMLApp.library;
+
 			if ($('[name="filter-results"][value="keys"]').is(':checked') && IEMLApp.library == 1)
 			{
 				form_data.keys = 'keys';
 			}
-
-			IEMLApp.library = form_data.library || IEMLApp.library;
 
 			IEMLApp.submit(form_data);
 			
