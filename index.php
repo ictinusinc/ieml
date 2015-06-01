@@ -275,7 +275,10 @@ require_once(APPROOT.'/includes/header.php');
 							</div>
 						</div>
 					</div>
-					<div class="editor-proper"></div>
+					<div class="editor-proper-wrap">
+						<div class="editor-proper"></div>
+						<button type="button" class="btn btn-default editor-fullscreen-button"><span class="glyphicon glyphicon-resize-full"></span></button>
+					</div>
 					<div class="editor-garbage hidden"><span class="glyphicon glyphicon-trash"></span></div>
 				</div>
 			</div>

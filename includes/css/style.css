@@ -120,10 +120,26 @@
 	border: 1px solid #BBB;
 }
 
-.editor-proper {
+.editor-fullscreen-button {
+	position: absolute;
+	right: 5px;
+	top: 5px;
+}
+
+.editor-proper-wrap {
 	height: 175px;
+	position: relative;
+	overflow-y: auto;
+}
+
+.editor-drawer.fullscreen .editor-proper-wrap {
+	height: 800px;
+}
+
+.editor-proper {
 	padding: 10px;
-	overflow-y: scroll;
+	height: 100%;
+	position: relative;
 }
 
 .editor-head {

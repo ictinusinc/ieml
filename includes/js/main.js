@@ -1577,6 +1577,8 @@
 			hide_editor();
 
 			clearEditor();
+		}).on('click', '.editor-fullscreen-button', function() {
+			$('.editor-drawer').toggleClass('fullscreen');
 		}).on('click', '.delRelExp', function() {
 			var $this = $(this);
 
