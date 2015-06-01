@@ -1301,7 +1301,7 @@
 		{
 			var form_data = form_arr_to_map($(this).serializeArray());
 
-			if ($('[name="filter-results"][value="keys"]').is(':checked') && IEMLApp.library != 1)
+			if ($('[name="filter-results"][value="keys"]').is(':checked') && IEMLApp.library == 1)
 			{
 				form_data.keys = 'keys';
 			}
