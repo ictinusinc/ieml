@@ -273,12 +273,12 @@ require_once(APPROOT.'/includes/header.php');
 								<span class="draggable-list"><div class="draggable" data-script-val="]"><strong>]</strong></div></span>
 								<span class="draggable-list"><div class="draggable" data-script-val="/"><strong>/</strong></div></span>
 							</div>
+							<div class="col-md-2">
+								<button type="button" class="pull-right btn btn-default editor-fullscreen-button"><span class="glyphicon glyphicon-resize-full"></span></button>
+							</div>
 						</div>
 					</div>
-					<div class="editor-proper-wrap">
-						<div class="editor-proper"></div>
-						<button type="button" class="btn btn-default editor-fullscreen-button"><span class="glyphicon glyphicon-resize-full"></span></button>
-					</div>
+					<div class="editor-proper"></div>
 					<div class="editor-garbage hidden"><span class="glyphicon glyphicon-trash"></span></div>
 				</div>
 			</div>
